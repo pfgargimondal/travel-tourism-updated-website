@@ -1,0 +1,338 @@
+@media only screen and (max-width: 991px){
+    .header {
+        background: var(--main-blue-background-color);
+        height: auto !important;
+    }
+
+    .header.sticky {
+        position: relative;
+    }
+
+    .progress-container {
+        display: none;
+    }
+
+    .navbar-toggler .navbar-toggler-icon i {
+        color: var(--light-black-text-color);
+        font-size: 2rem;
+    }
+
+    .cjaoksdwrrr.d-none{
+        display: block !important;
+        width: 16vw;
+    }
+
+    .asdoijodjokpkoie{
+        justify-content: end;
+    }
+
+    .oifkepomtkret img{
+        height: 2rem !important;
+    }
+
+
+    /*responsive mega menu start*/
+
+    header .navbar-nav li.nav-item {
+        margin: 5px 5px;
+    }
+
+    header #mega-menu-drpdwn #mega-menu-drpdwn-collapse {
+        position: absolute;
+        transition: 0.3s ease-in-out;
+        width: 100%;
+        box-shadow: none;
+    }
+
+    header #mega-menu-drpdwn:hover #mega-menu-drpdwn-collapse {
+        position: initial;
+        transition: 0.3s ease-in-out;
+    }
+
+    header #mega-menu-drpdwn #mega-menu-drpdwn-collapse li:first-child.mt-2 {
+        margin-top: 0 !important;
+    }
+
+    header #mega-menu-drpdwn #mega-menu-drpdwn-collapse .uierr_dropdown .ud-list {
+        height: auto;
+        z-index: 9;
+        right: 0;
+    }
+
+    header #mega-menu-drpdwn #mega-menu-drpdwn-collapse .uierr_dropdown {
+        left: 0;
+        top: initial;
+        z-index: 9;
+    }
+
+    header #mega-menu-drpdwn #mega-menu-drpdwn-collapse li .uierr_dropdown .ud-list {
+        top: 0 !important;
+    }
+
+    header #mega-menu-drpdwn:hover {
+        z-index: 9;
+    }
+
+    /*responsive mega menu end*/
+
+    header .header-top {
+        display: none;
+    }
+
+    header .nav-menu {
+        background: #000;
+        top: initial;
+    }
+
+    header .menu-item {
+        color: #fff !important;
+    }
+
+    header .collapse {
+        display: none;
+    }
+
+    header .navbar-nav {
+        position: absolute;
+        z-index: 9999;
+        background: #fff;
+        width: 100%;
+        height: auto;
+        padding: 3rem;
+        left: 0;
+        box-shadow: rgba(0, 0, 0, 0.2) 0px 25px 20px -20px;
+    }
+
+    header .navbar-nav li .nav-link:after {
+        transform: initial;
+        left: 0;
+    }
+    
+    .sifjdnosjkjhjmre.d-flex{
+        display: none !important;
+    }
+
+    .container {
+        max-width: initial !important;
+        width: 100%;
+    }
+    
+    button.fsdgsadehtrfdewe{
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        border: 1px solid var(--border);
+        border-radius: 25px;
+    }
+
+    button.fsdgsadehtrfdewe.px-1{
+        padding-inline: 5px !important;
+    }
+
+    button.fsdgsadehtrfdewe span{
+        white-space: nowrap;
+        max-width: 3rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .res-loggedout-dropdown-icon{
+        border: 0 !important;
+    }    
+
+    button.fsdgsadehtrfdewe i.bi-person-fill{
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background: var(--main-yellow-color);
+        font-size: 1rem;
+    }
+
+    .flight-content-area{
+        width: 100%;
+        margin-top: 0;
+    }    
+
+    .res-nav-menu.d-none{
+        display: block !important;
+    }
+
+    .gfhhgedfdbfgy.d-none{
+        display: block !important;
+    }
+
+    .gfhhgedfdbfgy{
+        width: 16vw;
+    }
+
+    .res-nav-menu{
+        width: 85%;
+        left: 0;
+        z-index: 99999;
+        transition: all 0.2s ease;
+    }
+
+    .res-nav-menu-hide{
+        left: -100%;
+        transition: all 0.2s ease;
+    }
+
+    .res-nav-menu-backdrop{
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(20px);
+        visibility: visible;
+        opacity: 1;
+        z-index: 99999;
+    }
+
+    .res-nav-menu-backdrop-hide{
+        visibility: hidden;
+        opacity: 0;
+        z-index: -99999;
+    }
+
+    .res-nav-menu .gfhhgedfdbfgy {
+        width: auto;
+    }
+
+    .res-nav-menu .asdoijodjokpkoie{
+        border: 1px solid #bba11d;
+    }
+
+    .res-nav-menu .fsdgsadehtrfdewe,
+    .asdoijodjokpkoie,
+    .res-nav-menu .gfhhgedfdbfgy,
+    .doiweokrwerwer{
+        border-radius: 12px;
+    }
+
+    .res-nav-menu .gfhhgedfdbfgy,
+    .doiweokrwerwer{
+        border: 1px solid var(--light-border-color);
+    }
+
+    .doiweokrwerwer h6{
+        font-weight: 600;
+    }
+
+    .dijewojkor span{
+        font-size: 1rem;
+    }
+
+    .fhgdgserbtytrr li{
+        list-style: none;
+        padding: 10px;
+        border-bottom: 1px solid var(--light-border-color);
+    }
+
+    .fhgdgserbtytrr li a{
+        font-weight: 600;
+    }
+    
+    .res-nav-menu-backdrop.d-none{
+        display: block !important;
+    }
+
+    .new-header .res-toggle-bar i,
+    .new-header button.fsdgsadehtrfdewe i{
+        color: #000;
+    }    
+
+    .res-nav-menu button.fsdgsadehtrfdewe{
+        color: #fff !important;
+    }
+    
+    header.bg-transparent{
+        background-color: #fff !important;
+    }    
+
+    .fsdgsadehtrfdewe i.bi-chevron-down{
+        font-size: 10px;
+    }
+
+    .res-nav-user{
+        border-bottom: 1px solid var(--border);
+    }
+
+    .res-nav-user p:last-child{
+        color: var(--main-red-color) !important;
+    }
+
+    .diwejojiwerer{
+        margin-right: 0.3rem;
+        flex-shrink: 0;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 600px){
+    button.fsdgsadehtrfdewe span{
+        display: none;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 488px){
+    .oifkepomtkret img {
+        height: 1.8rem !important;
+    }    
+}
+
+
+
+
+@media only screen and (max-width: 375px) {
+    .oifkepomtkret img {
+        height: 1.4rem !important;
+    }
+
+    .fsdgsadehtrfdewe i.bi-chevron-down.ms-1{
+        margin-left: 0 !important;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 363px) {
+    .fhgdgserbtytrr li a {
+        font-size: 0.8rem;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 335px) {
+    button.fsdgsadehtrfdewe i.bi-person-fill {
+        width: 1.2rem;
+        height: 1.2rem;
+        font-size: 0.8rem;
+    }
+
+    .diwejojiwerer{
+        margin-right: 0;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 303px){
+    .res-nav-menu.p-3{
+        padding-inline: 10px !important;
+    }
+
+    .oifkepomtkret img {
+        height: 1rem !important;
+    }
+}

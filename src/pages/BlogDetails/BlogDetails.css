@@ -1,0 +1,324 @@
+/* strat blog details css by   nisha  */
+/* strat blog details css by   nisha  */
+/* strat blog details css by   nisha  */
+.hero-sectionc{
+  position: relative;
+}
+
+.gfrt{
+  padding: 12rem 0;
+}
+
+.hero-sectionc::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+/*Blog Details filter page*/
+
+
+.blog-detail {
+  padding: 70px 0;
+}
+
+.custom-toggler{
+border:none;
+background:none;
+display:flex;
+flex-direction:column;
+gap:5px;
+}
+
+.custom-toggler span{
+width:25px;
+height:3px;
+background:#fff;
+display:block;
+transition:.3s;
+}
+
+/* cross animation */
+
+.custom-toggler.active span:nth-child(1){
+transform:rotate(45deg) translate(5px,5px);
+}
+
+.custom-toggler.active span:nth-child(2){
+opacity:0;
+}
+
+.custom-toggler.active span:nth-child(3){
+transform:rotate(-45deg) translate(6px,-6px);
+}
+.fghffsd5fd 
+{
+    width:100%;
+    height:460px;
+}
+
+.fghffsd5fd  img
+{
+    width:100%;
+    height:100%;
+    border-radius:8px;
+}
+.rotate-line{
+transform: rotate(90deg);
+display:inline-block;
+}
+
+.fnsdjhf button 
+{
+    padding:8px 20px;
+    background-color:#00b4a8;
+    color:white;
+    border-radius :25px;
+    border:none;
+    
+}
+
+.faq-accordion{
+width:100%;
+}
+
+.faq-item{
+border-bottom:1px solid #ddd;
+padding:15px 0;
+}
+
+.faq-question{
+font-size:18px;
+font-weight:600;
+cursor:pointer;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.faq-answer{
+max-height:0;
+overflow:hidden;
+transition:0.3s;
+color:#555;
+font-size:15px;
+margin-top:10px;
+}
+
+.faq-item.active .faq-answer{
+max-height:200px;
+}
+
+.faq-icon{
+font-size:20px;
+}
+
+/* Layout */
+.blog-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 40px;
+}
+
+/* Blog Image */
+.blog-pic {
+  /*position: relative;*/
+  width:100%;
+  height:550px;
+}
+
+.custom-navbar{
+padding:15px 0;
+}
+
+.logo-text{
+color:#fff;
+}
+
+
+
+.nav-right{
+display:flex;
+align-items:center;
+gap:15px;
+color:#fff;
+}
+
+.blog-image img {
+  width: 100%;
+  height:100%;
+  border-radius: 12px;
+}
+
+.badgepart {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  background: var(--main-green-color);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* Blog Content */
+.blog-title {
+  font-size: 30px;
+  margin: 25px 0 15px;
+  font-weight: 600;
+}
+
+.blog-main p {
+  color: #000;
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.subtitel {
+  font-size: 24px;
+  margin-top: 30px;
+  font-weight: 600;
+}
+
+/* Sidebar */
+.blog-sidepart {
+  padding-top: 10px;
+}
+
+.sidepart-title {
+  font-size: 22px;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+/* Related Items */
+.related-item {
+  margin-bottom: 25px;
+}
+
+.related-item img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.categori {
+  color: var(--main-green-color);
+  font-weight: 600;
+  font-size: 14px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.related-item p {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.journey-section {
+  padding: 80px 0;
+}
+
+.container {
+  width: 90%;
+  margin: auto;
+}
+
+/* Heading */
+.section-heading {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.sub-title {
+  color: var(--main-green-color);
+  font-weight: 600;
+}
+
+.section-heading h2 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+/* Grid Layout */
+.journey-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 30px;
+}
+
+/* Left Card */
+.left-card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.card-cont {
+  margin-top: 20px;
+}
+
+.tag {
+  color: var(--main-green-color);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.left-card h3 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.left-card p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Author */
+.author-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+
+.author img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+/* Right Cards */
+.right-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.ins-card img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.ins-card h4 {
+  font-size: 16px;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+
+/* end blog details css by   nisha  */
+/* end blog details css by   nisha  */
+/* end blog details css by   nisha  */
+

@@ -1,0 +1,100 @@
+@media only screen and (max-width: 991px){
+    .sidebar{
+        position: fixed;
+        top: 0;
+        left: 0;
+        transition: 0.1s ease-in-out;
+        height: 100%;
+        width: 75%;
+        background: #fff;
+        z-index: 999999;
+    }
+
+    .sidebar-hide{
+        left: -100%;
+        transition: 0.1s ease-in-out;
+    }
+
+    .dejnwirwer.d-flex{
+        flex-direction: column;
+    }
+
+    .stat-cards{
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .main-wrap{
+        width: 100%;
+        padding-inline: 0;
+    }
+
+    .res-user-account .avatar-preview {
+        width: 16vw !important;
+        height: 16vw !important;
+    }    
+
+    .res-user-account .topbar{
+        padding-top: 0;
+    }
+
+    .res-user-account .sidebar-brand{
+        align-items: center;
+        border-bottom: 0;
+    }
+
+    #res-ua-btn{
+        font-size: 1.5rem;
+    }
+
+    .main-wrap .card-body.p-4{
+        padding-inline: 0 !important;
+    }
+
+    .card-header.py-4{
+        padding-top: 0 !important;
+    }
+
+    .sidebar-backdrop{
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 999999;
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .sidebar-backdrop-hide{
+        z-index: -999999;
+        visibility: hidden;
+        opacity: 0;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 600px){
+    .sidebar-brand .topbar{
+        padding-top: 0;
+    }
+
+    .topbar-left p {
+        font-size: 12px !important;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 393px){
+    .topbar-left h3 {
+        font-size: 1.2rem !important;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 318px){
+    .topbar-left p {
+        font-size: 10px !important;
+    }
+}

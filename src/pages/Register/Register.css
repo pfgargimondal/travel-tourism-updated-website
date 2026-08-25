@@ -1,0 +1,137 @@
+  /* BACKGROUND IMAGE */
+  .reg-login-wrapper {
+      background: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470') no-repeat center center/cover;
+      position: fixed;
+      width: 900px;
+      max-width: 90%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 99999999;
+      visibility: visible;
+      opacity: 1;
+      box-shadow: rgba(14, 30, 37, 0.12) 0px 2px 4px 0px, rgba(14, 30, 37, 0.32) 0px 2px 16px 0px;
+      transition: all 0.3s ease;
+  }
+
+  .reg-login-wrapper-hide {
+      z-index: -99999999;
+      visibility: hidden;
+      opacity: 0;
+      transition: all 0.3s ease;
+  }
+
+  /* DARK OVERLAY */
+  .reg-login-wrapper-backdrop {
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 9999999;
+      visibility: visible;
+      opacity: 1;
+  }
+
+  .reg-login-wrapper-backdrop-hide {
+      z-index: -9999999;
+      visibility: hidden;
+      opacity: 0;
+  }
+
+  /* LOGIN BOX (GLASS EFFECT) */
+  .login-box {
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 15px;
+      padding: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      flex-direction: column;
+  }
+
+  /* INPUT */
+  .custom-input {
+      background: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      padding: 5px 10px;
+      color: #fff;
+      font-size: 0.9rem;
+  }
+
+  .custom-input::placeholder {
+      color: #ddd;
+  }
+
+  /* BUTTON */
+  .login-btn {
+      background: var(--main-green-color);
+      border: none;
+      height: 45px;
+      font-weight: bold;
+      color: white;
+      box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 15px;
+      transition: all 0.2s ease;
+  }
+
+  .login-btn:hover {
+      background: var(--blue-primary-color);
+      color: #fff;
+      box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+      transform: translateY(-3px);
+      transition: all 0.2s ease;
+  }
+
+  .right-content {
+      padding-right: 80px;
+  }
+
+  .right-content h1 {
+      font-size: 40px;
+      font-weight: 700;
+  }
+
+  /* SOCIAL ICONS */
+  .social-icons i {
+      font-size: 20px;
+      margin-right: 15px;
+      background: #fff;
+      height: 40px;
+      text-align: center;
+      width: 40px;
+      color: #000;
+      padding: 10px;
+      border-radius: 50%;
+  }
+
+  .right-content h1 {
+      color: white;
+  }
+
+  .overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1;
+      /* niche thakbe */
+  }
+
+  .main-container {
+      position: relative;
+      z-index: 0;
+  }
+
+  .dfnjhdf {
+      width: 100%;
+      height: 3px;
+      background-color: #fff;
+  }
+
+  .fhjkljytre {
+      text-decoration: underline !important;
+  }
+
+
+
+
+  @media only screen and (max-width: 465px){
+    .lomsodjfkdf{
+        flex-direction: column;
+    }
+  }

@@ -1,0 +1,112 @@
+.bottom-res-nav-menu{
+    z-index: 9999;
+    box-shadow: rgba(0, 0, 0, 0.45) 0px -20px 20px -20px;
+    padding-inline: 0 1rem;
+}
+
+.res-nav-menus{
+    flex: 1;
+    text-align: center;
+}
+
+.res-nav-menus a{
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--light-black-text-color);
+    flex: 1;
+    height: stretch;
+}
+
+.res-nav-menus i{
+    font-size: 1.4rem;
+}
+
+.res-nav-menus.active a{
+    color: var(--main-green-color) !important;
+}
+
+.res-nav-menus:nth-child(3n) .dweiojrwerwer{
+    width: 2.7rem;
+    height: 2.7rem;
+    background: var(--button-gradient-color);
+    color: #fff;
+    margin-inline: auto;
+    transform: translateY(-0.5rem);
+    margin-bottom: 0 !important;
+    border: 2px solid #fff;
+}
+
+.res-nav-menus:nth-child(3n) .dweiojrwerwer i{
+    animation: sway 2.4s infinite;
+    animation-timing-function: ease-in-out;
+    -webkit-transform-origin: top;
+    -moz-transform-origin: top;
+    transform-origin: top;        
+}
+
+.res-nav-menus:nth-child(3n) img{
+    width: 4rem;
+    margin: auto;
+    transform: translateY(-4px);
+}
+
+@keyframes sway  {
+    0% { transform: rotate(8deg) translate(-50%, -50%); }
+    50% { transform: rotate(-8deg) translate(-50%, -50%); }
+    100% { transform: rotate(8deg) translate(-50%, -50%); }
+}
+
+.diweurwer span{
+    width: 1.1rem;
+    height: 1.1rem;
+    background: red;
+    line-height: 1.5;
+    font-size: 11px;
+    right: 25%;
+}
+
+
+
+
+
+@media only screen and (max-width: 991px){
+    .diweurwer span {
+        right: 45%;
+        transform: translateX(50%);
+    }
+}
+
+
+
+
+
+@media only screen and (max-width: 600px){
+    .diweurwer span {
+        right: 40%;
+    }
+}
+
+
+
+
+
+@media only screen and (max-width: 383px) {
+    .res-nav-menus i {
+        font-size: 1.2rem !important;
+    }
+
+    .res-nav-menus a span{
+        font-size: 0.8rem;
+    }
+
+    .res-nav-menus:nth-child(3n) img {
+        width: 3rem;
+        transform: translateY(-7px);
+    }
+
+    .diweurwer{
+        margin-bottom: 0.25rem !important;
+    }    
+}

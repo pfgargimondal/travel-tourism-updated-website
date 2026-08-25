@@ -1,0 +1,155 @@
+/* ================= MAIN FOOTER ================= */
+
+.main-footer {
+    background: #142544;
+    color: #fff;
+}
+
+.main-footer p{
+    color: #fff !important;
+}
+
+.footer-logo {
+    font-weight: 700;
+}
+
+.footer-links li {
+    margin-bottom: 0.8rem;
+}
+
+.footer-links a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: var(--main-green-color);
+}
+
+.footer-contact li {
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.payment-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.payment-logos {
+    display: flex;
+    gap: 10px;
+}
+
+.payment-logos img {
+    height: 2.3vw;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.3s ease;
+}
+
+.payment-logos img:hover {
+    transform: scale(1.15);
+}
+
+/* Newsletter */
+.newsletter-form input {
+    border-radius: 8px 0 0 8px;
+}
+
+/* Bottom Bar */
+.footer-bottom {
+    background: #0f1e38;
+    padding: 15px 0;
+}
+
+.social-icons a {
+    color: #fff;
+    margin-left: 10px;
+    font-size: 1.8vw;
+}
+
+.social-icons img{
+    width: 3vw;
+    transition: 0.2s ease-in-out;
+}
+
+.social-icons img:hover {
+    transform: scale(1.15);
+    transition: 0.2s ease-in-out;
+}
+
+
+.booking-input {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    padding-left: 0;
+    font-weight: 600;
+    background: transparent;
+}
+
+.booking-input:focus {
+    box-shadow: none;
+    border-bottom: 1px solid #000;
+}
+
+
+@media only screen and (max-width: 991px){
+    .payment-logos img{
+        height: auto;
+    }
+
+    .social-icons img {
+        width: auto;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+        padding-bottom: 5rem;
+    }
+
+    .newsletter-form input{
+        border-radius: 8px;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 787px){
+    .payment-section{
+        flex-direction: column;
+        align-items: initial;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 600px){
+    .footer-bottom > .container.d-flex{
+        flex-direction: column;
+    }
+
+    .footer-bottom .social-icons{
+        margin-top: 1rem;
+    }
+
+    .footer-bottom {
+        padding-bottom: 6rem;
+    }
+}
+
+
+
+
+@media only screen and (max-width: 375px){
+    .payment-section{
+        flex-direction: column;
+    }
+}

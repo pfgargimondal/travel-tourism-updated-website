@@ -1,0 +1,40 @@
+/* ================= INSTAGRAM SECTION ================= */
+
+.insta-section {
+    background: #142544;
+    padding: 50px 0;
+    position: relative;
+    overflow: hidden;
+    padding-top: 6vw;
+}
+.footer-wave {
+    position: absolute;
+    top: -2vw;
+    left: 0;
+    width: 100%;
+    height: auto;
+    z-index: 1;
+}
+.insta-img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.follow-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    color: #000;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.follow-btn i {
+    margin-right: 6px;
+}

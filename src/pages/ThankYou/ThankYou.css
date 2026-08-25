@@ -1,0 +1,191 @@
+.thank-you-page{
+    min-height:100vh;
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f8fafc;
+    padding:30px 20px;
+    position:relative;
+    overflow:hidden;
+}
+
+.thank-you-page::before{
+    content:"";
+    position:absolute;
+    width:500px;
+    height:500px;
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    border-radius:50%;
+    top:-220px;
+    right:-150px;
+    opacity:.08;
+}
+
+.thank-you-page::after{
+    content:"";
+    position:absolute;
+    width:400px;
+    height:400px;
+    background:linear-gradient(135deg,#3b82f6,#06b6d4);
+    border-radius:50%;
+    bottom:-180px;
+    left:-120px;
+    opacity:.08;
+}
+
+.thank-you-card{
+    width:100%;
+    max-width:650px;
+    background:#fff;
+    border-radius:30px;
+    padding:70px 50px;
+    text-align:center;
+    box-shadow:0 15px 45px rgba(0,0,0,0.08);
+    position:relative;
+    z-index:2;
+}
+
+.success-animation{
+    margin-bottom:30px;
+}
+
+.circle{
+    width:120px;
+    height:120px;
+    margin:auto;
+    border-radius:50%;
+    background:#ecfdf5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    animation:pulse 2s infinite;
+}
+
+.checkmark{
+    width:70px;
+    height:70px;
+}
+
+.checkmark-circle{
+    stroke:#22c55e;
+    stroke-width:2;
+    stroke-miterlimit:10;
+    stroke-dasharray:166;
+    stroke-dashoffset:166;
+    animation:stroke 0.6s ease forwards;
+}
+
+.checkmark-check{
+    stroke:#22c55e;
+    stroke-width:3;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:48;
+    stroke-dashoffset:48;
+    animation:stroke 0.4s 0.6s ease forwards;
+}
+
+.thank-you-card h1{
+    font-size:48px;
+    color:#111827;
+    margin-bottom:18px;
+    font-weight:800;
+}
+
+.thank-you-card p{
+    font-size:17px;
+    line-height:1.8;
+    color:#6b7280;
+    max-width:500px;
+    margin:auto;
+}
+
+.thank-you-buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+    margin-top:40px;
+}
+
+.home-btn,
+.contact-btn{
+    padding:15px 32px;
+    border-radius:60px;
+    text-decoration:none;
+    font-size:16px;
+    font-weight:600;
+    transition:.3s ease;
+}
+
+.home-btn{
+    background:#22c55e;
+    color:#fff;
+}
+
+.home-btn:hover{
+    background:#16a34a;
+    transform:translateY(-3px);
+}
+
+.contact-btn{
+    background:#eff6ff;
+    color:#111827;
+}
+
+.contact-btn:hover{
+    background:#dbeafe;
+    transform:translateY(-3px);
+}
+
+@keyframes stroke{
+    to{
+    stroke-dashoffset:0;
+    }
+}
+
+@keyframes pulse{
+    0%{
+    transform:scale(1);
+    }
+    50%{
+    transform:scale(1.05);
+    }
+    100%{
+    transform:scale(1);
+    }
+}
+
+@media(max-width:768px){
+    .thank-you-card{
+    padding:50px 25px;
+    }
+
+    .thank-you-card h1{
+    font-size:36px;
+    }
+
+    .thank-you-card p{
+    font-size:15px;
+    }
+
+    .thank-you-buttons{
+    flex-direction:column;
+    }
+
+    .home-btn,
+    .contact-btn{
+    width:100%;
+    }
+
+    .circle{
+    width:100px;
+    height:100px;
+    }
+
+    .checkmark{
+    width:60px;
+    height:60px;
+    }
+}
