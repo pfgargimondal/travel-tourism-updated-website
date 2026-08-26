@@ -730,6 +730,15 @@ export const FlightFilter = () => {
   });
 
 
+  const handleLoaderToggle = () => {
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+  };
+
+
   if (loading) return <Loader />;
 
   return (
@@ -1391,7 +1400,7 @@ export const FlightFilter = () => {
                       Filters
                     </h5>
 
-                    <div onClick={(e) => { e.stopPropagation(); resetFilters() }} className="reset-link">
+                    <div onClick={(e) => { e.stopPropagation(); resetFilters(); handleLoaderToggle() }} className="reset-link">
                       <i className="fa-solid fa-arrow-rotate-left"></i>{" "}
                       Reset
                     </div>
@@ -1408,7 +1417,7 @@ export const FlightFilter = () => {
                       <div className="dimodjhiuhsdf d-flex align-items-center justify-content-between p-3">
                         <h5 className="mb-0">Filter</h5>
 
-                        <div onClick={(e) => { e.stopPropagation(); resetFilters() }} className="reset-link">
+                        <div onClick={(e) => { e.stopPropagation(); resetFilters(); handleLoaderToggle() }} className="reset-link">
                           <i className="fa-solid fa-arrow-rotate-left"></i>{" "}
                           Reset
                         </div>
@@ -1433,7 +1442,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="NON_STOP"
                                   checked={filters.stops.includes('NON_STOP')}
-                                  onChange={() => toggleStop('NON_STOP')}
+                                  onChange={() => {toggleStop('NON_STOP'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1461,7 +1470,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="1_CHANGE"
                                   checked={filters.stops.includes('1_CHANGE')}
-                                  onChange={() => toggleStop('1_CHANGE')}
+                                  onChange={() => {toggleStop('1_CHANGE'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1501,7 +1510,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="NON_REFUNDABLE"
                                   checked={filters.farePolicy.includes('NON_REFUNDABLE')}
-                                  onChange={() => toggleFarePolicy('NON_REFUNDABLE')}
+                                  onChange={() => {toggleFarePolicy('NON_REFUNDABLE'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1529,7 +1538,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="REFUNDABLE"
                                   checked={filters.farePolicy.includes('REFUNDABLE')}
-                                  onChange={() => toggleFarePolicy('REFUNDABLE')}
+                                  onChange={() => {toggleFarePolicy('REFUNDABLE'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1569,7 +1578,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="SG"
                                   checked={filters.airlines.includes('SG')}
-                                  onChange={() => toggleAirline('SG')}
+                                  onChange={() => {toggleAirline('SG'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1589,7 +1598,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="QP"
                                   checked={filters.airlines.includes('QP')}
-                                  onChange={() => toggleAirline('QP')}
+                                  onChange={() => {toggleAirline('QP'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1609,7 +1618,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="IX"
                                   checked={filters.airlines.includes('IX')}
-                                  onChange={() => toggleAirline('IX')}
+                                  onChange={() => {toggleAirline('IX'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1629,7 +1638,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="AI"
                                   checked={filters.airlines.includes('AI')}
-                                  onChange={() => toggleAirline('AI')}
+                                  onChange={() => {toggleAirline('AI'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1649,7 +1658,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="6E"
                                   checked={filters.airlines.includes('6E')}
-                                  onChange={() => toggleAirline('6E')}
+                                  onChange={() => {toggleAirline('6E'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">
@@ -1680,6 +1689,7 @@ export const FlightFilter = () => {
                               min={0}
                               max={50000}
                               onChange={(e, newValue) => setPriceRange(newValue)}
+                              onChangeCommitted={handleLoaderToggle}
                               valueLabelDisplay="off"
                             />
                             <div className="price-values">
@@ -1707,7 +1717,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="departure"
                               checked={filters.departureTime.includes('BEFORE_6AM')}
-                              onChange={() => toggleDepartureTime('BEFORE_6AM')}
+                              onChange={() => {toggleDepartureTime('BEFORE_6AM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/dfrr.png" alt="" />
@@ -1719,7 +1729,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="departure"
                               checked={filters.departureTime.includes('6AM_12PM')}
-                              onChange={() => toggleDepartureTime('6AM_12PM')}
+                              onChange={() => {toggleDepartureTime('6AM_12PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/afternoon.png" alt="" />
@@ -1731,7 +1741,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="departure"
                               checked={filters.departureTime.includes('12PM_6PM')}
-                              onChange={() => toggleDepartureTime('12PM_6PM')}
+                              onChange={() => {toggleDepartureTime('12PM_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/evening.png" alt="" />
@@ -1743,7 +1753,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="departure"
                               checked={filters.departureTime.includes('AFTER_6PM')}
-                              onChange={() => toggleDepartureTime('AFTER_6PM')}
+                              onChange={() => {toggleDepartureTime('AFTER_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/night.png" alt="" />
@@ -1769,7 +1779,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="arrival"
                               checked={filters.arrivalTime.includes('BEFORE_6AM')}
-                              onChange={() => toggleArrivalTime('BEFORE_6AM')}
+                              onChange={() => {toggleArrivalTime('BEFORE_6AM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/dfrr.png" alt="" />
@@ -1781,7 +1791,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="arrival"
                               checked={filters.arrivalTime.includes('6AM_12PM')}
-                              onChange={() => toggleArrivalTime('6AM_12PM')}
+                              onChange={() => {toggleArrivalTime('6AM_12PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/afternoon.png" alt="" />
@@ -1793,7 +1803,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="arrival"
                               checked={filters.arrivalTime.includes('12PM_6PM')}
-                              onChange={() => toggleArrivalTime('12PM_6PM')}
+                              onChange={() => {toggleArrivalTime('12PM_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/evening.png" alt="" />
@@ -1805,7 +1815,7 @@ export const FlightFilter = () => {
                               type="checkbox"
                               name="arrival"
                               checked={filters.arrivalTime.includes('AFTER_6PM')}
-                              onChange={() => toggleArrivalTime('AFTER_6PM')}
+                              onChange={() => {toggleArrivalTime('AFTER_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
                             <img src="/images/night.png" alt="" />
@@ -1831,7 +1841,7 @@ export const FlightFilter = () => {
                                   type="checkbox"
                                   value="SAME_DAY_ARRIVAL"
                                   checked={filters.others.includes('SAME_DAY_ARRIVAL')}
-                                  onChange={() => toggleOtherFilter('SAME_DAY_ARRIVAL')}
+                                  onChange={() => {toggleOtherFilter('SAME_DAY_ARRIVAL'); handleLoaderToggle()}}
                                   className="checkbox__trigger visuallyhidden"
                                 />
                                 <span className="checkbox__symbol">

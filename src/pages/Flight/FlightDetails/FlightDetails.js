@@ -132,6 +132,8 @@ export const FlightDetails = () => {
     }
   }, [fareId, search_key, flight?.Flight_Key]);
 
+  console.log(flightRePrice, 'flightRePrice');
+
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
 
@@ -178,6 +180,8 @@ export const FlightDetails = () => {
   };
 
   const repriceFlight = flightRePrice?.AirRepriceResponses?.[0]?.Flight;
+
+  const isBlockAllowed = repriceFlight?.Block_Ticket_Allowed;
 
   const fare = repriceFlight?.Fares?.[0];
 
@@ -1322,6 +1326,293 @@ export const FlightDetails = () => {
       state: paymentData,
     });
   };
+
+  const getFlightKey = () => {
+    return (
+      repriceFlight?.Flight_Key ||
+      repriceFlight?.AirRepriceResponses?.[0]?.Flight_Key ||
+      ""
+    );
+  };
+
+  const getGender = (gender) => {
+    if (
+      gender === "Female" ||
+      gender === "F" ||
+      gender === 1 ||
+      gender === "1"
+    ) {
+      return 1;
+    }
+
+    return 0;
+  };
+
+  const getPaxType = (passengerType) => {
+    switch (passengerType) {
+      case "Adult":
+        return 0;
+
+      case "Child":
+        return 1;
+
+      case "Infant":
+        return 2;
+
+      default:
+        return 0;
+    }
+  };
+
+  const createPAXDetails = () => {
+    return bookingPassengers.map((passenger, index) => ({
+      Pax_Id: index + 1,
+
+      Pax_type: getPaxType(
+        passenger?.passengerType
+      ),
+
+      Title:
+        passenger?.title || "",
+
+      First_Name:
+        passenger?.firstName || "",
+
+      Last_Name:
+        passenger?.lastName || "",
+
+      Gender:
+        getGender(passenger?.gender),
+
+      Age:
+        passenger?.age
+          ? Number(passenger.age)
+          : null,
+
+      DOB:
+        // passenger?.dob || null,
+        passenger?.dob
+        ? (() => {
+            const [year, month, day] = passenger.dob.split("-");
+            return `${month}/${day}/${year}`;
+          })()
+        : null,
+
+      Passport_Number:
+        passenger?.passportNumber || null,
+
+      Passport_Issuing_Country:
+        passenger?.passportCountry || null,
+
+      Passport_Expiry:
+        passenger?.passportExpiry || null,
+
+      Nationality:
+        passenger?.nationality || null,
+
+      Pancard_Number:
+        passenger?.panCardNo || null,
+
+      FrequentFlyerDetails:
+        passenger?.showFF &&
+        passenger?.ffNumber
+          ? {
+              Airline_Code:
+                passenger?.airline || "",
+
+              FrequentFlyerNumber:
+                passenger?.ffNumber || "",
+            }
+          : null,
+    }));
+  };
+
+  const createBookingSSRDetails = () => {
+    const ssrDetails = [];
+
+    if (Array.isArray(selectedSeatList)) {
+      selectedSeatList.forEach((seat) => {
+        ssrDetails.push({
+          // Pax_Id: Number(seat?.passengerIndex) + 1,
+          Pax_Id: Number(seat.paxId),
+          SSR_Key: seat.ssrKey || "",
+        });
+      });
+    }
+
+    if (Array.isArray(selectedMealList)) {
+      selectedMealList.forEach((meal) => {
+        console.log(meal, 'mealsergderhpayment');
+        ssrDetails.push({
+          // SSR_Type: "MEAL",
+
+          // Pax_Id: Number(meal?.passengerIndex) + 1,
+          Pax_Id: meal?.paxId,
+          SSR_Key: meal.SSR_Key || "",
+          // SSR_Code: meal?.SSR_Code || meal?.Meal_Code || meal?.code || "",
+
+          // Amount: Number(
+          //   meal?.Total_Amount || meal?.Amount || meal?.price || 0,
+          // ),
+        });
+      });
+    }
+
+    Object.values(selectedSSR || {}).forEach((passengerSSR) => {
+      Object.values(passengerSSR || {}).forEach((ssr) => {
+        if (!ssr) return;
+
+        ssrDetails.push({
+          // SSR_Type: ssr?.SSR_TypeName || ssr?.SSR_Type || "",
+          Pax_Id: Number(ssr?.passengerIndex ?? ssr?.Pax_Id ?? 0) + 1,
+          SSR_Key: ssr.ssrKey || "",
+          // SSR_Code: ssr?.SSR_Code || ssr?.code || "",
+          // Amount: Number(ssr?.Total_Amount || ssr?.Amount || ssr?.price || 0),
+        });
+      });
+    });
+
+    return ssrDetails;
+  };
+
+  const createTempBookingPayload = () => {
+    const firstPassenger =
+      bookingPassengers?.[0] || {};
+
+    const payload = {
+      Customer_Mobile:
+        firstPassenger?.mobile || "",
+
+      Passenger_Mobile:
+        firstPassenger?.mobile || "",
+
+      WhatsAPP_Mobile:
+        null,
+
+      Passenger_Email:
+        firstPassenger?.email || "",
+
+      PAX_Details:
+        createPAXDetails(),
+
+      GST:
+        false,
+
+      GST_Number:
+        "",
+
+      GST_HolderName:
+        "GST Holder Name",
+
+      GST_Address:
+        "GST Address",
+
+      BookingFlightDetails: [
+        {
+          Search_Key:
+            search_key || "",
+
+          Flight_Key:
+            getFlightKey(),
+
+          BookingSSRDetails:
+            createBookingSSRDetails(),
+        },
+      ],
+
+      CostCenterId:
+        0,
+
+      ProjectId:
+        0,
+
+      BookingRemark:
+        "Flight Booking",
+
+      CorporateStatus:
+        0,
+
+      CorporatePaymentMode:
+        0,
+
+      MissedSavingReason:
+        null,
+
+      CorpTripType:
+        null,
+
+      CorpTripSubType:
+        null,
+
+      TripRequestId:
+        null,
+
+      BookingAlertIds:
+        null,
+    };
+
+    return payload;
+  };
+
+  const handleHoldTicket = async () => {
+    try {
+        setFlightBookingModal(false);
+
+        const payload = createTempBookingPayload();
+        const response = await http.post(
+          "/flight-temp-booking",
+          payload
+        );
+
+        console.log(response, 'response temp booking');
+
+      const bookingReference =  response?.booking_reference ||
+                response?.BookingId ||
+                response?.booking_id ||
+                response?.Booking_Reference ||
+                response?.BookingReference ||
+                response?.BookingRef ||
+                response?.PNR ||
+                response?.pnr ||
+                response?.data?.Booking_Id ||
+                response?.data?.BookingId ||
+                response?.data?.Booking_Reference ||
+                response?.data?.BookingReference || "";
+
+        if (!bookingReference) {
+            throw new Error("Booking reference not found from Temp Booking response.");
+        }
+
+        const ticketingType = "0";
+
+        const ticketingPayload = {
+            Booking_RefNo: bookingReference,
+            Ticketing_Type: ticketingType,
+        };
+
+
+        const ticketResponse = await http.post(
+          "/flight-ticketing",
+          ticketingPayload,
+        );
+  
+        console.log(ticketResponse, 'ticketResponse');
+        console.log(ticketResponse?.data, 'ticketResponsedata');
+        console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
+
+        // Call your Laravel API
+        // Laravel:
+        // Air_TempBooking
+        //      ↓
+        // Air_Ticketing (Ticketing_Type = 0)
+
+        // After successful block:
+        // navigate to Hold Ticket Success page
+
+    } catch (error) {
+        console.error("Hold ticket failed:", error);
+    }
+};
 
 console.log(selectedSeats, 'selectedSeats');
 
@@ -4601,6 +4892,17 @@ console.log(selectedSeats, 'selectedSeats');
               <span className="text-muted small d-block">Total Amount</span>
               <h4 className="mb-0 fw-bold">{formatAmount(totallAmountt)}</h4>
             </div>
+
+            {isBlockAllowed && (
+                <button
+                    type="button"
+                    className="btn btn-outline-primary px-4"
+                    onClick={handleHoldTicket}
+                >
+                    <i className="fa-solid fa-clock me-2"></i>
+                    Hold Ticket
+                </button>
+            )}
 
             <button
               type="button"

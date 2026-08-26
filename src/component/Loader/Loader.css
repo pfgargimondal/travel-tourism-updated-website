@@ -1,67 +1,94 @@
-.loading{
-  position: fixed;
+:root{
+  --brand: #F26522;
+  --brand-dark: var(--main-golden);
+  --ink-dim: rgba(27,27,27,0.5);
+}
+
+
+
+.tp-preloader{ 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
   width: 100%;
-  height: 100%;
-  background: #fff;
+  min-height: 100vh;
+  background: #ffffff;
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 9999999;
+  z-index: 99999999;
+}
+ 
+/* ---- brand badge ---- */
+.tp-badge{
+  position: relative;
+  width: 76px;
+  height: 76px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
-.loading svg{
-  width: 600px;
-  height: 600px;
+ 
+.tp-badge-ring{
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(242,101,34,0.18);
 }
-
-.loading .grey {
-  stroke-dasharray: 788 790;
-  stroke-dashoffset: 789;
-  animation: draw_0 3200ms infinite, fade 3200ms infinite;
+ 
+.tp-badge-ring.tp-spin{
+  border: 2px solid transparent;
+  border-top-color: var(--brand);
+  border-right-color: var(--brand);
+  animation: tp-rotate 0.9s linear infinite;
 }
-
-.loading .blue {
-  stroke-dasharray: 788 790;
-  stroke-dashoffset: 789;
-  animation: draw_1 3200ms infinite, fade 3200ms infinite;
+ 
+@keyframes tp-rotate{
+  to { transform: rotate(360deg); }
 }
-
-@keyframes fade {
-  0% {
-    stroke-opacity: 1;
-  }
-  80% {
-    stroke-opacity: 1;
-  }
-  100% {
-    stroke-opacity: 0;
-  }
+ 
+.tp-badge-core{
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--brand), var(--brand-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(242,101,34,0.35);
+  animation: tp-pulse 1.8s ease-in-out infinite;
 }
-
-@keyframes draw_0 {
-  9.375% {
-    stroke-dashoffset: 789
-  }
-  39.375% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
+ 
+@keyframes tp-pulse{
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
 }
-
-@keyframes draw_1 {
-  35.625% {
-    stroke-dashoffset: 789
-  }
-  65.625% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: 0;
+ 
+.tp-icon-wrap{
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+ 
+.tp-icon-wrap.tp-fade{
+  opacity: 0;
+  transform: scale(0.6) rotate(-10deg);
+}
+ 
+.tp-icon-wrap svg{
+  width: 100%;
+  height: 100%;
+}
+ 
+@media (prefers-reduced-motion: reduce){
+  .tp-badge-ring.tp-spin,
+  .tp-badge-core{
+    animation: none !important;
   }
 }

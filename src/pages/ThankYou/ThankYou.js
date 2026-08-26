@@ -3,8 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import Loader from "../../component/Loader/Loader";
 import "./ThankYou.css";
 
-
-
 export const ThankYou = () => {
     const [loading, setLoading] = useState(false);
 
@@ -12,8 +10,12 @@ export const ThankYou = () => {
     const location = useLocation();
 
     const {
+         // eslint-disable-next-line
         ticketResponse = {},
+        bookingReference = {},
     } = location.state || {};
+
+    console.log(location.state, 'sjhdgksdbh');
 
 
     useEffect(() => {
@@ -66,11 +68,7 @@ export const ThankYou = () => {
                         <div className="booking-confirmation-box">
 
                             <div className="booking-label">
-                                Booking Reference
-                            </div>
-
-                            <div className="booking-reference">
-                                {ticketResponse?.Booking_RefNo}
+                                Booking Reference - {bookingReference}
                             </div>
 
                             <p className="mb-0">

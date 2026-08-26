@@ -596,19 +596,12 @@ export const FlightPayment = () => {
 
     return {
       BookingReference: bookingReference,
-
       Search_Key: search_key || "",
-
       Flight_Key: getFlightKey(),
-
       PaymentId: paymentResponse?.razorpay_payment_id || "",
-
       OrderId: paymentResponse?.razorpay_order_id || "",
-
       PaymentSignature: paymentResponse?.razorpay_signature || "",
-
       PAX_Details: createPAXDetails(),
-
       BookingFlightDetails: [
         {
           Search_Key: search_key || "",
@@ -618,10 +611,9 @@ export const FlightPayment = () => {
           BookingSSRDetails: createBookingSSRDetails(),
         },
       ],
-
       Passenger_Mobile: bookingPassengers?.[0]?.mobile || "",
-
       Passenger_Email: bookingPassengers?.[0]?.email || "",
+      Ticketing_Type: "1",
     };
   };
 
@@ -652,99 +644,115 @@ export const FlightPayment = () => {
         throw new Error("Payment verification failed");
       }
 
+      const addPaymentPayload = createTicketingPayload({
+        bookingReference,
+        paymentResponse,
+      });
+
+      const addPaymentResponse = await http.post(
+          "/flight-add-payment", addPaymentPayload
+      );
+
+      console.log(addPaymentResponse, 'addPaymentResponse');
+
+      // 5. Only after Add_Payment succeeds
+      if (addPaymentResponse?.data?.success) {
+
+      }
+
       // ===================================================
       // STEP 3
       // Create Ticketing Payload
       // ===================================================
 
-      const ticketingPayload = createTicketingPayload({
-        bookingReference,
-        paymentResponse,
-      });
+      // const ticketingPayload = createTicketingPayload({
+      //   bookingReference,
+      //   paymentResponse,
+      // });
 
-      // ===================================================
-      // STEP 4
-      // CALL TICKETING API
-      // ===================================================
+      // // ===================================================
+      // // STEP 4
+      // // CALL TICKETING API
+      // // ===================================================
 
-      const ticketResponse = await http.post(
-        "/flight-ticketing",
-        ticketingPayload,
-      );
+      // const ticketResponse = await http.post(
+      //   "/flight-ticketing",
+      //   ticketingPayload,
+      // );
 
-      console.log(ticketResponse, 'ticketResponse');
-      console.log(ticketResponse?.data, 'ticketResponsedata');
-      console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
+      // console.log(ticketResponse, 'ticketResponse');
+      // console.log(ticketResponse?.data, 'ticketResponsedata');
+      // console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
 
-      const ticketData = ticketResponse?.data?.data;
+      // const ticketData = ticketResponse?.data?.data;
 
-      const airlinePNRDetails =
-        ticketData?.AirlinePNRDetails || [];
+      // const airlinePNRDetails =
+      //   ticketData?.AirlinePNRDetails || [];
 
-      const errorCode =
-        ticketData?.Response_Header?.Error_Code;
+      // const errorCode =
+      //   ticketData?.Response_Header?.Error_Code;
 
-      const errorDesc =
-        ticketData?.Response_Header?.Error_Desc ||
-        "Your booking is being processed.";
+      // const errorDesc =
+      //   ticketData?.Response_Header?.Error_Desc ||
+      //   "Your booking is being processed.";
 
-      // ===================================================
-      // DETERMINE BOOKING STATUS
-      // ===================================================
+      // // ===================================================
+      // // DETERMINE BOOKING STATUS
+      // // ===================================================
 
-      let bookingStatus = "pending";
+      // let bookingStatus = "pending";
 
-      if (
-        errorCode === "0000" &&
-        airlinePNRDetails.length > 0
-      ) {
-        bookingStatus = "confirmed";
-      } else if (errorCode === "0046") {
-        bookingStatus = "payment_pending";
-      }
+      // if (
+      //   errorCode === "0000" &&
+      //   airlinePNRDetails.length > 0
+      // ) {
+      //   bookingStatus = "confirmed";
+      // } else if (errorCode === "0046") {
+      //   bookingStatus = "payment_pending";
+      // }
 
-      // ===================================================
-      // SAVE BOOKING DATA
-      // ===================================================
+      // // ===================================================
+      // // SAVE BOOKING DATA
+      // // ===================================================
 
-      const confirmationData = {
-        bookingReference,
-        paymentResponse,
-        ticketResponse: ticketResponse?.data,
-        bookingStatus,
-        bookingMessage: errorDesc,
-      };
+      // const confirmationData = {
+      //   bookingReference,
+      //   paymentResponse,
+      //   ticketResponse: ticketResponse?.data,
+      //   bookingStatus,
+      //   bookingMessage: errorDesc,
+      // };
 
-      sessionStorage.setItem(
-        "flightBookingConfirmation",
-        JSON.stringify(confirmationData)
-      );
+      // sessionStorage.setItem(
+      //   "flightBookingConfirmation",
+      //   JSON.stringify(confirmationData)
+      // );
 
-      // ===================================================
-      // CONFIRMED
-      // ===================================================
+      // // ===================================================
+      // // CONFIRMED
+      // // ===================================================
 
       // if (bookingStatus === "confirmed") {
-        navigate("/thank-you", {
-          state: {
-            bookingReference,
-            paymentResponse,
-            ticketResponse: ticketResponse?.data,
-            bookingPassengers,
-            flight,
-            segment,
-            repriceFlight,
-            totallAmountt,
-            bookingStatus,
-          },
-        });
+      //   navigate("/thank-you", {
+      //     state: {
+      //       bookingReference,
+      //       paymentResponse,
+      //       ticketResponse: ticketResponse?.data,
+      //       bookingPassengers,
+      //       flight,
+      //       segment,
+      //       repriceFlight,
+      //       totallAmountt,
+      //       bookingStatus,
+      //     },
+      //   });
 
       //   return;
       // }
 
-      // ===================================================
-      // PENDING
-      // ===================================================
+      // // ===================================================
+      // // PENDING
+      // // ===================================================
 
       // navigate("/flight-booking-pending", {
       //   state: {
@@ -861,18 +869,6 @@ export const FlightPayment = () => {
         amount: totallAmountt,
         bookingReference,
       });
-
-      /*
-        DO NOT CALL TICKETING HERE.
-
-        Ticketing happens only after:
-        
-        Razorpay payment success
-              ↓
-        Laravel payment verification
-              ↓
-        Ticketing API
-      */
 
     } catch (error) {
       console.error(
