@@ -655,122 +655,300 @@ export const FlightPayment = () => {
 
       console.log(addPaymentResponse, 'addPaymentResponse');
 
-      // 5. Only after Add_Payment succeeds
-      if (addPaymentResponse?.data?.success) {
+      if (!addPaymentResponse?.data?.success) {
+        const paymentErrorMessage =
+          addPaymentResponse?.data?.message ||
+          "Payment could not be completed.";
 
+        const confirmationData = {
+          bookingReference,
+          paymentResponse,
+          ticketResponse: null,
+          bookingStatus: "payment_failed",
+          bookingMessage: paymentErrorMessage,
+        };
+
+        sessionStorage.setItem(
+          "flightBookingConfirmation",
+          JSON.stringify(confirmationData)
+        );
+
+        navigate("/flight-booking-pending", {
+          state: {
+            bookingReference,
+            paymentResponse,
+            ticketResponse: null,
+            bookingPassengers,
+            flight,
+            segment,
+            repriceFlight,
+            totallAmountt,
+            bookingStatus: "payment_failed",
+            bookingMessage: paymentErrorMessage,
+          },
+        });
+
+        return;
       }
 
-      // ===================================================
-      // STEP 3
-      // Create Ticketing Payload
-      // ===================================================
 
-      // const ticketingPayload = createTicketingPayload({
-      //   bookingReference,
-      //   paymentResponse,
-      // });
+      // =====================================================
+      // 5. AIR TICKETING
+      // =====================================================
 
-      // // ===================================================
-      // // STEP 4
-      // // CALL TICKETING API
-      // // ===================================================
+      const ticketingPayload = createTicketingPayload({
+        bookingReference,
+        paymentResponse,
+      });
 
-      // const ticketResponse = await http.post(
-      //   "/flight-ticketing",
-      //   ticketingPayload,
-      // );
+      console.log("Ticketing Payload:", ticketingPayload);
 
-      // console.log(ticketResponse, 'ticketResponse');
-      // console.log(ticketResponse?.data, 'ticketResponsedata');
-      // console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
+      const ticketResponse = await http.post(
+        "/flight-ticketing",
+        ticketingPayload
+      );
 
-      // const ticketData = ticketResponse?.data?.data;
-
-      // const airlinePNRDetails =
-      //   ticketData?.AirlinePNRDetails || [];
-
-      // const errorCode =
-      //   ticketData?.Response_Header?.Error_Code;
-
-      // const errorDesc =
-      //   ticketData?.Response_Header?.Error_Desc ||
-      //   "Your booking is being processed.";
-
-      // // ===================================================
-      // // DETERMINE BOOKING STATUS
-      // // ===================================================
-
-      // let bookingStatus = "pending";
-
-      // if (
-      //   errorCode === "0000" &&
-      //   airlinePNRDetails.length > 0
-      // ) {
-      //   bookingStatus = "confirmed";
-      // } else if (errorCode === "0046") {
-      //   bookingStatus = "payment_pending";
-      // }
-
-      // // ===================================================
-      // // SAVE BOOKING DATA
-      // // ===================================================
-
-      // const confirmationData = {
-      //   bookingReference,
-      //   paymentResponse,
-      //   ticketResponse: ticketResponse?.data,
-      //   bookingStatus,
-      //   bookingMessage: errorDesc,
-      // };
-
-      // sessionStorage.setItem(
-      //   "flightBookingConfirmation",
-      //   JSON.stringify(confirmationData)
-      // );
-
-      // // ===================================================
-      // // CONFIRMED
-      // // ===================================================
-
-      // if (bookingStatus === "confirmed") {
-      //   navigate("/thank-you", {
-      //     state: {
-      //       bookingReference,
-      //       paymentResponse,
-      //       ticketResponse: ticketResponse?.data,
-      //       bookingPassengers,
-      //       flight,
-      //       segment,
-      //       repriceFlight,
-      //       totallAmountt,
-      //       bookingStatus,
-      //     },
-      //   });
-
-      //   return;
-      // }
-
-      // // ===================================================
-      // // PENDING
-      // // ===================================================
-
-      // navigate("/flight-booking-pending", {
-      //   state: {
-      //     bookingReference,
-      //     paymentResponse,
-      //     ticketResponse: ticketResponse?.data,
-      //     bookingPassengers,
-      //     flight,
-      //     segment,
-      //     repriceFlight,
-      //     totallAmountt,
-      //     bookingStatus,
-      //     bookingMessage: errorDesc,
-      //   },
-      // });
+      console.log("Ticket Response:", ticketResponse);
+      console.log("Ticket Response Data:", ticketResponse?.data);
+      console.log("Ticket API Data:", ticketResponse?.data?.data);
 
 
+      // =====================================================
+      // 6. EXTRACT TICKETING RESPONSE
+      // =====================================================
 
+      const ticketData = ticketResponse?.data?.data || {};
+
+      const airlinePNRDetails =
+        ticketData?.AirlinePNRDetails || [];
+
+      const responseHeader =
+        ticketData?.Response_Header || {};
+
+      const errorCode =
+        String(responseHeader?.Error_Code || "");
+
+      const errorDesc =
+        responseHeader?.Error_Desc ||
+        "Your booking is being processed.";
+
+      const errorInnerException =
+        responseHeader?.Error_InnerException || "";
+
+      const statusId =
+        responseHeader?.Status_Id || "";
+
+
+      // =====================================================
+      // 7. DETERMINE BOOKING STATUS
+      // =====================================================
+
+      let bookingStatus = "pending";
+
+
+      // -----------------------------------------------------
+      // CONFIRMED
+      // -----------------------------------------------------
+
+      if (
+        errorCode === "0000" &&
+        airlinePNRDetails.length > 0
+      ) {
+        bookingStatus = "confirmed";
+      }
+
+      // -----------------------------------------------------
+      // PAYMENT / BOOKING PENDING
+      // -----------------------------------------------------
+
+      else if (errorCode === "0046") {
+        bookingStatus = "payment_pending";
+      }
+
+      // -----------------------------------------------------
+      // TICKETING FAILED
+      // -----------------------------------------------------
+
+      else if (errorCode === "0009") {
+        bookingStatus = "ticketing_failed";
+      }
+
+      // -----------------------------------------------------
+      // ANY OTHER ERROR
+      // -----------------------------------------------------
+
+      else if (errorCode !== "0000") {
+        bookingStatus = "pending";
+      }
+
+      // =====================================================
+      // 8. SAVE BOOKING CONFIRMATION
+      // =====================================================
+
+      const confirmationData = {
+        bookingReference,
+        paymentResponse,
+        ticketResponse: ticketResponse?.data,
+
+        bookingStatus,
+        bookingMessage: errorDesc,
+
+        airlinePNRDetails,
+
+        errorCode,
+        errorInnerException,
+        statusId,
+      };
+
+      sessionStorage.setItem(
+        "flightBookingConfirmation",
+        JSON.stringify(confirmationData)
+      );
+
+
+      // =====================================================
+      // 9. CONFIRMED BOOKING
+      // =====================================================
+
+      if (bookingStatus === "confirmed") {
+
+        navigate("/thank-you", {
+          state: {
+            bookingReference,
+
+            paymentResponse,
+
+            ticketResponse: ticketResponse?.data,
+
+            airlinePNRDetails,
+
+            bookingPassengers,
+
+            flight,
+
+            segment,
+
+            repriceFlight,
+
+            totallAmountt,
+
+            bookingStatus,
+          },
+        });
+
+        return;
+      }
+
+
+      // =====================================================
+      // 10. PAYMENT PENDING
+      // =====================================================
+
+      if (bookingStatus === "payment_pending") {
+
+        navigate(`/flight-booking-pending/${bookingReference}`, {
+          state: {
+            bookingReference,
+
+            paymentResponse,
+
+            ticketResponse: ticketResponse?.data,
+
+            airlinePNRDetails,
+
+            bookingPassengers,
+
+            flight,
+
+            segment,
+
+            repriceFlight,
+
+            totallAmountt,
+
+            bookingStatus,
+
+            bookingMessage: errorDesc,
+          },
+        });
+        return;
+      }
+
+
+      // =====================================================
+      // 11. TICKETING FAILED
+      // =====================================================
+
+      if (bookingStatus === "ticketing_failed") {
+        navigate(`/flight-booking-pending/${bookingReference}`, {
+          state: {
+            bookingReference,
+
+            paymentResponse,
+
+            ticketResponse: ticketResponse?.data,
+
+            airlinePNRDetails,
+
+            bookingPassengers,
+
+            flight,
+
+            segment,
+
+            repriceFlight,
+
+            totallAmountt,
+
+            bookingStatus,
+
+            bookingMessage: errorDesc,
+
+            errorCode,
+
+            errorInnerException,
+
+            statusId,
+          },
+        });
+        return;
+      }
+
+      // =====================================================
+      // 12. OTHER PENDING RESPONSE
+      // =====================================================
+
+      navigate(`/flight-booking-pending/${bookingReference}`, {
+        state: {
+          bookingReference,
+
+          paymentResponse,
+
+          ticketResponse: ticketResponse?.data,
+
+          airlinePNRDetails,
+
+          bookingPassengers,
+
+          flight,
+
+          segment,
+
+          repriceFlight,
+
+          totallAmountt,
+
+          bookingStatus,
+
+          bookingMessage: errorDesc,
+
+          errorCode,
+
+          errorInnerException,
+
+          statusId,
+        },
+      });
     } catch (error) {
       console.error("Ticketing Error:", error);
 

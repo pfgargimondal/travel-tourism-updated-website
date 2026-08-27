@@ -1,0 +1,163 @@
+.booking-status-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f5f7fb;
+}
+
+.booking-status-card {
+  width: 100%;
+  max-width: 650px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 45px 40px;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.booking-status-icon {
+  width: 75px;
+  height: 75px;
+  margin: 0 auto 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 36px;
+  font-weight: 700;
+}
+
+.booking-status-icon.pending {
+  background: #fff4d6;
+  color: #d69e00;
+}
+
+.booking-status-icon.failed {
+  background: #ffe5e5;
+  color: #dc3545;
+}
+
+.booking-status-card h1 {
+  margin-bottom: 15px;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.booking-status-message {
+  color: #666;
+  font-size: 16px;
+  line-height: 1.7;
+  margin-bottom: 30px;
+}
+
+.booking-reference-box {
+  background: #f7f8fa;
+  border: 1px dashed #ccc;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 25px;
+}
+
+.booking-reference-box span {
+  display: block;
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 7px;
+}
+
+.booking-reference-box strong {
+  font-size: 24px;
+  letter-spacing: 2px;
+}
+
+.booking-details {
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+  padding: 15px 0;
+  margin-bottom: 25px;
+}
+
+.booking-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.booking-detail-row span {
+  color: #777;
+}
+
+.status-pending {
+  color: #d69e00;
+}
+
+.status-failed {
+  color: #dc3545;
+}
+
+.important-message {
+  background: #fff8e8;
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.important-message strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.important-message p {
+  margin: 0;
+  color: #666;
+  line-height: 1.6;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.booking-actions .btn {
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-support {
+  background: #0d6efd;
+  color: #fff;
+}
+
+.btn-home {
+  background: #f1f1f1;
+  color: #333;
+}
+
+.technical-message {
+  margin-top: 25px;
+  color: #777;
+}
+
+@media (max-width: 576px) {
+  .booking-status-card {
+    padding: 35px 20px;
+  }
+
+  .booking-actions {
+    flex-direction: column;
+  }
+
+  .booking-actions .btn {
+    width: 100%;
+  }
+}

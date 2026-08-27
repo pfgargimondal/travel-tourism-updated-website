@@ -162,7 +162,7 @@ export const FlightDetails = () => {
   const handleSelectedModal = (value) => {
     setSelectedCoupon((prev) => (prev === value ? null : value));
   };
-
+ 
   useEffect(() => {
     const html = document.querySelector("html");
 
