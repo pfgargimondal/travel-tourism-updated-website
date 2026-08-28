@@ -23,7 +23,8 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
     // eslint-disable-next-line
     const [resHomeFlightSearchToggle, setResHomeFlightSearchToggle] = useState(false);
     // eslint-disable-next-line
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [googleUser, setGoogleUser] = useState(null);
     const [userDropdownToggle, setUserDropdownToggle] = useState(false);
 
 
@@ -318,9 +319,9 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
 
 
 
-            <Login loginRegModal={loginRegModal} setLoginRegModal={setLoginRegModal} regModal={regModal} setRegModal={setRegModal} />
+            <Login loginRegModal={loginRegModal} setLoginRegModal={setLoginRegModal} regModal={regModal} setRegModal={setRegModal} setGoogleUser={setGoogleUser}/>
 
-            <Register loginRegModal={loginRegModal} setLoginRegModal={setLoginRegModal} regModal={regModal} setRegModal={setRegModal} />
+            <Register loginRegModal={loginRegModal} setLoginRegModal={setLoginRegModal} regModal={regModal} setRegModal={setRegModal} googleUser={googleUser}/>
 
 
 

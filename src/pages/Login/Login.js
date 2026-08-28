@@ -2,10 +2,84 @@ import { Link } from "react-router-dom";
 
 
 import "./Login.css";
+import axios from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
+import http from "../../http";
 
 
 
-export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal }) => {
+export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal, setGoogleUser }) => {
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                // Get Google profile
+                const response = await axios.get(
+                    "https://www.googleapis.com/oauth2/v3/userinfo",
+                    {
+                        headers: {
+                            Authorization: `Bearer ${tokenResponse.access_token}`,
+                        },
+                    }
+                );
+
+                const googleUser = response.data;
+
+                console.log("Google User:", googleUser);
+
+                // Send Google user to Laravel
+                const loginResponse = await http.post(
+                    `/user/google-login`,
+                    {
+                        name: googleUser.name,
+                        email: googleUser.email,
+                        google_id: googleUser.sub,
+                        avatar: googleUser.picture,
+                    }
+                );
+
+                console.log("Google Login Response:", loginResponse.data);
+
+                if (loginResponse.data.status === "login") {
+
+                    // Existing user
+                    localStorage.setItem(
+                        "token",
+                        loginResponse.data.token
+                    );
+
+                    localStorage.setItem(
+                        "user",
+                        JSON.stringify(loginResponse.data.user)
+                    );
+
+                    setLoginRegModal(false);
+
+                    window.location.reload();
+                }
+
+                if (loginResponse.data.status === "register") {
+
+                    // New Google user
+                    setGoogleUser(googleUser);
+
+                    setLoginRegModal(false);
+                    setRegModal(true);
+                }
+
+            } catch (error) {
+                console.error(
+                    "Google Login Error:",
+                    error.response?.data || error
+                );
+            }
+        },
+
+        onError: () => {
+            console.log("Google Login Failed");
+        },
+    });
+
     return (
         <div>
             <div onClick={() => setLoginRegModal(false)} className={loginRegModal ? "reg-login-wrapper-backdrop position-fixed w-100 h-100 start-0 top-0 bottom-0 end-0" : "reg-login-wrapper-backdrop reg-login-wrapper-backdrop-hide position-fixed w-100 h-100 start-0 top-0 bottom-0 end-0"}></div>
@@ -39,13 +113,22 @@ export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal }
                                     <label className="form-label text-dark"><i class="bi me-1 bi-lock"></i> Password</label>
                                     <input type="password" className="form-control custom-input" />
                                 </div>
-                                <div className="form-check mb-2">
+                                {/* <div className="form-check mb-2">
                                     <input className="form-check-input" type="checkbox" />
                                     <label className="form-check-label text-dark">
                                         Remember me?
                                     </label>
-                                </div>
+                                </div> */}
                                 <button className="btn login-btn w-100">LOGIN</button>
+
+                                <button
+                                    type="button"
+                                    className="btn google-login-btn w-100 mt-2"
+                                    onClick={() => handleGoogleLogin()}
+                                >
+                                    <i className="bi bi-google me-2"></i>
+                                    Continue with Google
+                                </button>
                             </form>
                                 
                             <div className="lomsodjfkdf d-flex justify-content-between align-items-center mt-2">
