@@ -1985,15 +1985,28 @@ export const FlightFilter = () => {
 
                 <div className="flight-filtr-wrppr">
                   {filteredFlights?.length > 0 ? (
-                    filteredFlights.map((flight, index) => {
-                      const firstSegment = flight.Segments[0];
-                      const lastSegment =
-                        flight.Segments[flight.Segments.length - 1];
+                      [...filteredFlights]
+                          .sort((a, b) => {
+                              const priceA =
+                                  a.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity;
 
-                      const cheapestFare = flight.Fares[0]?.FareDetails[0];
+                              const priceB =
+                                  b.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity;
 
-                      const destinationSegment =
-                        lastSegment || firstSegment;
+                              return Number(priceA) - Number(priceB);
+                          })
+                          .map((flight, index) => {
+                              const firstSegment = flight.Segments[0];
+
+                              const lastSegment =
+                                  flight.Segments[flight.Segments.length - 1];
+
+                              const cheapestFare =
+                                  flight.Fares[0]?.FareDetails[0];
+
+                              const destinationSegment =
+                                  lastSegment || firstSegment;
+
 
                       return (
                         <div className="flight-card" key={index}>
