@@ -78,6 +78,11 @@ export const FlightDetails = () => {
   const [selectedMeals, setSelectedMeals] = useState({});
   const [activeMealFilter, setActiveMealFilter] = useState("all");
 
+  const [showSeatRecommendationModal, setShowSeatRecommendationModal] =
+    useState(false);
+  // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
+  // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
+
   useEffect(() => {
     const fetchCountryCode = async () => {
       try {
@@ -676,6 +681,7 @@ export const FlightDetails = () => {
       // Seat available → show Seat first
       if (seatAvailable) {
         setActiveSeatMealTab("seats");
+        setShowSeatRecommendationModal(true);
       }
       // Only meal available → show Meal first
       else if (mealAvailable) {
@@ -695,6 +701,90 @@ export const FlightDetails = () => {
       setLoading(false);
     }
   };
+
+  const handleSeatSkip = () => {
+    console.log("User skipped seat selection");
+
+    // Clear selected seats
+    setSelectedSeats([]);
+
+    // Mark as completed so user can continue
+    setIsSeatSelectionComplete(true);
+
+    // Close seat recommendation popup
+    setShowSeatRecommendationModal(false);
+
+    // Go to meals if available
+    if (hasMeal) {
+        setShowSeatMealSection(true);
+        setActiveSeatMealTab("meals");
+        return;
+    }
+
+    // No meals → continue to booking
+    handleSeatMealContinue();
+  };
+
+  const handleMealSkip = () => {
+    console.log("User skipped meal selection");
+
+    // Clear selected meals
+    setSelectedMeals({});
+
+    // Close seat/meal section
+    setShowSeatMealSection(false);
+
+    // Continue to booking
+    handleSeatMealContinue();
+  };
+
+  const handleChooseSeat = () => {
+    console.log("User wants to choose seat manually");
+
+    // Close recommendation popup
+    setShowSeatRecommendationModal(false);
+
+    // Open seat/meal section
+    setShowSeatMealSection(true);
+
+    // Open seat tab
+    setActiveSeatMealTab("seats");
+  };
+
+  const handleAcceptRecommendedSeat = (recommendedSeat) => {
+    console.log("Recommended seat selected:", recommendedSeat);
+
+    if (!recommendedSeat) {
+        console.log("No recommended seat available");
+        return;
+    }
+
+    // Select recommended seat
+    setSelectedSeats([recommendedSeat]);
+
+    // Mark seat selection completed
+    setIsSeatSelectionComplete(true);
+
+    // Close popup
+    setShowSeatRecommendationModal(false);
+
+    // Go to meals
+    if (hasMeal) {
+        setShowSeatMealSection(true);
+        setActiveSeatMealTab("meals");
+        return;
+    }
+
+    // No meals → continue booking
+    handleSeatMealContinue();
+  };
+
+  const recommendedSeat = seatMap?.find((seat) => {
+    return (
+        seat?.SSR_TypeName?.toUpperCase() === "SEAT" &&
+        Number(seat?.SSR_Status) === 2
+    );
+  });
 
   const totalPassengers =
     Number(adultCount || 0) +
@@ -3392,29 +3482,60 @@ console.log(selectedSeats, 'selectedSeats');
                         CONTINUE BUTTON
                     ========================================================= */}
                     {activeSeatMealTab === "seats" && (
-                      <button
-                        type="button"
-                        className="btn btn-outline-primary rounded-pill px-4 mt-3"
-                        disabled={!isSeatSelectionComplete}
-                        onClick={handleSeatMealContinue}
-                      >
-                        Continue
-                      </button>
+                        <div className="d-flex align-items-center gap-3 mt-3">
+
+                            {/* SKIP SEAT */}
+                            <button
+                                type="button"
+                                className="btn btn-link text-muted text-decoration-none"
+                                onClick={handleSeatSkip}
+                            >
+                                Skip Seat Selection
+                            </button>
+
+                            {/* CONTINUE */}
+                            <button
+                                type="button"
+                                className="btn btn-outline-primary rounded-pill px-4"
+                                onClick={handleSeatMealContinue}
+                            >
+                                Continue
+                            </button>
+
+                        </div>
                     )}
 
                     {/* =========================================================
                         MEAL CONTINUE BUTTON
                         Optional - use this for next step after meals
                     ========================================================= */}
-                    {activeSeatMealTab === "meals" && (
-                      <button
-                        type="button"
-                        className="btn btn-primary rounded-pill px-4 mt-3"
-                        onClick={handleSeatMealContinue}
-                      >
-                        Continue
-                      </button>
-                    )}
+                    {/* =========================================================
+                          MEAL CONTINUE
+                      ========================================================= */}
+
+                      {activeSeatMealTab === "meals" && (
+                          <div className="d-flex align-items-center gap-3 mt-3">
+
+                              {/* SKIP MEALS */}
+                              <button
+                                  type="button"
+                                  className="btn btn-link text-muted text-decoration-none"
+                                  onClick={handleMealSkip}
+                              >
+                                  Skip Meals
+                              </button>
+
+                              {/* CONTINUE */}
+                              <button
+                                  type="button"
+                                  className="btn btn-primary rounded-pill px-4"
+                                  onClick={handleSeatMealContinue}
+                              >
+                                  Continue
+                              </button>
+
+                          </div>
+                      )}
                   </>
                 )}
               </div>
@@ -4250,6 +4371,130 @@ console.log(selectedSeats, 'selectedSeats');
             </div>
           </div>
         </div>
+      )}
+
+      {/* =========================================================
+          SEAT RECOMMENDATION MODAL
+      ========================================================= */}
+
+      {showSeatRecommendationModal && (
+          <>
+              {/* Overlay */}
+              <div
+                  className="seat-recommendation-overlay"
+                  onClick={handleSeatSkip}
+              ></div>
+
+              {/* Modal */}
+              <div className="seat-recommendation-modal">
+
+                  {/* TOP SKIP */}
+                  <button
+                      type="button"
+                      className="seat-recommendation-skip"
+                      onClick={handleSeatSkip}
+                  >
+                      Skip
+                  </button>
+
+                  {/* ICON */}
+                  <div className="seat-recommendation-icon">
+                      <img
+                          src="/images/seatda.png"
+                          alt="Seat"
+                      />
+                  </div>
+
+                  {/* TITLE */}
+                  <h5>
+                      We have chosen the best seat specially for you
+                  </h5>
+
+                  {/* ROUTE */}
+                  <div className="seat-route">
+                      {segment?.Origin_City?.replace(
+                          /\s*\(.*?\)/g,
+                          "",
+                      )}
+
+                      {" ✈ "}
+
+                      {segment?.Destination_City?.replace(
+                          /\s*\(.*?\)/g,
+                          "",
+                      )}
+                  </div>
+
+                  {/* RECOMMENDED SEAT */}
+                  <div className="recommended-seat-box">
+
+                      <div className="recommended-seat-name">
+
+                          <strong>
+                              {recommendedSeat?.SSR_Name ||
+                                  recommendedSeat?.Seat_Number ||
+                                  recommendedSeat?.SeatNo ||
+                                  "12F"}
+                          </strong>
+
+                          <span>
+                              {" "}
+                              (
+                              {recommendedSeat?.SSR_TypeDesc ||
+                                  "WINDOW"}
+                              )
+                          </span>
+
+                      </div>
+
+                      <div className="recommended-seat-price">
+                          ₹{" "}
+                          {recommendedSeat?.Amount ||
+                              recommendedSeat?.Price ||
+                              recommendedSeat?.SSR_Amount ||
+                              250}
+                      </div>
+
+                  </div>
+
+                  {/* BUTTONS */}
+                  <div className="seat-recommendation-buttons">
+
+                      {/* LET ME CHOOSE */}
+                      <button
+                          type="button"
+                          className="btn btn-outline-primary rounded-pill"
+                          onClick={handleChooseSeat}
+                      >
+                          Let Me Choose
+                      </button>
+
+                      {/* ACCEPT */}
+                      <button
+                          type="button"
+                          className="btn btn-primary rounded-pill"
+                          onClick={() =>
+                              handleAcceptRecommendedSeat(
+                                  recommendedSeat,
+                              )
+                          }
+                      >
+                          Yes, I Like It
+                      </button>
+
+                  </div>
+
+                  {/* SKIP */}
+                  <button
+                      type="button"
+                      className="skip-seat-bottom"
+                      onClick={handleSeatSkip}
+                  >
+                      Skip Seat Selection
+                  </button>
+
+              </div>
+          </>
       )}
 
       {/* add baggage modal end */}

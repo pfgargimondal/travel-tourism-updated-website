@@ -1369,3 +1369,154 @@ span.duiewnrme-divider{
   width: max-content !important;
   max-width: initial !important;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   SEAT RECOMMENDATION POPUP
+========================================================= */
+
+.seat-recommendation-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9998;
+}
+
+.seat-recommendation-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 410px;
+    max-width: calc(100% - 30px);
+
+    background: #ffffff;
+    border-radius: 16px;
+
+    padding: 22px 26px 18px;
+
+    z-index: 9999;
+
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+
+    text-align: center;
+}
+
+.seat-recommendation-skip {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+
+    border: none;
+    background: transparent;
+
+    color: #007bff;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.seat-recommendation-icon {
+    width: 50px;
+    height: 50px;
+
+    margin: 0 auto 12px;
+
+    border-radius: 50%;
+
+    background: #eaf4ff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.seat-recommendation-icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+}
+
+.seat-recommendation-modal h5 {
+    font-size: 16px;
+    font-weight: 600;
+
+    margin: 10px 0 14px;
+}
+
+.seat-route {
+    font-size: 14px;
+    color: #555;
+
+    margin-bottom: 12px;
+}
+
+.recommended-seat-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #eeeeee;
+
+    margin-bottom: 18px;
+}
+
+.recommended-seat-name {
+    font-size: 14px;
+}
+
+.recommended-seat-name strong {
+    font-size: 16px;
+    color: #222;
+}
+
+.recommended-seat-price {
+    font-weight: 700;
+    font-size: 15px;
+    color: #222;
+}
+
+.seat-recommendation-buttons {
+    display: flex;
+    gap: 12px;
+
+    margin-bottom: 10px;
+}
+
+.seat-recommendation-buttons button {
+    flex: 1;
+
+    height: 42px;
+}
+
+.skip-seat-bottom {
+    border: none;
+    background: transparent;
+
+    color: #777;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    padding: 5px 10px;
+}
+
+.skip-seat-bottom:hover {
+    color: #007bff;
+}
