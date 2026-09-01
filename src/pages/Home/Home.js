@@ -47,7 +47,7 @@ const [tripType, setTripType] = useState(0);
 const [cabinClass, setCabinClass] = useState("0");
 // eslint-disable-next-line
 const [travelType, setTravelType] = useState(0);
-// const MAX_GUESTS_PER_ROOM = 8;
+const [specialFare, setSpecialFare] = useState("regular");
 
 
 // const [roomCount, setRoomCount] = useState(1);
@@ -297,7 +297,10 @@ const [infantAges, setInfantAges] = useState([]);
           infants: infantCount,
           travelType: travelType,
           tripType: tripType,
-          cabinClass: cabinClass
+          cabinClass: cabinClass,
+          SrCitizen_Search: specialFare === "senior",
+          StudentFare_Search: specialFare === "student",
+          DefenceFare_Search: specialFare === "defence",
       };
       const params = new URLSearchParams(searchData);
       navigate(`/flight-filter?${params.toString()}`);
@@ -716,8 +719,11 @@ const [infantAges, setInfantAges] = useState([]);
                     <input
                       className="inp-cbx"
                       id="cbx-lh"
-                      name="aghfhrr"
+                      name="specialFare"
                       type="radio"
+                      value="regular"
+                      checked={specialFare === "regular"}
+                      onChange={(e) => setSpecialFare(e.target.value)}
                       style={{ display: "none" }}
                     />
 
@@ -730,8 +736,11 @@ const [infantAges, setInfantAges] = useState([]);
                     <input
                       className="inp-cbx"
                       id="cbx-ku"
-                      name="aghfhrr"
+                      name="specialFare"
                       type="radio"
+                      value="student"
+                      checked={specialFare === "student"}
+                      onChange={(e) => setSpecialFare(e.target.value)}
                       style={{ display: "none" }}
                     />
 
@@ -744,8 +753,11 @@ const [infantAges, setInfantAges] = useState([]);
                     <input
                       className="inp-cbx"
                       id="cbx-kh"
-                      name="aghfhrr"
+                      name="specialFare"
                       type="radio"
+                      value="defence"
+                      checked={specialFare === "defence"}
+                      onChange={(e) => setSpecialFare(e.target.value)}
                       style={{ display: "none" }}
                     />
 
@@ -758,8 +770,11 @@ const [infantAges, setInfantAges] = useState([]);
                     <input
                       className="inp-cbx"
                       id="cbx-gd"
-                      name="aghfhrr"
+                      name="specialFare"
                       type="radio"
+                      value="senior"
+                      checked={specialFare === "senior"}
+                      onChange={(e) => setSpecialFare(e.target.value)}
                       style={{ display: "none" }}
                     />
 
@@ -772,8 +787,11 @@ const [infantAges, setInfantAges] = useState([]);
                     <input
                       className="inp-cbx"
                       id="cbx-asd"
-                      name="aghfhrr"
+                      name="specialFare"
                       type="radio"
+                      value="doctor"
+                      checked={specialFare === "doctor"}
+                      onChange={(e) => setSpecialFare(e.target.value)}
                       style={{ display: "none" }}
                     />
 

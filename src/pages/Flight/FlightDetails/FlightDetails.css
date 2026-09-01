@@ -1312,7 +1312,7 @@ span.duiewnrme-divider{
 }
 
 .flight-booking-modal{
-  width: 40%;
+  width: 540px;
   max-width: 95%;
   z-index: 999999;
   opacity: 1;
@@ -1390,7 +1390,7 @@ span.duiewnrme-divider{
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.55);
-    z-index: 9998;
+    z-index: 99999;
 }
 
 .seat-recommendation-modal {
@@ -1407,7 +1407,7 @@ span.duiewnrme-divider{
 
     padding: 22px 26px 18px;
 
-    z-index: 9999;
+    z-index: 999999;
 
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
 
@@ -1519,4 +1519,113 @@ span.duiewnrme-divider{
 
 .skip-seat-bottom:hover {
     color: #007bff;
+}
+
+.duinjikijfe{
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.duinjikijfe i{
+  color: var(--blue-secondary-color);
+  font-size: 1.5rem;
+  transform: rotate(45deg);
+}
+
+.ibinihiewr h6{
+  font-weight: 600;
+  font-size: 0.9rem !important;
+}
+
+.ibinihiewr p{
+  font-size: 0.8rem !important;
+}
+
+.indjeinfisf{
+  border: 1px solid var(--border);
+  border-radius: 5px;
+}
+
+.indjeinfisf p{
+  font-size: 0.8rem !important;
+}
+
+.indjeinfisf p:first-child{
+  font-weight: 600;
+  color: var(--blue-secondary-color) !important;
+}
+
+.ergvdfsdd i{
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.8rem;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 2;
+}
+
+i.fa-users{
+  color: var(--blue-primary-color);
+  background: rgb(214, 236, 245);
+}
+
+i.fa-table-cells-large{
+  color: purple;
+  background: rgb(250, 235, 252);
+}
+
+i.fa-chair{
+  color: var(--main-green-color);
+  background: rgb(217, 249, 240);
+}
+
+i.fa-suitcase-rolling{
+  color: orange;
+  background: rgb(249, 235, 217);
+}
+
+p.jinkmnjsdf,
+p.uinfiknke,
+.ihinoioijosdkf p,
+p.ijkihrtg{
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #000 !important;
+}
+
+.uidbjewh p{
+  border-right: 1px solid var(--border);
+  padding-inline: 0.5rem;
+}
+
+.uidbjewh p:last-child{
+  border-right: 0;
+}
+
+.iodmosopkfplf img{
+  height: 1.5rem;
+}
+
+.omhicnsdmf p{
+  color: #000 !important;
+  font-weight: 600;
+}
+
+.omhicnsdmf small{
+  color: var(--light-black-text-color);
+  font-weight: 500;
+}
+
+p.ibindnvxcv{
+  font-weight: 600;
+}
+
+p.jomkodokofjdf{
+  font-weight: 500;
+  color: var(--light-black-text-color) !important;
+}
+
+.booking-total > div span{
+  font-weight: 600;
+  color: var(--light-black-text-color) !important;
 }

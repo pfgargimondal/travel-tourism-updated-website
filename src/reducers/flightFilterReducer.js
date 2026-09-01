@@ -1,7 +1,7 @@
 export const initialState = {
   stops: [], // e.g., ['NON_STOP', '1_CHANGE']
   farePolicy: [], // e.g., ['NON_REFUNDABLE', 'REFUNDABLE']
-  priceRange: [6115, 43746],
+  priceRange: [0, 500000],
   departureTime: [], // e.g., ['BEFORE_6AM', '6AM_12PM', '12PM_6PM', 'AFTER_6PM']
   arrivalTime: [], // e.g., ['BEFORE_6AM', '6AM_12PM', '12PM_6PM', 'AFTER_6PM']
   airlines: [],

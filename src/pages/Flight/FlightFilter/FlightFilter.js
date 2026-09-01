@@ -184,6 +184,7 @@ export const FlightFilter = () => {
   };
 
   const filteredFlights = useMemo(() => {
+    
     const result = allFlights.filter((flight) => {
       const segments = flight?.Segments || [];
 
@@ -255,6 +256,9 @@ export const FlightFilter = () => {
       */
 
       const price = getFlightPrice(flight);
+
+      // console.log(price, 'pricepricepricepriceprice');
+      // console.log(filters, 'filtersfiltersfiltersfiltersfilters');
 
       const priceMatches =
         price >= filters.priceRange[0] &&
@@ -443,6 +447,17 @@ export const FlightFilter = () => {
   const tripType = searchParams.get("tripType");
   const travelType = searchParams.get("travelType");
   const cabinClass = searchParams.get("cabinClass");
+  const SrCitizen_Search = searchParams.get("SrCitizen_Search");
+  const StudentFare_Search = searchParams.get("StudentFare_Search");
+  const DefenceFare_Search = searchParams.get("DefenceFare_Search");
+
+  const [specialFare, setSpecialFare] = useState(() => {
+    if (StudentFare_Search) return "student";
+    if (DefenceFare_Search) return "defence";
+    if (SrCitizen_Search) return "senior";
+
+    return "regular";
+  });
 
   const [selectedOrigin, setSelectedOrigin] = useState(origin || "");
   const [selectedDestination, setSelectedDestination] = useState(
@@ -481,6 +496,9 @@ export const FlightFilter = () => {
           tripType,
           travelType,
           cabinClass,
+          SrCitizen_Search,
+          StudentFare_Search,
+          DefenceFare_Search,
         };
         const response = await http.post("/flight-search", payload);
         setFlightsList(response.data.flightList);
@@ -502,6 +520,9 @@ export const FlightFilter = () => {
     tripType,
     travelType,
     cabinClass,
+    SrCitizen_Search,
+    StudentFare_Search,
+    DefenceFare_Search,
   ]);
     
 
@@ -668,6 +689,9 @@ export const FlightFilter = () => {
       tripType: selectedTripType,
       travelType,
       cabinClass: selectedCabinClass,
+      SrCitizen_Search,
+      StudentFare_Search,
+      DefenceFare_Search,
     });
 
     navigate(`/flight-filter?${params.toString()}`);
@@ -683,35 +707,66 @@ export const FlightFilter = () => {
     setSelectedDestination(origin);
   };
 
-  // const airlineCounts = useMemo(() => {
-  //   const airlineMap = {};
+  // const availableAirlines = [
+  //   ...new Map(
+  //     filteredFlights
+  //       .flatMap((flight) => flight.Segments[0] || [])
+  //       .map((segment) => {
+  //         const code =
+  //           segment?.Airline_Code;
+  //         if (!code) return null;
+  //         return [
+  //           code,
+  //           {
+  //             code,
+  //             name: segment?.Airline_Name || code,
+  //           },
+  //         ];
+  //       })
+  //       .filter(Boolean)
+  //   ).values(),
+  // ];
 
-  //   filteredFlights.forEach((flight) => {
-  //     const segment = flight?.Segments?.[0];
 
-  //     const airlineCode =
-  //       segment?.Airline_Code || flight?.Airline_Code;
+  const airlineCounts = useMemo(() => {
+    const airlineMap = {};
 
-  //     const airlineName =
-  //       segment?.Airline_Name || airlineCode;
+    filteredFlights.forEach((flight) => {
+      const segment = flight?.Segments?.[0];
 
-  //     if (!airlineCode) {
-  //       return;
-  //     }
+      const airlineCode =
+        segment?.Airline_Code || flight?.Airline_Code;
 
-  //     if (!airlineMap[airlineCode]) {
-  //       airlineMap[airlineCode] = {
-  //         airlineCode,
-  //         airlineName,
-  //         count: 0,
-  //       };
-  //     }
+      const airlineName =
+        segment?.Airline_Name || airlineCode;
 
-  //     airlineMap[airlineCode].count += 1;
-  //   });
+      if (!airlineCode) {
+        return;
+      }
 
-  //   return Object.values(airlineMap);
-  // }, [filteredFlights]);
+      if (!airlineMap[airlineCode]) {
+        airlineMap[airlineCode] = {
+          airlineCode,
+          airlineName,
+          count: 0,
+        };
+      }
+
+      airlineMap[airlineCode].count += 1;
+    });
+
+    return Object.values(airlineMap);
+  }, [filteredFlights]);
+
+
+  const availableAirlines = airlineCounts.map((airline) => ({
+    code: airline.airlineCode,
+    name: airline.airlineName,
+    count: airline.count,
+  }));
+
+
+  console.log(airlineCounts, 'airlineCountsairlineCounts');
 
 
   const cabinClassMap = {
@@ -1265,8 +1320,11 @@ export const FlightFilter = () => {
                               <input
                                 className="inp-cbx"
                                 id="cbx-lh"
-                                name="aghfhrr"
+                                name="specialFare"
                                 type="radio"
+                                value="regular"
+                                checked={specialFare === "regular"}
+                                onChange={(e) => setSpecialFare(e.target.value)}
                                 style={{ display: "none" }}
                               />
 
@@ -1279,8 +1337,11 @@ export const FlightFilter = () => {
                               <input
                                 className="inp-cbx"
                                 id="cbx-ku"
-                                name="aghfhrr"
+                                name="specialFare"
                                 type="radio"
+                                value="student"
+                                checked={specialFare === "student"}
+                                onChange={(e) => setSpecialFare(e.target.value)}
                                 style={{ display: "none" }}
                               />
 
@@ -1293,8 +1354,11 @@ export const FlightFilter = () => {
                               <input
                                 className="inp-cbx"
                                 id="cbx-kh"
-                                name="aghfhrr"
+                                name="specialFare"
                                 type="radio"
+                                value="defence"
+                                checked={specialFare === "defence"}
+                                onChange={(e) => setSpecialFare(e.target.value)}
                                 style={{ display: "none" }}
                               />
 
@@ -1307,8 +1371,11 @@ export const FlightFilter = () => {
                               <input
                                 className="inp-cbx"
                                 id="cbx-gd"
-                                name="aghfhrr"
+                                name="specialFare"
                                 type="radio"
+                                value="senior"
+                                checked={specialFare === "senior"}
+                                onChange={(e) => setSpecialFare(e.target.value)}
                                 style={{ display: "none" }}
                               />
 
@@ -1321,8 +1388,11 @@ export const FlightFilter = () => {
                               <input
                                 className="inp-cbx"
                                 id="cbx-asd"
-                                name="aghfhrr"
+                                name="specialFare"
                                 type="radio"
+                                value="doctor"
+                                checked={specialFare === "doctor"}
+                                onChange={(e) => setSpecialFare(e.target.value)}
                                 style={{ display: "none" }}
                               />
 
@@ -1425,6 +1495,29 @@ export const FlightFilter = () => {
                     )}
 
                     <div className={`${window.innerWidth <= 991 ? 'px-3 pt-3' : ''} dijnsihfsdlf`}>
+                      <div className="flight-filter-box flht-fltr-wrapper mt-0 pb-3">
+                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                          <div className="flight-filter-left">
+                            <span className="flight-filter-title">Flight Selection View</span>
+                          </div>
+                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                        </div>
+
+                        <div className="flight-filter-content dhsxdcfdhdfgsxf d-flex flex-fill">
+                          <label htmlFor="csdf" className="flex-fill mb-0">
+                            <input id="csdf" name="dnusbnfn" className="d-none position-absolute" type="radio" />
+
+                            <span>Individual Flights</span>
+                          </label>
+
+                          <label htmlFor="vsdda" className="flex-fill mb-0">
+                            <input id="vsdda" name="dnusbnfn" className="d-none position-absolute" type="radio" />
+
+                            <span>Combined Flights</span>
+                          </label>
+                        </div>
+                      </div>
+
                       {/* Stops */}
                       <div className="flight-filter-box flht-fltr-wrapper mt-0">
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
@@ -1571,105 +1664,40 @@ export const FlightFilter = () => {
                         </div>
 
                         <div className="flight-filter-content">
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="SG"
-                                  checked={filters.airlines.includes('SG')}
-                                  onChange={() => {toggleAirline('SG'); handleLoaderToggle()}}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper"><img src="/images/SG.svg" alt="" /> SpiceJet</p>
-                              </label>
-                            </div>
-                          </div>
+                          {availableAirlines.map((airline) => (
+                            <div className="form-check suggested-item ps-0"  key={airline.code}>
+                              <div className="checkbox-wrapper-33">
+                                <label className="checkbox">
+                                  <input
+                                    type="checkbox"
+                                    value={airline.code}
+                                    checked={filters.airlines.includes(airline.code)}
+                                    onChange={() => {
+                                      toggleAirline(airline.code);
+                                      handleLoaderToggle();
+                                    }}
+                                    className="checkbox__trigger visuallyhidden"
+                                  />
+                                  <span className="checkbox__symbol">
+                                    <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M4 14l8 7L24 7" />
+                                    </svg>
+                                  </span>
+                                  <p className="checkbox__textwrapper">
+                                    <img
+                                      src={`/images/${airline.code}.svg`}
+                                      alt={airline.name}
+                                    /> 
+                                    {" "}{airline.name}
+                                  </p>
 
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="QP"
-                                  checked={filters.airlines.includes('QP')}
-                                  onChange={() => {toggleAirline('QP'); handleLoaderToggle()}}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper"><img src="/images/QP.svg" alt="" /> Akasa Air</p>
-                              </label>
+                                  <span className="airline-count">
+                                    ({airline.count})
+                                  </span>
+                                </label>
+                              </div>
                             </div>
-                          </div>
-
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="IX"
-                                  checked={filters.airlines.includes('IX')}
-                                  onChange={() => {toggleAirline('IX'); handleLoaderToggle()}}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper"><img src="/images/IX.svg" alt="" /> Air India Express</p>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="AI"
-                                  checked={filters.airlines.includes('AI')}
-                                  onChange={() => {toggleAirline('AI'); handleLoaderToggle()}}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper"><img src="/images/AI.svg" alt="" /> Air India</p>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="6E"
-                                  checked={filters.airlines.includes('6E')}
-                                  onChange={() => {toggleAirline('6E'); handleLoaderToggle()}}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg aria-hidden="true" className="icon-checkbox" width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper"><img src="/images/6E.svg" alt="" /> IndiGo</p>
-                              </label>
-                            </div>
-                          </div>
+                          ))}
                         </div>
                       </div>
 
@@ -1689,7 +1717,7 @@ export const FlightFilter = () => {
                               min={0}
                               max={50000}
                               onChange={(e, newValue) => setPriceRange(newValue)}
-                              onChangeCommitted={handleLoaderToggle}
+                              // onChangeCommitted={handleLoaderToggle}
                               valueLabelDisplay="off"
                             />
                             <div className="price-values">
@@ -1720,7 +1748,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleDepartureTime('BEFORE_6AM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/dfrr.png" alt="" />
+                            <img src="/images/d1.png" alt="" />
                             <p className="mb-0">Before <br /> 6 AM</p>
                           </label>
 
@@ -1732,7 +1760,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleDepartureTime('6AM_12PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/afternoon.png" alt="" />
+                            <img src="/images/d2.png" alt="" />
                             <p className="mb-0">6 AM - <br /> 12 PM</p>
                           </label>
 
@@ -1744,7 +1772,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleDepartureTime('12PM_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/evening.png" alt="" />
+                            <img src="/images/d3.png" alt="" />
                             <p className="mb-0">12 PM - <br /> 6 PM</p>
                           </label>
 
@@ -1756,7 +1784,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleDepartureTime('AFTER_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/night.png" alt="" />
+                            <img src="/images/d4.png" alt="" />
                             <p className="mb-0">After <br /> 6 PM</p>
                           </label>
                         </div>
@@ -1782,7 +1810,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleArrivalTime('BEFORE_6AM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/dfrr.png" alt="" />
+                            <img src="/images/d1.png" alt="" />
                             <p className="mb-0">Before <br /> 6 AM</p>
                           </label>
 
@@ -1794,7 +1822,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleArrivalTime('6AM_12PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/afternoon.png" alt="" />
+                            <img src="/images/d2.png" alt="" />
                             <p className="mb-0">6 AM - <br /> 12 PM</p>
                           </label>
 
@@ -1806,7 +1834,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleArrivalTime('12PM_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/evening.png" alt="" />
+                            <img src="/images/d3.png" alt="" />
                             <p className="mb-0">12 PM - <br /> 6 PM</p>
                           </label>
 
@@ -1818,7 +1846,7 @@ export const FlightFilter = () => {
                               onChange={() => {toggleArrivalTime('AFTER_6PM'); handleLoaderToggle()}}
                               className="d-none position-absolute"
                             />
-                            <img src="/images/night.png" alt="" />
+                            <img src="/images/d4.png" alt="" />
                             <p className="mb-0">After <br /> 6 PM</p>
                           </label>
                         </div>

@@ -1125,6 +1125,10 @@ label.nihnuidnuiwehrwer img{
     flex: 1;
 }
 
+.uidnkmomkfsdf .nihnuidnuiwehrwer:hover{
+    border: 1px solid var(--blue-primary-color);
+}
+
 .flight-results-section .filter-header{
     border-bottom: 1px solid var(--border);
     padding: 0.7rem;
@@ -1171,6 +1175,34 @@ label.nihnuidnuiwehrwer img{
     font-weight: 500;
     font-family: var(--font-family-spinnaker);
     cursor: pointer;
+}
+
+.dhsxdcfdhdfgsxf{
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.dhsxdcfdhdfgsxf label{    
+    padding: 10px 5px;
+    font-size: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s ease-in-out;
+    border: 1px solid #fff;
+    color: #000 !important;
+    user-select: none;
+    border-right: 1px solid var(--border);
+}
+
+.dhsxdcfdhdfgsxf label:last-child{
+    border-right: 0;
+}
+
+.dhsxdcfdhdfgsxf label:has(input:checked){
+    border: 1px solid var(--blue-primary-color);
+    background: color-mix(in srgb, var(--blue-primary-color) 10%, #fff 90%);
+    color: var(--blue-secondary-color) !important;
+    border-radius: 8px;
 }
 
 

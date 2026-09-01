@@ -382,7 +382,7 @@ export const FlightSeats = ({
                 SELECTION STATUS
             ===================================================== */}
 
-            <div className="passenger-seat-tabs">
+            <div className="passenger-seat-tabs sticky-top d-inline-block">
 
                 <span className="seat-select-label">
                     Select seat for:
@@ -396,7 +396,7 @@ export const FlightSeats = ({
                         <button
                             key={index}
                             type="button"
-                            className={`passenger-seat-tab btn btn-tour mx-2 ${
+                            className={`passenger-seat-tab btn btn-tour ms-2 ${
                                 activePassenger === index ? "active" : ""
                             }`}
                             onClick={() => setActivePassenger(index)}

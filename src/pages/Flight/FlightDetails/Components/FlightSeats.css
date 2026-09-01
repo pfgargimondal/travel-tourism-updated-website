@@ -452,8 +452,15 @@ p.xfbdfshbdbb{
     padding: 3px 5px !important;
     background: #fff !important;
     color: #000 !important;
+    border: 1px solid var(--light-border-color) !important;
+    font-size: 0.9rem !important;
+    font-weight: 500;
 }
 
 .passenger-seat-tab:hover{
     color: #000 !important;
+}
+
+.passenger-seat-tabs.sticky-top{
+    top: 3%;
 }

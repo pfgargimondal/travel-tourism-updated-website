@@ -4711,7 +4711,7 @@ console.log(selectedSeats, 'selectedSeats');
         } d-flex flex-column bg-white top-50 start-50 translate-middle p-3 position-fixed`}
       >
         {/* Header */}
-        <div className="flight-booking-modal-header d-flex align-items-center justify-content-between mb-2 pb-2">
+        <div className="flight-booking-modal-header d-flex align-items-center justify-content-between pb-2">
           <h5 className="mb-0">
             <b>Your Booking Summary</b>
           </h5>
@@ -4726,20 +4726,27 @@ console.log(selectedSeats, 'selectedSeats');
         <div className="all-coupon-modal-body">
           <div className="idhijweoijorwekrwer">
             {/* Flight Information */}
-            <div className="booking-flight-info border-bottom pb-3 mb-3">
+            <div className="booking-flight-info border-bottom py-3 mb-3">
               <div className="d-flex justify-content-between align-items-center">
-                <div>
-                  <span className="text-muted small">Departure</span>
-                  <h6 className="mb-1">
-                    {segment?.Origin_City} → {segment?.Destination_City}
+                <div className="d-flex align-items-center gap-2">
+                  <div className="duinjikijfe p-3 text-center">
+                    <i class="fa-solid fa-plane-up"></i>
+                  </div>
+                  
+                  <div className="ibinihiewr">
+                    {/* <span className="text-muted small">Departure</span> */}
+                    <h6 className="mb-1">
+                      {segment?.Origin_City} → {segment?.Destination_City}
+                    </h6>
 
-                  </h6>
-                  <small className="text-muted">{formatDepartureDateTime(segment?.Departure_DateTime)}</small>
+                    <p className="mb-0">{formatDepartureDateTime(segment?.Departure_DateTime)}</p>
+                  </div>
                 </div>
 
-                <div className="text-end">
-                  <span className="badge bg-light text-dark">{segment?.Airline_Name}</span>
-                  <small className="d-block text-muted mt-1">{segment?.Airline_Code}{" "}{segment?.Flight_Number}</small>
+                <div className="indjeinfisf px-2 py-1 text-center">
+                  <p className="mb-0">{segment?.Airline_Name}</p>
+                  
+                  <p className="d-block text-muted mb-0">{segment?.Airline_Code}{" "}{segment?.Flight_Number}</p>
                 </div>
               </div>
             </div>
@@ -4748,69 +4755,83 @@ console.log(selectedSeats, 'selectedSeats');
             <div className="booking-summary-section border-bottom pb-3 mb-3">
               <h6 className="fw-bold mb-3">Passenger & Seat Details</h6>
 
-              <div className="d-flex justify-content-between mb-2">
-                <span className="text-muted">
+              <div className="ergvdfsdd d-flex justify-content-between mb-3">
+                <div className="text-muted d-flex">
                   <i className="fa-solid fa-users me-2"></i>
-                  Passengers
-                </span>
-                <strong> 
+
+                  <div className="duibjenhewrwer">
+                    <p className="jinkmnjsdf mb-1">Passengers</p>
+
+                    <div className="d-flex flex-wrap gap-2">
+                      {adultCount > 0 && (
+                        <span className="badge bg-light text-dark border">
+                          {adultCount} Adult
+                          {adultCount > 1 ? "s" : ""}
+                        </span>
+                      )}
+                      {childCount > 0 && (
+                        <span className="badge bg-light text-dark border">
+                          {childCount} Child
+                          {childCount > 1 ? "ren" : ""}
+                        </span>
+                      )}
+                      {infantCount > 0 && (
+                        <span className="badge bg-light text-dark border">
+                          {infantCount} Infant
+                          {infantCount > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="uinfiknke mb-0"> 
                   {totalPassengers}{" "}
                 {totalPassengers === 1
                   ? "Passenger"
                   : "Passengers"}
-                </strong>
-              </div>
-              <div className="d-flex flex-wrap gap-2 mb-3">
-                {adultCount > 0 && (
-                  <span className="badge bg-light text-dark border">
-                    {adultCount} Adult
-                    {adultCount > 1 ? "s" : ""}
-                  </span>
-                )}
-                {childCount > 0 && (
-                  <span className="badge bg-light text-dark border">
-                    {childCount} Child
-                    {childCount > 1 ? "ren" : ""}
-                  </span>
-                )}
-                {infantCount > 0 && (
-                  <span className="badge bg-light text-dark border">
-                    {infantCount} Infant
-                    {infantCount > 1 ? "s" : ""}
-                  </span>
-                )}
+                </p>
+              </div>              
+
+              <div className="ergvdfsdd d-flex justify-content-between mb-3">
+                <div className="dhbnubfhusfdf d-flex align-items-center">
+                  <i className="fa-solid me-2 fa-table-cells-large"></i>
+                  
+                  <p className="jinkmnjsdf mb-0">Cabin Class</p>
+                </div>
+
+                <p className="uinfiknke mb-0">{cabinClassName}</p>
               </div>
 
+              <div className="ergvdfsdd d-flex justify-content-between mb-3">
+                <div className="dhbnubfhusfdf d-flex align-items-center">
+                  <i className="fa-solid me-2 fa-chair"></i>
 
-              <div className="d-flex justify-content-between mb-2">
-                <span className="text-muted">
-                  <i className="fa-solid fa-chair me-2"></i>
-                  Cabin Class
-                </span>
-                <strong>{cabinClassName}</strong>
-              </div>
+                  <p className="jinkmnjsdf mb-0">Seats</p>
+                </div>
 
-              <div className="d-flex justify-content-between mb-2">
-                <span className="text-muted">
-                  <i className="fa-solid fa-chair me-2"></i>
-                  Seats
-                </span>
-                <strong>
+                <p className="uinfiknke mb-0">
                   {selectedSeatCount}{" "}
                   {selectedSeatCount === 1
                     ? "Seat"
                     : "Seats"}
-                </strong>
+                </p>
               </div>
 
-              <div className="d-flex justify-content-between">
-                <span className="text-muted">
+              <div className="ergvdfsdd d-flex justify-content-between">
+                <div className="dhbnubfhusfdf d-flex align-items-center">
                   <i className="fa-solid fa-suitcase-rolling me-2"></i>
-                  Baggage
-                </span>
-                <strong>  {adultFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Adult</strong>
-                <strong>  {childFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Child</strong>
-                <strong>  {infantFare?.Free_Baggage?.Check_In_Baggage || "0 Kg"} / Infant</strong> 
+                  
+                  <p className="jinkmnjsdf mb-0">Baggage</p>
+                </div>
+                
+                <div className="uidbjewh d-flex align-items-center">
+                  <p className="uinfiknke mb-0">  {adultFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Adult</p>
+                  
+                  <p className="uinfiknke mb-0">  {childFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Child</p>
+                  
+                  <p className="uinfiknke mb-0">  {infantFare?.Free_Baggage?.Check_In_Baggage || "0 Kg"} / Infant</p> 
+                </div>
               </div>
 
               {bookingPassengers.length > 0 && (
@@ -4932,68 +4953,69 @@ console.log(selectedSeats, 'selectedSeats');
             <div className="booking-fare-section border-bottom pb-3 mb-3">
               <h6 className="fw-bold mb-3">Fare Breakdown</h6>
 
-              <div className="d-flex justify-content-between mb-2">
-                <span>Base Fare</span>
-                <span>{formatAmount(baseFare)}</span>
+              <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
+                <p className="mb-0">Base Fare</p>
+
+                <p className="mb-0">{formatAmount(baseFare)}</p>
               </div>
 
-              <div className="d-flex justify-content-between mb-2">
-                <span>Taxes & Fees</span>
-                <span> {formatAmount(taxAmount)}</span>
+              <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
+                <p className="mb-0">Taxes & Fees</p>
+               
+                <p className="mb-0"> {formatAmount(taxAmount)}</p>
               </div>
 
               {seatCharges > 0 && (
-                <div className="d-flex justify-content-between mb-2">
+                <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
 
-                  <span>
+                  <p className="mb-0">
                     Seat Charges
-                  </span>
+                  </p>
 
-                  <span>
+                  <p className="mb-0">
                     {formatAmount(seatCharges)}
-                  </span>
-
+                  </p>
                 </div>
               )}
               {/* Meal Charges */}
               {mealCharges > 0 && (
-                <div className="d-flex justify-content-between mb-2">
+                <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
 
-                  <span>
+                  <p className="mb-0">
                     Meal Charges
-                  </span>
+                  </p>
 
-                  <span>
+                  <p className="mb-0">
                     {formatAmount(mealCharges)}
-                  </span>
+                  </p>
 
                 </div>
               )}
               {/* Baggage Charges */}
               {extraBaggageCharges > 0 && (
-                <div className="d-flex justify-content-between mb-2">
-                  <span>
+                <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
+                  <p className="mb-0">
                     {/* <i className="fa-solid fa-suitcase-rolling me-2"></i> */}
                     Extra Baggage
-                  </span>
+                  </p>
 
-                  <span>
+                  <p className="mb-0">
                     {formatAmount(extraBaggageCharges)}
-                  </span>
+                  </p>
                 </div>
               )}
               {/* Other Charges */}
 
               {otherCharges > 0 && (
-                <div className="d-flex justify-content-between mb-2">
+                <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
 
-                  <span>
+                  <p className="mb-0">
                     Other Charges
-                  </span>
+                  </p>
 
-                  <span>
+                  <p className="mb-0">
                     {formatAmount(otherCharges)}
-                  </span>
+                  </p>
 
                 </div>
               )}
@@ -5018,37 +5040,39 @@ console.log(selectedSeats, 'selectedSeats');
             </div>
             {selectedSeatList.length > 0 && (
               <div className="border rounded-3 p-3 mb-3">
-
                 <div className="d-flex justify-content-between mb-2">
+                  <div className="d-flex align-items-center gap-1 mb-2">
+                    <div className="iodmosopkfplf">
+                      <img src="/images/car-seat.png" alt="" />
+                    </div>
+                    
+                    <h6 className="fw-bold mb-0">
+                      Selected Seats
+                    </h6>
+                  </div>
 
-                  <h6 className="fw-bold mb-0">
-                    Selected Seats
-                  </h6>
-
-                  <span className="text-muted small">
+                  <p className="jomkodokofjdf mb-0 small">
                     {selectedSeatList.length} selected
-                  </span>
+                  </p>
 
                 </div>
 
 
                 <div className="d-flex flex-wrap gap-2">
-
                   {selectedSeatList.map(
                     (seat, index) => (
 
                       <div
                         key={index}
-                        className="border rounded-2 px-3 py-2"
+                        className="border rounded-2 px-3 py-1"
                       >
-
-                        <strong>
+                        <p className="ijkihrtg mb-0">
                           {seat?.Seat_Name ||
                             seat?.SeatNumber ||
                             seat?.seatNumber ||
                             seat?.seat || seat?.description ||
                             `Seat ${index + 1}`} 
-                        </strong>
+                        </p>
 
                         {Number(
                           seat?.Total_Amount ??
@@ -5073,46 +5097,48 @@ console.log(selectedSeats, 'selectedSeats');
                   )}
 
                 </div>
-
               </div>
             )}
             {/* ===================================================
                 SELECTED MEALS
             ==================================================== */}
             {selectedMealList.length > 0 && (
-              <div className="border rounded-3 p-3">
+              <div className="border rounded-3 p-3 mb-2">
+                <div className="d-flex align-items-center gap-1 mb-2">
+                  <div className="iodmosopkfplf">
+                    <img src="/images/fried-rice.png" alt="" />
+                  </div>
 
-                <h6 className="fw-bold mb-3">
-                  Selected Meals
-                </h6>
-
+                  <h6 className="fw-bold mb-0">
+                    Selected Meals
+                  </h6>
+                </div>
 
                 {selectedMealList.map(
                   (meal, index) => (
 
                     <div
                       key={index}
-                      className="d-flex justify-content-between align-items-center mb-2"
+                      className="omhicnsdmf d-flex justify-content-between align-items-center mb-2"
                     >
 
                       <div>
 
-                        <strong>
+                        <p className="mb-0">
                           {meal?.SSR_TypeDesc ||
                             meal?.SSR_Name ||
                             meal?.Meal_Name ||
                             meal?.MealName ||
                             "Meal"}
-                        </strong>
+                        </p>
 
-                        <div className="small text-muted">
+                        <small>
                           Passenger {index + 1}
-                        </div>
-
+                        </small>
                       </div>
 
 
-                      <span>
+                      <p className="ibindnvxcv mb-0">
                         {formatAmount(
                           meal?.Total_Amount ??
                             meal?.TotalAmount ??
@@ -5120,7 +5146,7 @@ console.log(selectedSeats, 'selectedSeats');
                             meal?.Price ??
                             0
                         )}
-                      </span>
+                      </p>
 
                     </div>
 
