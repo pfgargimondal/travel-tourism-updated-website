@@ -1,3 +1,8 @@
+.sjkbcfksdndf{
+  width: 100%;
+  padding: 4rem 0;
+}
+
 .flight-detail-card {
   background: #fff;
   border: 1px solid #d8e3ef;
@@ -17,20 +22,11 @@
   width: 34px;
   height: 34px;
   border-radius: 7px;
-  background: #061d8f;
+  background: var(--blue-primary-color);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.departure-badge {
-  background: #092d58;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
-  padding: 5px 8px;
-  border-radius: 4px;
 }
 
 .flight-detail-top h5 {
@@ -39,17 +35,19 @@
 }
 
 .hide-details-btn {
-  border: 1px solid #cbdbea;
+  border: 1px solid var(--border);
   background: #fff;
   border-radius: 8px;
   padding: 7px 13px;
   font-size: 12px;
-  color: #19395e;
+  font-weight: 500;
+  color: var(--blue-secondary-color);
+  font-family: var(--font-family-raleway);
 }
 
 /* Summary */
 .flight-summary {
-  padding: 0 64px 10px;
+  padding: 3px 0;
   display: flex;
   align-items: center;
   gap: 7px;
@@ -59,6 +57,12 @@
 
 .flight-summary strong {
   color: #142f52;
+}
+
+.flight-summary p{
+  line-height: 1.6;
+  font-weight: 600;
+  color: #000 !important;
 }
 
 /* Sector */
@@ -71,26 +75,32 @@
 }
 
 .sector-title {
-  background: #092d58;
-  color: #fff;
-  font-size: 9px;
-  font-weight: 700;
+  background: #fff;
+  color: var(--blue-secondary-color);
+  font-size: 10px;
+  border: 1px solid var(--border);
+  font-weight: 600;
   padding: 5px 8px;
   border-radius: 4px;
+  font-family: var(--font-family-raleway);
 }
 
 .sector-route {
-  font-size: 13px;
-  color: #092d58;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
 }
 
 .flight-number {
-  color: #71839a;
-  font-size: 11px;
+  color: var(--blue-secondary-color);
+  font-family: var(--font-family-raleway);
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .flight-number i {
-  background: #061d8f;
+  background: var(--blue-primary-color);
+  transform: rotate(-90deg);
   color: #fff;
   padding: 5px;
   border-radius: 5px;
@@ -98,31 +108,34 @@
 }
 
 .saver-badge {
-  font-size: 9px;
-  padding: 4px 8px;
+  font-size: 12px;
+  padding: 2px 6px;
   border-radius: 10px;
-  background: #eef5ff;
-  border: 1px solid #d5e3f5;
-  color: #52709b;
+  background: var(--light-blue-highlighted-background-color);
+  border: 1px solid var(--border);
+  font-weight: 600;
 }
 
 /* Route */
 .flight-route-details {
   display: grid;
-  grid-template-columns: 100px 1fr 100px 270px;
+  grid-template-columns: 125px 1fr 125px 250px;
   gap: 15px;
   align-items: center;
   padding: 10px 14px 15px;
 }
 
 .airport-detail .time {
-  font-size: 20px;
-  color: #111;
+  font-size: 24px;
+  color: #000;
+  font-family: var(--font-family-raleway);
 }
 
 .airport-detail div {
   font-size: 12px;
-  color: #172d4b;
+  color: var(--blue-secondary-color);
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
 }
 
 .airport-detail div span {
@@ -131,9 +144,11 @@
 
 .airport-detail small {
   display: block;
-  color: #7b8da3;
-  font-size: 10px;
+  color: var(--light-black-text-color);
+  font-size: 11px;
   margin-top: 2px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
 }
 
 .arrival {
@@ -148,27 +163,34 @@
 }
 
 .duration-line {
-  height: 1px;
-  background: #d9e1ea;
-  margin: 6px 0;
+  border: 1px dashed var(--border);
+  margin: 10px 0;
+}
+
+.duration-detail > span{
+  font-family: var(--font-family-raleway);
+  font-size: 12px;
+  color: var(--blue-primary-color);
+  font-weight: 600;
+  border: 1px solid var(--blue-primary-color);  
+  border-radius: 25px;
+  padding: 3px 10px;
 }
 
 .duration-detail small {
-  color: #198754;
+  color: var(--light-highlighted-text-color);
+  border: 1px solid var(--blue-primary-color);  
+  border-radius: 25px;
+  padding: 3px 10px;
+  font-weight: 500;
 }
 
 /* Baggage */
-.aircraft-info {
-  border: 1px solid #dce5ef;
-  border-radius: 9px;
-  padding: 11px 12px;
-}
 
 .aircraft-title {
-  color: #8795a7;
-  font-size: 9px;
-  letter-spacing: 1px;
+  font-size: 11px;
   margin-bottom: 8px;
+  color: var(--light-black-text-color);
 }
 
 .baggage-row {
@@ -190,7 +212,7 @@
 }
 
 .payment-page-header {
-  background: #d9ecff;
+  background: var(--light-green-highlighted-background-color);
   padding: 14px 30px;
   display: flex;
   align-items: center;
@@ -254,15 +276,6 @@
   padding: 18px;
 }
 
-.departure-badge {
-  background: #0d2d57;
-  color: #fff;
-  font-size: 10px;
-  padding: 5px 9px;
-  border-radius: 4px;
-  font-weight: 700;
-}
-
 .route-box {
   display: flex;
   align-items: center;
@@ -293,7 +306,8 @@
 .aircraft-info {
   border: 1px solid #dce3eb;
   border-radius: 10px;
-  padding: 12px 15px;
+  padding: 10px;
+  padding-bottom: 5px;
   max-width: 300px;
   margin-left: auto;
 }
@@ -302,7 +316,8 @@
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  margin-bottom: 5px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
 }
 
 .aircraft-info div:last-child {
@@ -310,12 +325,14 @@
 }
 
 .aircraft-info span {
-  color: #666;
+  color: var(--light-black-text-color);
   font-size: 13px;
 }
 
-.aircraft-info strong {
+.aircraft-info p {
   font-size: 13px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
 }
 
 .traveller-body {
@@ -375,6 +392,12 @@
   padding: 16px;
 }
 
+.payment-method p{
+  font-size: 0.7rem !important;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
 .payment-option {
   display: flex;
   gap: 12px;
@@ -403,7 +426,6 @@
 .price-summary-card {
   background: #fff;
   border-radius: 12px;
-  padding: 16px;
   box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
   position: sticky;
   top: 20px;
@@ -413,41 +435,70 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  padding: 10px 1rem;
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to right, color-mix(in srgb, var(--main-golden) 70%, #fff 40%), #fff, color-mix(in srgb, var(--main-yellow-color) 70%, #fff 80%));
 }
 
 .price-summary-header h5 {
   margin: 0;
   font-weight: 700;
+  font-size: 1rem;
+}
+
+.flight-passenger-count{
+  border-radius: 25px;
+  border: 1px solid var(--border);
+  color: var(--blue-secondary-color);
+  padding: 0px 8px;
 }
 
 .price-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
+  padding: 6px 0;
   font-size: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .price-row span {
-  color: #555;
+  font-size: 0.8rem;
+  color: #000 !important;
 }
 
-.price-row strong {
-  color: #222;
+.price-row span i{
+  color: var(--blue-primary-color);
+  font-size: 14px;
+}
+
+.price-row p {
+  color: #000 !important;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
 }
 
 .grand-total {
-  background: #fff1db;
-  color: #e44b00;
+  background: #fff;
+  color: #000;
   border-radius: 8px;
-  padding: 12px;
-  margin-top: 10px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 17px;
-  font-weight: 700;
+  font-family: var(--font-family-raleway);
+}
+
+.grand-total h5{
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.dhubewnwer{
+  padding-inline: 1rem;
 }
 
 @media (max-width: 991px) {
@@ -500,15 +551,14 @@
 }
 
 .traveller-details-header {
-  background: #dceeff;
+  background: var(--light-blue-highlighted-background-color);
   padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .traveller-details-header h5 {
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: #111;
+  font-weight: 600;
 }
 
 .traveller-details-body {
@@ -519,9 +569,11 @@
 }
 
 .traveller-label {
-  font-size: 12px;
-  color: #222;
+  font-size: 14px;
+  color: var(--light-black-text-color);
   margin-bottom: 6px;
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
 }
 
 .traveller-value {
@@ -664,16 +716,11 @@
 ========================================================= */
 
 .payment-mode-content {
-  margin: 0 14px 14px;
-
+  margin-top: 1rem;
   border: 1px solid #d4dbe2;
-
   border-radius: 6px;
-
   display: flex;
-
   overflow: hidden;
-
   min-height: 310px;
 }
 
@@ -683,35 +730,34 @@
 ========================================================= */
 
 .payment-method-list {
-  width: 235px;
-
+  width: 280px;
   flex-shrink: 0;
-
-  background: #f4f5f7;
+  background: #fff;
+  border-right: 1px solid var(--border);
 }
 
 .payment-method {
   width: 100%;
-
   min-height: 77px;
-
   border: none;
   border-bottom: 1px solid #ddd;
-
   background: transparent;
-
-  padding: 11px 13px;
-
+  padding: 1rem 10px;
   display: flex;
   align-items: center;
-
   gap: 11px;
-
   text-align: left;
-
   cursor: pointer;
-
   transition: 0.2s;
+}
+
+.payment-method:focus-visible{
+  outline: none !important;
+}
+
+.payment-method h5{
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .payment-method:last-child {
@@ -723,7 +769,8 @@
 }
 
 .payment-method.active {
-  background: #ffffff;
+  background: color-mix(in srgb, var(--blue-primary-color) 20%, #fff 80%);
+  border-left: 3px solid var(--blue-primary-color);
 }
 
 .payment-method-icon {
@@ -743,6 +790,10 @@
   color: #222;
 
   font-size: 18px;
+}
+
+.payment-method-icon img{
+  height: 2.5rem;
 }
 
 .payment-method.active
@@ -783,10 +834,9 @@
 
 .payment-content {
   flex: 1;
-
-  padding: 20px;
-
+  padding: 0.8rem 1rem;
   min-width: 0;
+  background: #fff;
 }
 
 
@@ -1007,33 +1057,26 @@
    CARD / WALLET / NETBANKING
 ========================================================= */
 
-.payment-placeholder {
-  padding: 8px 10px;
-}
-
 .payment-placeholder h5 {
   font-size: 17px;
-
   font-weight: 700;
-
   margin-bottom: 10px;
+}
+
+.payment-placeholder > *{
+  font-family: var(--font-family-raleway);
 }
 
 .payment-placeholder p {
   color: #666;
-
   font-size: 13px;
-
   margin-bottom: 20px;
 }
 
 .payment-placeholder label {
   display: block;
-
   margin-bottom: 5px;
-
   font-size: 12px;
-
   font-weight: 600;
 }
 
@@ -1044,7 +1087,6 @@
 .card-payment-form .form-control,
 .payment-placeholder .form-select {
   font-size: 13px;
-
   min-height: 40px;
 }
 

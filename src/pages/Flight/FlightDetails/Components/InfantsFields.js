@@ -57,6 +57,10 @@ export const InfantsFields = ({infant, index, infantRule, handleInfantChange}) =
                         type="date"
                         className="form-control"
                         value={infant.dob}
+                        min={new Date(new Date().setFullYear(new Date().getFullYear() - 2))
+                            .toISOString()
+                            .split("T")[0]}
+                        max={new Date().toISOString().split("T")[0]}
                         onChange={(e)=>
                             handleInfantChange(index,"dob",e.target.value)
                         }

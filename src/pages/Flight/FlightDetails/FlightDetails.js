@@ -39,7 +39,6 @@ export const FlightDetails = () => {
   const cabinClass = state?.cabinClass;
   const fareDetailsData = state?.apiFareDetails;
 
-  console.log(fareDetailsData, 'fareDetailsData');
 
   const cabinClassMap = {
     0: "Economy",
@@ -83,6 +82,8 @@ export const FlightDetails = () => {
   // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
   // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
 
+
+
   useEffect(() => {
     const fetchCountryCode = async () => {
       try {
@@ -100,6 +101,68 @@ export const FlightDetails = () => {
 
     fetchCountryCode();
   }, []);
+
+  useEffect(() => {
+    const detectUserCountry = async () => {
+        try {
+            const response = await fetch("https://ipapi.co/json/");
+            const data = await response.json();
+
+            const phoneCode = data.country_calling_code;
+
+            if (!phoneCode || !countryCode?.length) return;
+
+            const matchedCountry = countryCode.find(
+                (country) => country.phone_code === phoneCode
+            );
+
+            if (matchedCountry) {
+                setBillingDetails((prev) => ({
+                    ...prev,
+                    billingCountryCode: prev.billingCountryCode || matchedCountry.phone_code,
+                }));
+            }
+        } catch (error) {
+            console.error("Unable to detect country:", error);
+        }
+    };
+    if (countryCode?.length) {
+        detectUserCountry();
+    }
+  }, [countryCode]);
+
+  useEffect(() => {
+    const detectAdultCountry = async () => {
+        try {
+            const response = await fetch("https://ipapi.co/json/");
+            const data = await response.json();
+
+            const phoneCode = data.country_calling_code;
+
+            if (!phoneCode || !countryCode?.length) return;
+
+            const matchedCountry = countryCode.find(
+                (country) => country.phone_code === phoneCode
+            );
+
+            if (!matchedCountry) return;
+
+            setAdultForms((prevAdults) =>
+                prevAdults.map((adult) => ({
+                    ...adult,
+                    countryCode:
+                        adult.countryCode || matchedCountry.phone_code,
+                }))
+            );
+        } catch (error) {
+            console.error("Unable to detect adult country:", error);
+        }
+    };
+    if (countryCode?.length) {
+        detectAdultCountry();
+    }
+  }, [countryCode]);
+
 
   useEffect(() => {
     const fetchFlightDetails = async () => {
@@ -137,7 +200,6 @@ export const FlightDetails = () => {
     }
   }, [fareId, search_key, flight?.Flight_Key]);
 
-  console.log(flightRePrice, 'flightRePrice');
 
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
@@ -504,7 +566,7 @@ export const FlightDetails = () => {
         }
 
         if (adultRule.Mandatory_SSRs && !passenger.Mandatory_SSRs?.trim()) {
-          return false;
+          // return false;
         }
       }
     }
@@ -565,9 +627,10 @@ export const FlightDetails = () => {
   const handleContinue = () => {
     // Clear previous billing error
     setBillingError("");
-
     const isPassengerValid = validatePassengerDetails();
+
     if (!isPassengerValid) {
+      setBillingError("Please fill in all required passenger details correctly.");
       return;
     }
 
@@ -609,6 +672,7 @@ export const FlightDetails = () => {
       );
       return;
     }
+
     handlePassengerDetails();
   };
 
@@ -759,32 +823,132 @@ export const FlightDetails = () => {
         return;
     }
 
-    // Select recommended seat
-    setSelectedSeats([recommendedSeat]);
+    const seatName = recommendedSeat?.SSR_TypeName;
+    /*
+     * Find all actual seats from seatMap
+     */
+    const getAllSeatDetails = (obj) => {
+        if (!obj) {
+            return [];
+        }
 
-    // Mark seat selection completed
+        if (Array.isArray(obj)) {
+            return obj.flatMap(item => getAllSeatDetails(item));
+        }
+
+        if (
+            obj.Seat_Details &&
+            Array.isArray(obj.Seat_Details)
+        ) {
+            return obj.Seat_Details;
+        }
+
+        return Object.values(obj).flatMap(value =>
+            value && typeof value === "object"
+                ? getAllSeatDetails(value)
+                : []
+        );
+    };
+
+    const allSeatDetails = getAllSeatDetails(seatMap);
+    console.log("All seat details:", allSeatDetails);
+
+    /*
+     * Find recommended seat inside ORIGINAL seat map
+     */
+    const actualSeat = allSeatDetails.find(
+        seat => seat?.SSR_TypeName === seatName
+    );
+
+    console.log("Recommended seat name:", seatName);
+    console.log("Actual seat from seat map:", actualSeat);
+
+    if (!actualSeat) {
+        console.log(
+            "Recommended seat not found in seat map:",
+            seatName
+        );
+        return;
+    }
+    /*
+     * Convert API seat to FlightSeats format
+     */
+    const seatMatch =
+        actualSeat?.SSR_TypeName?.match(/^(\d+)([A-F])/);
+
+    if (!seatMatch) {
+        console.log("Invalid seat name:", actualSeat?.SSR_TypeName);
+        return;
+    }
+
+    const selectedRecommendedSeat = {
+        id: actualSeat.SSR_TypeName,
+        row: Number(seatMatch[1]),
+        column: seatMatch[2],
+        status: Number(actualSeat.SSR_Status),
+        amount: Number(actualSeat.Total_Amount || 0),
+        currency: actualSeat.Currency_Code,
+        ssrKey: actualSeat.SSR_Key,
+        type: actualSeat.SSR_TypeName,
+        description: actualSeat.SSR_TypeDesc,
+        flightId: actualSeat.Flight_ID,
+        segmentId: actualSeat.Segment_Id,
+        applicablePaxTypes:
+            actualSeat.ApplicablePaxTypes || [],
+        paxId: 1,
+        isRecommended: true
+    };
+
+    console.log(
+        "FINAL SELECTED RECOMMENDED SEAT:",
+        selectedRecommendedSeat
+    );
+
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT change seatMap.
+     *
+     * Only update selectedSeats.
+     */
+    setSelectedSeats([
+        selectedRecommendedSeat
+    ]);
+
     setIsSeatSelectionComplete(true);
-
-    // Close popup
     setShowSeatRecommendationModal(false);
 
-    // Go to meals
+    /*
+     * Continue to meals / booking
+     */
     if (hasMeal) {
         setShowSeatMealSection(true);
         setActiveSeatMealTab("meals");
         return;
     }
 
-    // No meals → continue booking
     handleSeatMealContinue();
   };
 
-  const recommendedSeat = seatMap?.find((seat) => {
-    return (
-        seat?.SSR_TypeName?.toUpperCase() === "SEAT" &&
-        Number(seat?.SSR_Status) === 2
-    );
-  });
+  const recommendedSeat = seatMap?.[0]?.Seat_Segments
+    ?.flatMap((segment) => segment?.Seat_Row || [])
+    ?.flatMap((row) => row?.Seat_Details || [])
+    ?.filter(
+        (seat) =>
+            seat?.SSR_TypeDesc?.toUpperCase()?.startsWith("SEAT") &&
+            Number(seat?.SSR_Status) === 1
+    )
+    ?.sort((a, b) => {
+        // console.log(a, "seat A");
+        // console.log(b, "seat B");
+
+        return (
+            Number(a?.Total_Amount || 0) -
+            Number(b?.Total_Amount || 0)
+        );
+  })?.[0];
+
+console.log("Recommended Seat:", recommendedSeat);
 
   const totalPassengers =
     Number(adultCount || 0) +
@@ -1780,12 +1944,10 @@ console.log(selectedSeats, 'selectedSeats');
                       </div>
 
                       <div className="diwehidmsad d-flex flex-column text-end gap-1">
-                        {fareDetail?.CancellationCharges?.length > 0 && (
-                          <span className="badge bg-warning text-dark">
+                        <span className="badge bg-warning text-dark">
                             <i className="bi bi-lightning-charge-fill"></i>{" "}
-                            Cancellation Charges Apply
-                          </span>
-                        )}
+                            {fare?.Refundable === true ? "Refundable" : "Non-Refundable"}
+                        </span>
 
                         <button
                           type="button"
@@ -2977,23 +3139,23 @@ console.log(selectedSeats, 'selectedSeats');
                       <div className="col-md-4">
                         <label className="form-label">Country Code</label>
                         <select
-                          className="form-select"
-                          value={billingDetails.billingCountryCode}
-                          onChange={(e) => {
-                            setBillingDetails({
-                              ...billingDetails,
-                              billingCountryCode: e.target.value,
-                            });
-                            setBillingError("");
-                          }}
+                            className="form-select"
+                            value={billingDetails.billingCountryCode}
+                            onChange={(e) => {
+                                setBillingDetails({
+                                    ...billingDetails,
+                                    billingCountryCode: e.target.value,
+                                });
+                                setBillingError("");
+                            }}
                         >
-                          <option value="">Select Country Code</option>
+                            <option value="">Select Country Code</option>
 
-                          {countryCode.map((country) => (
-                            <option key={country.id} value={country.phone_code}>
-                              {country.name} ({country.phone_code})
-                            </option>
-                          ))}
+                            {countryCode.map((country) => (
+                                <option key={country.id} value={country.phone_code}>
+                                    {country.name} ({country.phone_code})
+                                </option>
+                            ))}
                         </select>
                       </div>
 
@@ -3238,6 +3400,8 @@ console.log(selectedSeats, 'selectedSeats');
                                 adultCount={adultCount}
                                 childCount={childCount}
                                 infantCount={infantCount}
+                                selectedSeats={selectedSeats}
+                                setSelectedSeats={setSelectedSeats}
                                 bookingPassengers={bookingPassengers}
                                 onSeatSelectionComplete={
                                   setIsSeatSelectionComplete
@@ -3245,7 +3409,7 @@ console.log(selectedSeats, 'selectedSeats');
                                 onSeatChange={(seats) => {
                                   console.log("Selected seats:", seats);
                                   setSelectedSeats(seats);
-                                }}
+                                }} 
                               />
                             </div>
                           </div>
@@ -4431,10 +4595,7 @@ console.log(selectedSeats, 'selectedSeats');
                       <div className="recommended-seat-name">
 
                           <strong>
-                              {recommendedSeat?.SSR_Name ||
-                                  recommendedSeat?.Seat_Number ||
-                                  recommendedSeat?.SeatNo ||
-                                  "12F"}
+                              {recommendedSeat?.SSR_TypeName}
                           </strong>
 
                           <span>
@@ -4449,10 +4610,7 @@ console.log(selectedSeats, 'selectedSeats');
 
                       <div className="recommended-seat-price">
                           ₹{" "}
-                          {recommendedSeat?.Amount ||
-                              recommendedSeat?.Price ||
-                              recommendedSeat?.SSR_Amount ||
-                              250}
+                          {recommendedSeat?.Total_Amount}
                       </div>
 
                   </div>

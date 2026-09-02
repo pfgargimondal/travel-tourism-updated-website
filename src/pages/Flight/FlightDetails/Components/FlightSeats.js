@@ -7,37 +7,31 @@ export const FlightSeats = ({
     childCount,
     infantCount,
     bookingPassengers,
+    selectedSeats = [],
+    setSelectedSeats,
     onSeatChange,
     onSeatSelectionComplete
 }) => {
-
 
     const requiredSeats =
     Number(adultCount || 0) +
     Number(childCount || 0) +
     Number(infantCount || 0);
 
-    const [selectedSeats, setSelectedSeats] = useState([]);
+    // const [selectedSeats, setSelectedSeats] = useState([]);
     const [activePassenger, setActivePassenger] = useState(0);
 
     const findSeatSegments = (obj) => {
-
         if (!obj || typeof obj !== "object") {
             return null;
         }
-
         if (Array.isArray(obj)) {
-
             for (const item of obj) {
-
                 const result = findSeatSegments(item);
-
                 if (result) {
                     return result;
                 }
-
             }
-
             return null;
         }
 
@@ -46,36 +40,26 @@ export const FlightSeats = ({
         }
 
         for (const key of Object.keys(obj)) {
-
             const result = findSeatSegments(obj[key]);
-
             if (result) {
                 return result;
             }
-
         }
-
         return null;
     };
 
     const seatDetails = useMemo(() => {
-
         const seatSegments = findSeatSegments(seatMap);
-
         console.log("FOUND Seat_Segments:", seatSegments);
-
         if (!seatSegments) {
             console.log("Seat_Segments not found");
             return [];
         }
-
         const rows = seatSegments.flatMap(
             segment => segment?.Seat_Row || []
         );
-
         console.log("FOUND Seat Rows:", rows);
         console.log("Seat Row Count:", rows.length);
-
         const details = rows.flatMap(
             row => row?.Seat_Details || []
         );
@@ -231,9 +215,9 @@ export const FlightSeats = ({
 
         /*
          * Based on the API data you provided:
-         * SSR_Status = 2 -> actual available seat
+         * SSR_Status = 1 -> actual available seat
          */
-        return Number(seat.status) === 2;
+        return Number(seat.status) === 1;
 
     };
 
@@ -253,7 +237,7 @@ export const FlightSeats = ({
             // Check if this seat is already selected
             // ---------------------------------------------
             const existingIndex = prev.findIndex(
-                item => item?.id === seat.id
+                item => item?.id === seat?.id
             );
 
             if (existingIndex !== -1) {

@@ -23,6 +23,8 @@ export {Register} from "./Register/Register";
 export {PageNotFound} from "./PageNotFound/PageNotFound";
 export {ThankYou} from "./ThankYou/ThankYou";
 
+export {FlightTicket} from "./FlightTicket";
+
 
 
 

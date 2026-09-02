@@ -22,6 +22,8 @@ function App() {
   
   const pathName = useLocation().pathname;  
 
+  const excludeNavs = pathName.includes("/flight-ticket");
+
   useEffect(() => {
     const isHeaderNewIncluded = ["/thank-you", "/user-profile", "/account-information", "/user-booking", "/change-password", "/wishlist"].some(path => pathName.includes(path));
     const isHeaderBlackTextIncluded = ["/hotel-booking", "/hotel-payment", "/hotel-details", "/flight-details", "/flight-payment", "/flight-booking-pending"].some(path => pathName.includes(path));
@@ -43,7 +45,9 @@ function App() {
 
   return (
     <div className="App">
-      <Header headerNew={headerNew} headerBlackText={headerBlackText} headerStickyShow={headerStickyShow} />  
+      {!excludeNavs && (
+        <Header headerNew={headerNew} headerBlackText={headerBlackText} headerStickyShow={headerStickyShow} />  
+      )}
         {/* <div className="middle-wrapper"> */}
         
         <main className={ headerNew ? `mt-0 ${headerStickyShow ? "header-sticky-show-filter-wrapper" : ""}` : `${headerStickyShow ? "header-sticky-show-filter-wrapper" : ""}` }>
@@ -51,7 +55,9 @@ function App() {
         </main>
 
         {/* </div>       */}
+      {!excludeNavs && (
         <Footer/>
+      )}
     </div>
   );
 }

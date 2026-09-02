@@ -421,15 +421,15 @@ export const AdultFields = ({
                     onChange={(e) =>
                         handleAdultChange(index, "countryCode", e.target.value)
                     }
-                    >
+                >
                     <option value="">Select Country Code</option>
 
                     {countryCode.map((country) => (
                         <option
-                        key={country.id}
-                        value={country.phone_code}
+                            key={country.id}
+                            value={country.phone_code}
                         >
-                        {country.name} ({country.phone_code})
+                            {country.name} ({country.phone_code})
                         </option>
                     ))}
                 </select>

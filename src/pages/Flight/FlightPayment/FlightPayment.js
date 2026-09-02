@@ -1067,7 +1067,7 @@ export const FlightPayment = () => {
   // =========================================================
   // LOGIN HANDLER
   // =========================================================
-
+  // eslint-disable-next-line
   const handleLogin = () => {
     console.log("Open Login Modal");
   };
@@ -1082,98 +1082,83 @@ export const FlightPayment = () => {
   if (loading) return <Loader />;
 
   return (
-    <div className="sdfsdf655 flight-details-wrapper">
+    <div className="sjkbcfksdndf flight-details-wrapper">
       <div className="flight-payment-page">
         {/* ================= HEADER ================= */}
-        <div className="payment-page-header">
-          <div>
+        <div className="payment-page-header px-0">
+          <div className="container">
             <h4 className="mb-1 fw-bold">Review & Payment</h4>
 
-            <small>Complete your booking securely</small>
-          </div>
-
-          <div className="booking-step">
-            <span className="active">1</span>
-            <span>Review</span>
-
-            <div className="step-line"></div>
-
-            <span>2</span>
-            <span>Payment</span>
-
-            <div className="step-line"></div>
-
-            <span>3</span>
-            <span>Confirmation</span>
+            <p className="mb-0">Complete your booking securely</p>
           </div>
         </div>
 
-        <div className="container-fluid px-3 px-md-4">
+        <div className="container mt-5">
           <div className="row g-4">
             {/* ================= LEFT ================= */}
-            <div className="col-lg-8">
+            <div className="col-lg-9 mt-0">
               <div className="flight-detail-card">
                 {/* Top section */}
                 <div className="flight-detail-top">
-                  <div className="d-flex align-items-center gap-2">
+                  <div className="d-flex gap-2">
                     <div className="flight-icon">
                       <i className="fa-solid fa-plane"></i>
                     </div>
 
-                    <span className="departure-badge">DEPARTURE</span>
+                    <div className="indhudfnmdsf">
+                      <h5 className="mb-0 fw-bold">
+                        {segment?.Origin_City} <i className="fa-solid fa-arrow-right-long"></i>{" "}
+                        {destinationSegment?.Destination_City}
+                      </h5>
 
-                    <h5 className="mb-0 fw-bold">
-                      {segment?.Origin_City} →{" "}
-                      {destinationSegment?.Destination_City}
-                    </h5>
+                      {/* Flight summary */}
+                      <div className="flight-summary">
+                        <p className="mb-0">{formatFlightDate(segment?.Departure_DateTime)}</p>
+
+                        <p className="mb-0">•</p>
+
+                        <p className="mb-0">{segment?.Airline_Name}</p>
+
+                        <p className="mb-0">•</p>
+
+                        <p className="mb-0">
+                          {formatTime(segment?.Departure_DateTime)}
+                          {" - "}
+                          {formatTime(destinationSegment?.Arrival_DateTime)}
+                        </p>
+
+                        <p className="mb-0">•</p>
+
+                        <p className="mb-0">{cabinClassName}</p>
+
+                        <p className="mb-0">•</p>
+
+                        <p className="mb-0">
+                          {allSegments.length === 1
+                            ? "Non Stop"
+                            : `${allSegments.length - 1} Stop`}
+                        </p>
+
+                        <p className="mb-0">•</p>
+
+                        <p className="mb-0">
+                          {/* {segment?.Duration || "02h 45m"} */}
+                          {allSegments
+                            .map((segment) => {
+                              const [hours, minutes] = segment.Duration.split(":");
+                              return `${hours}h ${minutes}m`;
+                            })
+                            .join(" + ")}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <button type="button" className="hide-details-btn">
                     Hide details
                     <i className="fa-solid fa-chevron-up ms-2"></i>
                   </button>
-                </div>
-
-                {/* Flight summary */}
-                <div className="flight-summary">
-                  <span>{formatFlightDate(segment?.Departure_DateTime)}</span>
-
-                  <span>•</span>
-
-                  <span>{segment?.Airline_Name}</span>
-
-                  <span>•</span>
-
-                  <span>
-                    {formatTime(segment?.Departure_DateTime)}
-                    {" - "}
-                    {formatTime(destinationSegment?.Arrival_DateTime)}
-                  </span>
-
-                  <span>•</span>
-
-                  <span>{cabinClassName}</span>
-
-                  <span>•</span>
-
-                  <span>
-                    {allSegments.length === 1
-                      ? "Non Stop"
-                      : `${allSegments.length - 1} Stop`}
-                  </span>
-
-                  <span>•</span>
-
-                  <strong>
-                    {/* {segment?.Duration || "02h 45m"} */}
-                    {allSegments
-                      .map((segment) => {
-                        const [hours, minutes] = segment.Duration.split(":");
-                        return `${hours}h ${minutes}m`;
-                      })
-                      .join(" + ")}
-                  </strong>
-                </div>
+                </div>                
 
                 {allSegments.map((segment, index) => (
                   <div
@@ -1216,7 +1201,9 @@ export const FlightPayment = () => {
                         </strong>
 
                         <div>
-                          {segment?.Origin_City} <span>{segment?.Origin}</span>
+                          {segment?.Origin_City}
+                          
+                          {/* <span>{segment?.Origin}</span> */}
                         </div>
 
                         <small>
@@ -1234,7 +1221,7 @@ export const FlightPayment = () => {
 
                         <div className="duration-line"></div>
 
-                        <small>• {cabinClassName}</small>
+                        <small>{cabinClassName}</small>
                       </div>
 
                       {/* Arrival */}
@@ -1244,8 +1231,9 @@ export const FlightPayment = () => {
                         </strong>
 
                         <div>
-                          {segment?.Destination_City}{" "}
-                          <span>{segment?.Destination}</span>
+                          {segment?.Destination_City}
+
+                          {/* <span>{segment?.Destination}</span> */}
                         </div>
 
                         <small>
@@ -1265,16 +1253,16 @@ export const FlightPayment = () => {
 
                         <div className="baggage-row">
                           <span>Cabin baggage</span>
-                          <strong>
+                          <p className="mb-0">
                             {adultFare?.Free_Baggage?.Hand_Baggage}
-                          </strong>
+                          </p>
                         </div>
 
                         <div className="baggage-row">
                           <span>Check-in baggage</span>
-                          <strong>
+                          <p className="mb-0">
                             {adultFare?.Free_Baggage?.Check_In_Baggage}
-                          </strong>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -1356,7 +1344,7 @@ export const FlightPayment = () => {
               {/* =====================================================
                   WALLET LOGIN
               ====================================================== */}
-              <div className="wallet-login-card">
+              {/* <div className="wallet-login-card">
                 <div className="wallet-login-icon">
                   <span className="wallet-emoji">💳</span>
                 </div>
@@ -1367,12 +1355,13 @@ export const FlightPayment = () => {
 
                 <button
                   type="button"
-                  className="wallet-login-btn"
+                  className="btn btn-tour"
                   onClick={handleLogin}
                 >
                   LOG IN
                 </button>
-              </div>
+              </div> */}
+
               <div className="payment-mode-content">
                 {/* =================================================
                       PAYMENT METHODS
@@ -1388,17 +1377,17 @@ export const FlightPayment = () => {
                     onClick={() => setPaymentMethod("upi")}
                   >
                     <div className="payment-method-icon">
-                      <i className="fa-solid fa-qrcode"></i>
+                      <img src="/images/upi.png" alt="UPI" />
                     </div>
 
                     <div>
-                      <strong>UPI</strong>
+                      <h5 className="mb-2">UPI</h5>
 
-                      <small>
+                      <p className="mb-0">Pay using UPI apps
                         Make Online Payments Directly
                         <br />
                         from Bank
-                      </small>
+                      </p>
                     </div>
                   </button>
 
@@ -1412,17 +1401,17 @@ export const FlightPayment = () => {
                     onClick={() => setPaymentMethod("card")}
                   >
                     <div className="payment-method-icon">
-                      <i className="fa-regular fa-credit-card"></i>
+                      <img src="/images/card.png" alt="" />
                     </div>
 
                     <div>
-                      <strong>Credit/Debit/ATM Cards</strong>
+                      <h5 className="mb-2">Credit/Debit/ATM Cards</h5>
 
-                      <small>
+                      <p className="mb-0">Pay using your Credit/Debit/ATM Cards
                         Use VISA, Mastercard,
                         <br />
                         American Express etc.
-                      </small>
+                      </p>
                     </div>
                   </button>
 
@@ -1436,17 +1425,17 @@ export const FlightPayment = () => {
                     onClick={() => setPaymentMethod("wallet")}
                   >
                     <div className="payment-method-icon">
-                      <i className="fa-solid fa-wallet"></i>
+                      <img src="/images/wallet.png" alt="" />
                     </div>
 
                     <div>
-                      <strong>Wallets</strong>
+                      <h5 className="mb-2">Wallets</h5>
 
-                      <small>
+                      <p className="mb-0">
                         Choose Mobikwik, Payzapp,
                         <br />
                         PhonePe or Amazon
-                      </small>
+                      </p>
                     </div>
                   </button>
 
@@ -1460,13 +1449,13 @@ export const FlightPayment = () => {
                     onClick={() => setPaymentMethod("netbanking")}
                   >
                     <div className="payment-method-icon">
-                      <i className="fa-solid fa-building-columns"></i>
+                      <img src="/images/nb.png" alt="" />
                     </div>
 
                     <div>
-                      <strong>Net Banking</strong>
+                      <h5 className="mb-2">Net Banking</h5>
 
-                      <small>All Major banks are supported</small>
+                      <p className="mb-0">All Major banks are supported</p>
                     </div>
                   </button>
                 </div>
@@ -1526,65 +1515,67 @@ export const FlightPayment = () => {
             </div>
 
             {/* ================= RIGHT ================= */}
-            <div className="col-lg-4">
+            <div className="col-lg-3 mt-0">
               <div className="price-summary-card">
                 <div className="price-summary-header">
                   <h5>Price Summary</h5>
 
-                  <div>
-                    <i className="fa-solid fa-person"></i>{" "}
+                  <div className="flight-passenger-count">
+                    <i className="bi bi-people"></i>{" "}
                     {bookingPassengers.length}
                   </div>
                 </div>
 
-                <div className="price-row">
-                  <span>Base Price</span>
-
-                  <strong>{formatAmount(baseFare)}</strong>
-                </div>
-
-                <div className="price-row">
-                  <span>Taxes & Services Fees</span>
-
-                  <strong>{formatAmount(taxAmount)}</strong>
-                </div>
-
-                {seatCharges > 0 && (
+                <div className="dhubewnwer">
                   <div className="price-row">
-                    <span>Seat Charges</span>
+                    <span><i className="bi me-1 bi-plus-circle-dotted"></i> Base Price</span>
 
-                    <strong>{formatAmount(seatCharges)}</strong>
+                    <p className="mb-0">{formatAmount(baseFare)}</p>
                   </div>
-                )}
 
-                {mealCharges > 0 && (
                   <div className="price-row">
-                    <span>Meal Charges</span>
+                    <span><i className="bi me-1 bi-plus-circle-dotted"></i> Taxes & Services Fees</span>
 
-                    <strong>{formatAmount(mealCharges)}</strong>
+                    <p className="mb-0">{formatAmount(taxAmount)}</p>
                   </div>
-                )}
 
-                {extraBaggageCharges > 0 && (
-                  <div className="price-row">
-                    <span>Extra Baggage</span>
+                  {seatCharges > 0 && (
+                    <div className="price-row">
+                      <span>Seat Charges</span>
 
-                    <strong>{formatAmount(extraBaggageCharges)}</strong>
+                      <p className="mb-0">{formatAmount(seatCharges)}</p>
+                    </div>
+                  )}
+
+                  {mealCharges > 0 && (
+                    <div className="price-row">
+                      <span>Meal Charges</span>
+
+                      <p className="mb-0">{formatAmount(mealCharges)}</p>
+                    </div>
+                  )}
+
+                  {extraBaggageCharges > 0 && (
+                    <div className="price-row">
+                      <span>Extra Baggage</span>
+
+                      <p className="mb-0">{formatAmount(extraBaggageCharges)}</p>
+                    </div>
+                  )}
+
+                  {otherCharges > 0 && (
+                    <div className="price-row">
+                      <span>Others</span>
+
+                      <p className="mb-0">{formatAmount(otherCharges)}</p>
+                    </div>
+                  )}
+
+                  <div className="grand-total">
+                    <h5 className="mb-0">Grand Total</h5>
+
+                    <h5 className="mb-0">{formatAmount(totallAmountt)}</h5>
                   </div>
-                )}
-
-                {otherCharges > 0 && (
-                  <div className="price-row">
-                    <span>Others</span>
-
-                    <strong>{formatAmount(otherCharges)}</strong>
-                  </div>
-                )}
-
-                <div className="grand-total">
-                  <span>Grand Total</span>
-
-                  <strong>{formatAmount(totallAmountt)}</strong>
                 </div>
 
                 <button

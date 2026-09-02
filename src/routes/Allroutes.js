@@ -26,7 +26,8 @@ import {
   HotelBooking,
   HotelPayment,
   BusFilter,
-  Visa
+  Visa,
+  FlightTicket
 } from "../pages";
 
 // function PageRenderer() {
@@ -72,6 +73,8 @@ function Allroutes() {
       <Route path="/user-booking" element={<UserBooking />} />
       <Route path="/wishlist" element={<UserWishlist />} />
       <Route path="/change-password" element={<PasswordChange />} />
+
+      <Route path="/flight-ticket" element={<FlightTicket />} />
  
       {/* <Route
         path="/:slug"
