@@ -13,13 +13,19 @@ export const FlightSeats = ({
     onSeatSelectionComplete
 }) => {
 
+
     const requiredSeats =
     Number(adultCount || 0) +
-    Number(childCount || 0) +
-    Number(infantCount || 0);
+    Number(childCount || 0);
+    // Number(infantCount || 0);  
+
+    const safeSelectedSeats = Array.isArray(selectedSeats)
+        ? selectedSeats
+        : [];
+
 
     // const [selectedSeats, setSelectedSeats] = useState([]);
-    const [activePassenger, setActivePassenger] = useState(0);
+    const [activePassenger, setActivePassenger] = useState(null);
 
     const findSeatSegments = (obj) => {
         if (!obj || typeof obj !== "object") {
@@ -225,81 +231,76 @@ export const FlightSeats = ({
         if (!seat || !isAvailable(seat)) {
             return;
         }
-   
-        setSelectedSeats(prev => {
 
-            // Current passenger
-            const currentPassenger = activePassenger + 1;
+        setSelectedSeats((prev) => {
+            const currentSeats = Array.isArray(prev) ? prev : [];
 
-            const paxId = currentPassenger;
+            let paxId;
 
-            // ---------------------------------------------
-            // Check if this seat is already selected
-            // ---------------------------------------------
-            const existingIndex = prev.findIndex(
-                item => item?.id === seat?.id
-            );
+            // Passenger tab selected → keep changing that passenger's seat
+            if (activePassenger !== null) {
+                paxId = activePassenger + 1;
+            } else {
+                // No tab selected → automatically assign next unassigned passenger
+                const assignedPaxIds = new Set(
+                    currentSeats.map((item) => Number(item?.paxId))
+                );
 
-            if (existingIndex !== -1) {
+                paxId = null;
 
-                // Check ownership using paxId
-                if (
-                    prev[existingIndex]?.paxId === paxId
-                ) {
-                    const updated = [...prev];
-
-                    updated.splice(existingIndex, 1);
-
-                    if (onSeatChange) {
-                        onSeatChange(updated);
+                for (let i = 1; i <= requiredSeats; i++) {
+                    if (!assignedPaxIds.has(i)) {
+                        paxId = i;
+                        break;
                     }
-
-                    return updated;
                 }
 
-                // Seat belongs to another passenger
-                return prev;
+                if (!paxId) {
+                    return currentSeats;
+                }
             }
 
-            // ---------------------------------------------
-            // Add paxId from bookingPassengers
-            // ---------------------------------------------
-            const selectedSeat = {
-                ...seat,
-                paxId: paxId
-            };
-
-            const updated = [...prev];
-
-            // ---------------------------------------------
-            // Current passenger already has a seat
-            // Replace it
-            // ---------------------------------------------
-            const passengerSeatIndex = updated.findIndex(
-                item => item?.paxId === paxId
+            // Do not allow a seat already assigned to another passenger
+            const seatAlreadyUsed = currentSeats.some(
+                (item) =>
+                    item?.id === seat?.id &&
+                    Number(item?.paxId) !== paxId
             );
 
-            if (passengerSeatIndex !== -1) {
-
-                updated[passengerSeatIndex] = selectedSeat;
-
-            } else {
-
-                updated.push(selectedSeat);
-
+            if (seatAlreadyUsed) {
+                return currentSeats;
             }
 
-            if (onSeatChange) {
-                onSeatChange(updated);
-            }
+            const selectedSeat = {
+                ...seat,
+                paxId,
+                paxType:
+                    paxId <= Number(adultCount || 0) ? 0 : 1,
+                passengerType:
+                    paxId <= Number(adultCount || 0)
+                        ? "Adult"
+                        : "Child"
+            };
 
-            return updated;
+            // Replace only this passenger's previous seat
+            const updatedSeats = currentSeats.filter(
+                (item) => Number(item?.paxId) !== paxId
+            );
+
+            updatedSeats.push(selectedSeat);
+
+            onSeatChange?.(updatedSeats);
+
+            return updatedSeats;
         });
+
+        // DO NOT reset activePassenger here.
+        // The selected passenger tab stays active.
     };
 
-    const selectedTotal = selectedSeats.reduce(
+    const selectedTotal = safeSelectedSeats.reduce(
         (total, seat) =>
-            total + Number(seat.amount || 0),
+            total + Number(seat?.amount || 0),
         0
     );
 
@@ -319,8 +320,8 @@ export const FlightSeats = ({
 
         const available = isAvailable(seat);
 
-        const selected = selectedSeats.some(
-            item => item.id === seat.id
+        const selected = safeSelectedSeats.some(
+            item => item?.id === seat.id
         );
 
         return (
@@ -343,9 +344,7 @@ export const FlightSeats = ({
                     ${selected ? "selected" : ""}
                 `}
             >
-                <span>
-                    {seat.column}
-                </span>
+                <span>{seat.column}</span>
             </button>
         );
     };
@@ -373,8 +372,9 @@ export const FlightSeats = ({
                 </span>
 
                 {Array.from({ length: requiredSeats }, (_, index) => {
-
-                    const passengerSeat = selectedSeats[index];
+                    const passengerSeat = safeSelectedSeats.find(
+                        (seat) => Number(seat?.paxId) === index + 1
+                    );
 
                     return (
                         <button
@@ -386,7 +386,7 @@ export const FlightSeats = ({
                             onClick={() => setActivePassenger(index)}
                         >
                             <span className="pax-label">
-                                Pax {index + 1} - {" "}
+                                Pax {index + 1} -
                             </span>
 
                             <span className="pax-seat">
@@ -394,13 +394,9 @@ export const FlightSeats = ({
                             </span>
                         </button>
                     );
-
                 })}
-
             </div>
-
             <div className="selection-status">
-
                 {selectedSeats.length === 0 ? (
                     "No seat selected yet"
                 ) : (

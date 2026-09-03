@@ -464,3 +464,15 @@ p.xfbdfshbdbb{
 .passenger-seat-tabs.sticky-top{
     top: 3%;
 }
+
+.passenger-seat-tab {
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Active passenger tab */
+.passenger-seat-tab.active {
+    border: 1px solid #0d6efd !important;
+    background-color: #eaf2ff !important;
+    color: #0d6efd !important;
+    font-weight: 600;
+}

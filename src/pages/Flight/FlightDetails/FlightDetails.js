@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./FlightDetails.css";
 import http from "../../../http";
@@ -76,6 +76,7 @@ export const FlightDetails = () => {
 
   const [selectedMeals, setSelectedMeals] = useState({});
   const [activeMealFilter, setActiveMealFilter] = useState("all");
+  const [activeMealPassenger, setActiveMealPassenger] = useState(null);
 
   const [showSeatRecommendationModal, setShowSeatRecommendationModal] =
     useState(false);
@@ -815,17 +816,49 @@ export const FlightDetails = () => {
     setActiveSeatMealTab("seats");
   };
 
-  const handleAcceptRecommendedSeat = (recommendedSeat) => {
-    console.log("Recommended seat selected:", recommendedSeat);
+  const handleAcceptRecommendedSeat = (recommendedSeats) => {
+    console.log("Recommended seats:", recommendedSeats);
 
-    if (!recommendedSeat) {
+    if (!recommendedSeats) {
         console.log("No recommended seat available");
         return;
     }
 
-    const seatName = recommendedSeat?.SSR_TypeName;
+    const recommendations = Array.isArray(recommendedSeats)
+        ? recommendedSeats
+        : [recommendedSeats];
+
     /*
-     * Find all actual seats from seatMap
+     * Create passengers.
+     *
+     * PaxType:
+     * 0 = Adult
+     * 1 = Child
+     * 2 = Infant
+     */
+    const passengers = [];
+
+    for (let i = 0; i < Number(adultCount || 0); i++) {
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 0,
+            type: "Adult"
+        });
+    }
+
+    for (let i = 0; i < Number(childCount || 0); i++) {
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 1,
+            type: "Child"
+        });
+    }
+
+    // Infants normally do not require a seat.
+    // Do not add infants to the seat-selection list.
+
+    /*
+     * Get all actual seats from the original seat map.
      */
     const getAllSeatDetails = (obj) => {
         if (!obj) {
@@ -833,7 +866,9 @@ export const FlightDetails = () => {
         }
 
         if (Array.isArray(obj)) {
-            return obj.flatMap(item => getAllSeatDetails(item));
+            return obj.flatMap(item =>
+                getAllSeatDetails(item)
+            );
         }
 
         if (
@@ -844,82 +879,154 @@ export const FlightDetails = () => {
         }
 
         return Object.values(obj).flatMap(value =>
-            value && typeof value === "object"
+            value &&
+            typeof value === "object"
                 ? getAllSeatDetails(value)
                 : []
         );
     };
 
     const allSeatDetails = getAllSeatDetails(seatMap);
-    console.log("All seat details:", allSeatDetails);
 
     /*
-     * Find recommended seat inside ORIGINAL seat map
+     * Keep track of seats already assigned.
+     * The same seat must not be assigned to two passengers.
      */
-    const actualSeat = allSeatDetails.find(
-        seat => seat?.SSR_TypeName === seatName
-    );
+    const usedSeatNames = new Set();
 
-    console.log("Recommended seat name:", seatName);
-    console.log("Actual seat from seat map:", actualSeat);
+    const selectedRecommendedSeats = [];
 
-    if (!actualSeat) {
-        console.log(
-            "Recommended seat not found in seat map:",
-            seatName
+    /*
+     * Assign recommendations passenger by passenger.
+     */
+    passengers.forEach((passenger) => {
+
+        const recommendation = recommendations.find(
+            seat =>
+                !usedSeatNames.has(seat?.SSR_TypeName) &&
+                Array.isArray(seat?.ApplicablePaxTypes) &&
+                seat.ApplicablePaxTypes.includes(
+                    passenger.paxType
+                )
         );
-        return;
-    }
-    /*
-     * Convert API seat to FlightSeats format
-     */
-    const seatMatch =
-        actualSeat?.SSR_TypeName?.match(/^(\d+)([A-F])/);
 
-    if (!seatMatch) {
-        console.log("Invalid seat name:", actualSeat?.SSR_TypeName);
-        return;
-    }
+        if (!recommendation) {
+            console.log(
+                `No recommended seat for ${passenger.type} ${passenger.paxId}`
+            );
+            return;
+        }
 
-    const selectedRecommendedSeat = {
-        id: actualSeat.SSR_TypeName,
-        row: Number(seatMatch[1]),
-        column: seatMatch[2],
-        status: Number(actualSeat.SSR_Status),
-        amount: Number(actualSeat.Total_Amount || 0),
-        currency: actualSeat.Currency_Code,
-        ssrKey: actualSeat.SSR_Key,
-        type: actualSeat.SSR_TypeName,
-        description: actualSeat.SSR_TypeDesc,
-        flightId: actualSeat.Flight_ID,
-        segmentId: actualSeat.Segment_Id,
-        applicablePaxTypes:
-            actualSeat.ApplicablePaxTypes || [],
-        paxId: 1,
-        isRecommended: true
-    };
+        const seatName = recommendation?.SSR_TypeName;
+
+        /*
+         * Mark this recommendation as used.
+         */
+        usedSeatNames.add(seatName);
+
+        /*
+         * Find the actual seat in the original seat map.
+         */
+        const actualSeat = allSeatDetails.find(
+            seat =>
+                seat?.SSR_TypeName === seatName
+        );
+
+        if (!actualSeat) {
+            console.log(
+                "Recommended seat not found in seat map:",
+                seatName
+            );
+            return;
+        }
+
+        const match =
+            actualSeat?.SSR_TypeName?.match(
+                /^(\d+)([A-F])/
+            );
+
+        if (!match) {
+            return;
+        }
+
+        const selectedSeat = {
+            id: actualSeat.SSR_TypeName,
+
+            row: Number(match[1]),
+
+            column: match[2],
+
+            status: Number(actualSeat.SSR_Status),
+
+            amount: Number(
+                actualSeat.Total_Amount || 0
+            ),
+
+            currency:
+                actualSeat.Currency_Code,
+
+            ssrKey:
+                actualSeat.SSR_Key,
+
+            type:
+                actualSeat.SSR_TypeName,
+
+            description:
+                actualSeat.SSR_TypeDesc,
+
+            flightId:
+                actualSeat.Flight_ID,
+
+            segmentId:
+                actualSeat.Segment_Id,
+
+            applicablePaxTypes:
+                actualSeat.ApplicablePaxTypes || [],
+
+            // Correct passenger assignment
+            paxId: passenger.paxId,
+
+            paxType: passenger.paxType,
+
+            passengerType: passenger.type,
+
+            isRecommended: true
+        };
+
+        selectedRecommendedSeats.push(
+            selectedSeat
+        );
+    });
 
     console.log(
-        "FINAL SELECTED RECOMMENDED SEAT:",
-        selectedRecommendedSeat
+        "Selected recommended seats:",
+        selectedRecommendedSeats
     );
 
     /*
-     * IMPORTANT:
-     *
-     * Do NOT change seatMap.
-     *
-     * Only update selectedSeats.
+     * Required seats = Adults + Children.
+     * Infants do not require a seat.
      */
-    setSelectedSeats([
-        selectedRecommendedSeat
-    ]);
+    const totalRequiredSeats =
+        Number(adultCount || 0) +
+        Number(childCount || 0);
 
-    setIsSeatSelectionComplete(true);
+    /*
+     * Only update selectedSeats.
+     * NEVER replace seatMap.
+     */
+    setSelectedSeats(
+        selectedRecommendedSeats
+    );
+
+    setIsSeatSelectionComplete(
+        selectedRecommendedSeats.length === totalRequiredSeats
+    );
+
     setShowSeatRecommendationModal(false);
 
     /*
-     * Continue to meals / booking
+     * Continue to meals / booking.
      */
     if (hasMeal) {
         setShowSeatMealSection(true);
@@ -930,25 +1037,33 @@ export const FlightDetails = () => {
     handleSeatMealContinue();
   };
 
-  const recommendedSeat = seatMap?.[0]?.Seat_Segments
-    ?.flatMap((segment) => segment?.Seat_Row || [])
-    ?.flatMap((row) => row?.Seat_Details || [])
-    ?.filter(
-        (seat) =>
-            seat?.SSR_TypeDesc?.toUpperCase()?.startsWith("SEAT") &&
-            Number(seat?.SSR_Status) === 1
-    )
-    ?.sort((a, b) => {
-        // console.log(a, "seat A");
-        // console.log(b, "seat B");
+  const recommendedSeats = useMemo(() => {
+    const allSeats =
+        seatMap?.[0]?.Seat_Segments
+            ?.flatMap((segment) => segment?.Seat_Row || [])
+            ?.flatMap((row) => row?.Seat_Details || []) || [];
 
-        return (
-            Number(a?.Total_Amount || 0) -
-            Number(b?.Total_Amount || 0)
+    return allSeats
+        .filter(
+            (seat) =>
+                seat?.SSR_TypeDesc
+                    ?.toUpperCase()
+                    ?.startsWith("SEAT") &&
+                Number(seat?.SSR_Status) === 1
+        )
+        .sort(
+            (a, b) =>
+                Number(a?.Total_Amount || 0) -
+                Number(b?.Total_Amount || 0)
+        )
+        .slice(
+            0,
+            Number(adultCount || 0) +
+                Number(childCount || 0)
         );
-  })?.[0];
+  }, [seatMap, adultCount, childCount]);
 
-console.log("Recommended Seat:", recommendedSeat);
+console.log("Recommended Seat:", recommendedSeats);
 
   const totalPassengers =
     Number(adultCount || 0) +
@@ -1171,56 +1286,43 @@ console.log("Recommended Seat:", recommendedSeat);
   );
 
   const handleMealSelect = (meal) => {
-    if (totalPassengers <= 0) {
-      return;
+    if (!meal) return;
+    let passengerIndex;
+    // If a passenger tab is selected,
+    // keep selecting/replacing meals for that passenger
+    if (activeMealPassenger !== null) {
+        passengerIndex = activeMealPassenger;
+    } else {
+        // No tab selected → automatically assign next passenger
+        const totalPassengers =
+            Number(adultCount || 0) +
+            Number(childCount || 0);
+
+        passengerIndex = null;
+
+        for (let i = 0; i < totalPassengers; i++) {
+            if (!selectedMeals?.[i]) {
+                passengerIndex = i;
+                break;
+            }
+        }
+
+        if (passengerIndex === null) {
+            return;
+        }
     }
 
-    setSelectedMeals((prev) => {
-      const next = { ...prev };
-
-      // Check if this meal is already selected
-      const existingPassengerIndex = Object.keys(next).find(
-        (key) => next[key]?.SSR_Code === meal?.SSR_Code
-      );
-
-      if (existingPassengerIndex !== undefined) {
-        delete next[existingPassengerIndex];
-
-        const rearranged = {};
-
-        Object.values(next).forEach((item, index) => {
-          rearranged[index] = {
-            ...item,
-            paxId: index + 1,
-          };
-        });
-
-        return rearranged;
-      }
-
-      // Find first passenger without meal
-      let passengerIndex = -1;
-
-      for (let i = 0; i < totalPassengers; i++) {
-        if (!next[i]) {
-          passengerIndex = i;
-          break;
-        }
-      }
-
-      // All passengers already selected
-      if (passengerIndex === -1) {
-        return prev;
-      }
-
-      // Add pax_id based on passenger number
-      next[passengerIndex] = {
-        ...meal,
-        paxId: passengerIndex + 1,
-      };
-
-      return next;
-    });
+    setSelectedMeals((prev) => ({
+        ...prev,
+        [passengerIndex]: {
+            ...meal,
+            paxId: passengerIndex + 1,
+            paxType:
+                passengerIndex < Number(adultCount || 0)
+                    ? 0
+                    : 1,
+        },
+    }));
   };
 
   console.log(selectedMeals, 'selectedMeals'); 
@@ -1412,6 +1514,8 @@ console.log("Recommended Seat:", recommendedSeat);
         index,
     })),
   ];
+
+  const passengerList = bookingPassengers || [];
 
   const seatCharges = selectedSeatList.reduce(
     (total, seat) =>
@@ -3416,229 +3520,348 @@ console.log(selectedSeats, 'selectedSeats');
                         )}
 
                         {/* =======================================================
-                            MEALS
-                        ======================================================= */}
-                        <div
-                          className={`tab-pane ${
-                            activeSeatMealTab === "meals" ? "show active" : ""
-                          }`}
-                          id="meals"
-                          role="tabpanel"
-                          aria-labelledby="meals-tab"
-                        >
-                          <div className="doismkfjhisd py-3">
-                            {/* =====================================================
-                                  HEADER
-                              ===================================================== */}
-                            <div className="duisnuiherer border-bottom pb-3 mb-3">
-                              <div className="oidiewrwer d-flex justify-content-between mb-3">
-                                <div className="diewirhwerwer">
-                                  <h5 className="mb-2">
-                                    <b>
-                                      {segment?.Origin_City?.replace(
-                                        /\s*\(.*?\)/g,
-                                        "",
-                                      )}
-                                    </b>
+                              MEALS
+                          ======================================================= */}
+                          <div
+                              className={`tab-pane ${
+                                  activeSeatMealTab === "meals" ? "show active" : ""
+                              }`}
+                              id="meals"
+                              role="tabpanel"
+                              aria-labelledby="meals-tab"
+                          >
+                              <div className="doismkfjhisd py-3">
 
-                                    {" - "}
+                                  {/* =====================================================
+                                      HEADER
+                                  ===================================================== */}
 
-                                    <b>
-                                      {segment?.Destination_City?.replace(
-                                        /\s*\(.*?\)/g,
-                                        "",
-                                      )}
-                                    </b>
-                                  </h5>
+                                  <div className="duisnuiherer border-bottom pb-3 mb-3">
 
-                                  <h6 className="mb-0">
-                                    <span>{selectedMealCount}</span>
+                                      <div className="oidiewrwer d-flex justify-content-between mb-3">
 
-                                    {" of "}
+                                          <div className="diewirhwerwer">
 
-                                    <span>{totalPassengers}</span>
+                                              <h5 className="mb-2">
+                                                  <b>
+                                                      {segment?.Origin_City?.replace(
+                                                          /\s*\(.*?\)/g,
+                                                          "",
+                                                      )}
+                                                  </b>
 
-                                    {" selected"}
-                                  </h6>
-                                </div>
+                                                  {" - "}
 
-                                <p className="mb-0">Select your meal</p>
-                              </div>
+                                                  <b>
+                                                      {segment?.Destination_City?.replace(
+                                                          /\s*\(.*?\)/g,
+                                                          "",
+                                                      )}
+                                                  </b>
+                                              </h5>
 
-                              {/* =====================================================
-                                    VEG / NON VEG FILTER
-                                ===================================================== */}
+                                              <h6 className="mb-0">
+                                                  <span>{selectedMealCount}</span>
+                                                  {" of "}
+                                                  <span>{totalPassengers}</span>
+                                                  {" selected"}
+                                              </h6>
 
-                              <div className="dioewiuhrew d-flex gap-2">
-                                {/* ALL */}
+                                          </div>
 
-                                <button
-                                  type="button"
-                                  className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
-                                    activeMealFilter === "all"
-                                      ? "border-primary text-primary"
-                                      : ""
-                                  }`}
-                                  onClick={() => setActiveMealFilter("all")}
-                                >
-                                  <b>All</b>
-                                </button>
+                                          <p className="mb-0">
+                                              Select your meal
+                                          </p>
 
-                                {/* VEG */}
-
-                                <button
-                                  type="button"
-                                  className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
-                                    activeMealFilter === "veg"
-                                      ? "border-primary text-primary"
-                                      : ""
-                                  }`}
-                                  onClick={() => setActiveMealFilter("veg")}
-                                >
-                                  <img
-                                    src="/images/veg.png"
-                                    alt="Veg"
-                                    style={{
-                                      width: "16px",
-                                      height: "16px",
-                                    }}
-                                  />
-
-                                  <b>Veg</b>
-                                </button>
-
-                                {/* NON VEG */}
-
-                                <button
-                                  type="button"
-                                  className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
-                                    activeMealFilter === "nonveg"
-                                      ? "border-primary text-primary"
-                                      : ""
-                                  }`}
-                                  onClick={() => setActiveMealFilter("nonveg")}
-                                >
-                                  <img
-                                    src="/images/nonveg.png"
-                                    alt="Non Veg"
-                                    style={{
-                                      width: "16px",
-                                      height: "16px",
-                                    }}
-                                  />
-
-                                  <b>Non Veg</b>
-                                </button>
-                              </div>
-                            </div>
-                            {/* =====================================================
-                                  MEAL LIST
-                              ===================================================== */}
-                            <div className="dmiwejrwer row">
-                              {mealsList
-                                ?.filter((meal) => {
-                                  if (activeMealFilter === "all") {
-                                    return true;
-                                  }
-
-                                  return getMealType(meal) === activeMealFilter;
-                                })
-                                .map((meal, index) => {
-                                  const isSelected = Object.values(
-                                    selectedMeals,
-                                  ).some(
-                                    (selectedMeal) =>
-                                      selectedMeal?.SSR_Code === meal?.SSR_Code,
-                                  );
-
-                                  return (
-                                    <div
-                                      className="col-lg-6 mb-4"
-                                      key={`${meal?.SSR_Code}-${index}`}
-                                    >
-                                      <Meal
-                                        meal={meal}
-                                        mealName={getMealName(meal)}
-                                        mealPrice={getMealPrice(meal)}
-                                        selected={isSelected}
-                                        onSelect={handleMealSelect}
-                                      />
-                                    </div>
-                                  );
-                                })}
-                            </div>
-                            {/* =====================================================
-                                  SELECTED MEALS
-                              ===================================================== */}
-                            {selectedMealCount > 0 && (
-                              <div className="border rounded-2 p-3 mb-3">
-                                <div className="d-flex justify-content-between align-items-center mb-3">
-                                  <h6 className="mb-0">Selected Meals</h6>
-                                  <h6 className="mb-0">
-                                    <b>INR {totalMealPrice}</b>
-                                  </h6>
-                                </div>
-                                {Object.entries(selectedMeals).map(
-                                  ([passengerIndex, meal]) => (
-                                    <div
-                                      key={passengerIndex}
-                                      className="d-flex justify-content-between align-items-center border-bottom py-2"
-                                    >
-                                      <div>
-                                        <small className="text-muted">
-                                          Passenger {Number(passengerIndex) + 1}
-                                        </small>
-
-                                        <p className="mb-0">
-                                          {getMealName(meal)}
-                                        </p>
                                       </div>
 
-                                      <div className="d-flex align-items-center gap-3">
-                                        <b>
-                                          {meal?.Currency_Code || "INR"}{" "}
-                                          {getMealPrice(meal)}
-                                        </b>
 
-                                        <button
-                                          type="button"
-                                          className="btn btn-sm btn-outline-danger"
-                                          onClick={() =>
-                                            handleMealRemove(
-                                              Number(passengerIndex),
-                                            )
-                                          }
-                                        >
-                                          REMOVE
-                                        </button>
+                                      {/* =====================================================
+                                          PASSENGER TABS
+                                      ===================================================== */}
+
+                                      <div className="passenger-tabs d-flex flex-wrap gap-2 mb-3">
+
+                                          {passengerList.map((passenger, index) => {
+
+                                              const passengerName =
+                                                  `${passenger?.First_Name || ""} ${
+                                                      passenger?.Last_Name || ""
+                                                  }`.trim() ||
+                                                  `Passenger ${index + 1}`;
+
+                                              const passengerMeal =
+                                                  selectedMeals?.[index];
+
+                                              return (
+                                                  <button
+                                                      key={index}
+                                                      type="button"
+                                                      className={`passenger-seat-tab btn btn-tour ${
+                                                          activeMealPassenger === index
+                                                              ? "active"
+                                                              : ""
+                                                      }`}
+                                                      onClick={() =>
+                                                          setActiveMealPassenger(index)
+                                                      }
+                                                  >
+                                                      <span className="pax-label">
+                                                          {passengerName} -
+                                                      </span>
+
+                                                      <span className="pax-seat">
+                                                          {passengerMeal?.SSR_TypeName || "--"}
+                                                      </span>
+                                                  </button>
+                                              );
+                                          })}
+
                                       </div>
-                                    </div>
-                                  ),
-                                )}
-                              </div>
-                            )}
-                            {/* =====================================================
-                                  INFORMATION
-                              ===================================================== */}
-                            <div className="idcnuihiwer p-3 rounded-2 d-flex align-items-center gap-2 border mt-2">
-                              <div className="uidnwehruiewr position-relative rounded-circle">
-                                <i className="bi position-absolute top-50 start-50 translate-middle bi-gift"></i>
-                              </div>
 
-                              <div className="duihsnerew">
-                                <h5 className="mb-1">
-                                  All meals are freshly prepared and
-                                  hygienically packed.
-                                </h5>
 
-                                <p className="mb-0">
-                                  Availability may vary based on flight
-                                  duration.
-                                </p>
+                                      {/* =====================================================
+                                          VEG / NON VEG FILTER
+                                      ===================================================== */}
+
+                                      <div className="dioewiuhrew d-flex gap-2">
+
+                                          {/* ALL */}
+
+                                          <button
+                                              type="button"
+                                              className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
+                                                  activeMealFilter === "all"
+                                                      ? "border-primary text-primary"
+                                                      : ""
+                                              }`}
+                                              onClick={() => setActiveMealFilter("all")}
+                                          >
+                                              <b>All</b>
+                                          </button>
+
+
+                                          {/* VEG */}
+
+                                          <button
+                                              type="button"
+                                              className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
+                                                  activeMealFilter === "veg"
+                                                      ? "border-primary text-primary"
+                                                      : ""
+                                              }`}
+                                              onClick={() => setActiveMealFilter("veg")}
+                                          >
+                                              <img
+                                                  src="/images/veg.png"
+                                                  alt="Veg"
+                                                  style={{
+                                                      width: "16px",
+                                                      height: "16px",
+                                                  }}
+                                              />
+
+                                              <b>Veg</b>
+                                          </button>
+
+
+                                          {/* NON VEG */}
+
+                                          <button
+                                              type="button"
+                                              className={`d-inline-flex align-items-center gap-2 px-3 border rounded-pill bg-white ${
+                                                  activeMealFilter === "nonveg"
+                                                      ? "border-primary text-primary"
+                                                      : ""
+                                              }`}
+                                              onClick={() => setActiveMealFilter("nonveg")}
+                                          >
+                                              <img
+                                                  src="/images/nonveg.png"
+                                                  alt="Non Veg"
+                                                  style={{
+                                                      width: "16px",
+                                                      height: "16px",
+                                                  }}
+                                              />
+
+                                              <b>Non Veg</b>
+                                          </button>
+
+                                      </div>
+
+                                  </div>
+
+
+                                  {/* =====================================================
+                                      MEAL LIST
+                                  ===================================================== */}
+
+                                  <div className="dmiwejrwer row">
+
+                                      {mealsList
+                                          ?.filter((meal) => {
+
+                                              if (activeMealFilter === "all") {
+                                                  return true;
+                                              }
+
+                                              return (
+                                                  getMealType(meal) === activeMealFilter
+                                              );
+                                          })
+                                          .map((meal, index) => {
+
+                                              /*
+                                              * IMPORTANT:
+                                              * selectedMeals is an object:
+                                              *
+                                              * {
+                                              *   0: mealForPax1,
+                                              *   1: mealForPax2
+                                              * }
+                                              */
+
+                                              const activePaxId =
+                                                  activeMealPassenger !== null
+                                                      ? activeMealPassenger + 1
+                                                      : null;
+
+                                              const selectedMeal =
+                                                  activePaxId !== null
+                                                      ? selectedMeals?.[activePaxId - 1]
+                                                      : null;
+
+                                              const isSelected =
+                                                  selectedMeal?.SSR_Key === meal?.SSR_Key;
+
+                                              return (
+                                                  <div
+                                                      className="col-lg-6 mb-4"
+                                                      key={`${meal?.SSR_Code}-${index}`}
+                                                  >
+                                                      <Meal
+                                                          meal={meal}
+                                                          mealName={getMealName(meal)}
+                                                          mealPrice={getMealPrice(meal)}
+                                                          selected={isSelected}
+                                                          onSelect={handleMealSelect}
+                                                      />
+                                                  </div>
+                                              );
+                                          })}
+
+                                  </div>
+
+
+                                  {/* =====================================================
+                                      SELECTED MEALS
+                                  ===================================================== */}
+
+                                  {selectedMealCount > 0 && (
+                                      <div className="border rounded-2 p-3 mb-3">
+                                          <div className="d-flex justify-content-between align-items-center mb-3">
+                                              <h6 className="mb-0">
+                                                  Selected Meals
+                                              </h6>
+                                              <h6 className="mb-0">
+                                                  <b>INR {totalMealPrice}</b>
+                                              </h6>
+                                          </div>
+
+                                          {Object.entries(selectedMeals).map(
+                                              ([passengerIndex, meal]) => {
+                                                  const passenger =
+                                                      passengerList?.[
+                                                          Number(passengerIndex)
+                                                      ];
+                                                  const passengerName =
+                                                      `${passenger?.First_Name || ""} ${
+                                                          passenger?.Last_Name || ""
+                                                      }`.trim() ||
+                                                      `Passenger ${
+                                                          Number(passengerIndex) + 1
+                                                      }`;
+                                                  return (
+                                                      <div
+                                                          key={passengerIndex}
+                                                          className="d-flex justify-content-between align-items-center border-bottom py-2"
+                                                      >
+                                                          <div>
+                                                              <small className="text-muted">
+                                                                  {passengerName}
+                                                              </small>
+                                                              <p className="mb-0">
+                                                                  {getMealName(meal)}
+                                                              </p>
+                                                          </div>
+
+                                                          <div className="d-flex align-items-center gap-3">
+                                                              <b>
+                                                                  {meal?.Currency_Code || "INR"}{" "}
+                                                                  {getMealPrice(meal)}
+                                                              </b>
+                                                              <button
+                                                                  type="button"
+                                                                  className="btn btn-sm btn-outline-danger"
+                                                                  onClick={() =>
+                                                                      handleMealRemove(
+                                                                          Number(passengerIndex),
+                                                                      )
+                                                                  }
+                                                              >
+                                                                  REMOVE
+                                                              </button>
+                                                          </div>
+                                                      </div>
+                                                  );
+                                              },
+                                          )}
+                                      </div>
+                                  )}
+                                  {/* =====================================================
+                                      INFORMATION
+                                  ===================================================== */}
+                                  <div className="idcnuihiwer p-3 rounded-2 d-flex align-items-center gap-2 border mt-2">
+                                      <div className="uidnwehruiewr position-relative rounded-circle">
+                                          <i className="bi position-absolute top-50 start-50 translate-middle bi-gift"></i>
+                                      </div>
+                                      <div className="duihsnerew">
+                                          <h5 className="mb-1">
+                                              All meals are freshly prepared and
+                                              hygienically packed.
+                                          </h5>
+                                          <p className="mb-0">
+                                              Availability may vary based on flight
+                                              duration.
+                                          </p>
+                                      </div>
+                                  </div>
+                                  {/* =====================================================
+                                      SKIP / CONTINUE
+                                  ===================================================== */}
+                                  {activeSeatMealTab === "meals" && (
+                                      <div className="d-flex align-items-center gap-3 mt-3">
+                                          {/* SKIP MEALS */}
+                                          <button
+                                              type="button"
+                                              className="btn btn-link text-muted text-decoration-none"
+                                              onClick={handleMealSkip}
+                                          >
+                                              Skip Meals
+                                          </button>
+                                          {/* CONTINUE */}
+                                          <button
+                                              type="button"
+                                              className="btn btn-primary rounded-pill px-4"
+                                              onClick={handleSeatMealContinue}
+                                          >
+                                              Continue
+                                          </button>
+                                      </div>
+                                  )}
                               </div>
-                            </div>
                           </div>
-                        </div>
                       </div>
                     </div>
 
@@ -3676,7 +3899,6 @@ console.log(selectedSeats, 'selectedSeats');
                     {/* =========================================================
                           MEAL CONTINUE
                       ========================================================= */}
-
                       {activeSeatMealTab === "meals" && (
                           <div className="d-flex align-items-center gap-3 mt-3">
 
@@ -4590,30 +4812,27 @@ console.log(selectedSeats, 'selectedSeats');
                   </div>
 
                   {/* RECOMMENDED SEAT */}
-                  <div className="recommended-seat-box">
 
-                      <div className="recommended-seat-name">
+                  {recommendedSeats.map((seat, index) => (
+                      <div
+                          className="recommended-seat-box"
+                          key={`${seat?.SSR_TypeName}-${index}`}
+                      >
+                          <div className="recommended-seat-name">
+                              <strong>
+                                  Passenger {index + 1}: {seat?.SSR_TypeName}
+                              </strong>
 
-                          <strong>
-                              {recommendedSeat?.SSR_TypeName}
-                          </strong>
+                              <span>
+                                  ({seat?.SSR_TypeDesc || "WINDOW"})
+                              </span>
+                          </div>
 
-                          <span>
-                              {" "}
-                              (
-                              {recommendedSeat?.SSR_TypeDesc ||
-                                  "WINDOW"}
-                              )
-                          </span>
-
+                          <div className="recommended-seat-price">
+                              ₹ {seat?.Total_Amount || 0}
+                          </div>
                       </div>
-
-                      <div className="recommended-seat-price">
-                          ₹{" "}
-                          {recommendedSeat?.Total_Amount}
-                      </div>
-
-                  </div>
+                  ))}
 
                   {/* BUTTONS */}
                   <div className="seat-recommendation-buttons">
@@ -4633,7 +4852,7 @@ console.log(selectedSeats, 'selectedSeats');
                           className="btn btn-primary rounded-pill"
                           onClick={() =>
                               handleAcceptRecommendedSeat(
-                                  recommendedSeat,
+                                  recommendedSeats,
                               )
                           }
                       >
