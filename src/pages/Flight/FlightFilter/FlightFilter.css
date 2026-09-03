@@ -358,6 +358,11 @@ small.bgdbxzvxcv{
     margin-top: -20px !important;
 }
 
+.price-filter{
+    width: 90%;
+    margin-inline: auto;
+}
+
 .hotel-price-filter {
     width: 100%;
     background: #fff;
@@ -1153,6 +1158,7 @@ label.nihnuidnuiwehrwer img{
 
 .flight-results-section .disennksjhkf{
     max-height: 90vh;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: 0.7rem;
 }

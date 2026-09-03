@@ -1,8 +1,9 @@
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import Loader from "../../component/Loader/Loader";
 import "./ThankYou.css";
+
+const CONFETTI_COLORS = ["#2F5FE0", "#D98A2B", "#1B8A5A", "#0E1B33", "#C6453B"];
 
 export const ThankYou = () => {
     const [loading, setLoading] = useState(false);
@@ -125,11 +126,11 @@ export const ThankYou = () => {
     // PAGE CONTENT
     // =====================================================
 
-    let title = "Booking Under Process";
+    let title = "Your Booking is Being Processed";
 
     let message =
         bookingMessage ||
-        "Your booking request is currently being processed.";
+        "Your booking request is currently being processed. Please do not make another payment";
 
     let iconType = "pending";
 
@@ -178,6 +179,44 @@ export const ThankYou = () => {
 
 
     // =====================================================
+    // CONFETTI (confirmed bookings only)
+    // =====================================================
+
+    const confettiPieces = useMemo(() => {
+        if (!isConfirmed) return [];
+
+        return Array.from({ length: 28 }).map((_, i) => ({
+            id: i,
+            left: Math.random() * 100,
+            delay: Math.random() * 0.5,
+            duration: 2.2 + Math.random() * 1.4,
+            color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+            rotate: Math.round(Math.random() * 360),
+            size: 6 + Math.round(Math.random() * 5),
+        }));
+    }, [isConfirmed]);
+
+
+    // =====================================================
+    // COPY TO CLIPBOARD
+    // =====================================================
+
+    const [copiedField, setCopiedField] = useState("");
+
+    const handleCopy = async (value, field) => {
+        if (!value) return;
+
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopiedField(field);
+            setTimeout(() => setCopiedField(""), 2000);
+        } catch {
+            // clipboard access denied — value is still visible on screen
+        }
+    };
+
+
+    // =====================================================
     // RENDER
     // =====================================================
 
@@ -188,6 +227,30 @@ export const ThankYou = () => {
             <section className="thank-you-page">
 
                 <div className="thank-you-card">
+
+                    {/* ================================================= */}
+                    {/* CONFETTI */}
+                    {/* ================================================= */}
+
+                    {confettiPieces.length > 0 && (
+                        <div className="confetti-layer" aria-hidden="true">
+                            {confettiPieces.map((piece) => (
+                                <span
+                                    key={piece.id}
+                                    className="confetti-piece"
+                                    style={{
+                                        left: `${piece.left}%`,
+                                        backgroundColor: piece.color,
+                                        width: `${piece.size}px`,
+                                        height: `${piece.size * 0.4}px`,
+                                        animationDelay: `${piece.delay}s`,
+                                        animationDuration: `${piece.duration}s`,
+                                        transform: `rotate(${piece.rotate}deg)`,
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    )}
 
 
                     {/* ================================================= */}
@@ -265,9 +328,21 @@ export const ThankYou = () => {
                                 Booking Reference
                             </div>
 
-                            <strong className="booking-reference">
-                                {bookingReference}
-                            </strong>
+                            <div className="booking-value-row">
+                                <strong className="booking-reference">
+                                    {bookingReference}
+                                </strong>
+
+                                <button
+                                    type="button"
+                                    className="copy-btn"
+                                    onClick={() =>
+                                        handleCopy(bookingReference, "reference")
+                                    }
+                                >
+                                    {copiedField === "reference" ? "Copied" : "Copy"}
+                                </button>
+                            </div>
 
                         </div>
                     )}
@@ -287,9 +362,21 @@ export const ThankYou = () => {
                                         Airline PNR
                                     </span>
 
-                                    <strong>
-                                        {airlinePNR}
-                                    </strong>
+                                    <span className="booking-value-row">
+                                        <strong>
+                                            {airlinePNR}
+                                        </strong>
+
+                                        <button
+                                            type="button"
+                                            className="copy-btn"
+                                            onClick={() =>
+                                                handleCopy(airlinePNR, "pnr")
+                                            }
+                                        >
+                                            {copiedField === "pnr" ? "Copied" : "Copy"}
+                                        </button>
+                                    </span>
 
                                 </div>
                             )}
@@ -380,7 +467,7 @@ export const ThankYou = () => {
                         {!isConfirmed && (
                             <Link
                                 to="/contact-us"
-                                className="contact-btn"
+                                className="btn btn-tour"
                             >
                                 Contact Support
                             </Link>

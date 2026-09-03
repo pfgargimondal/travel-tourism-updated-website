@@ -362,6 +362,8 @@ input[type="range"] {
 
 .ghaadasd {
     margin-top: -75px;
+    position: relative;
+    z-index: 9;
 }
 
 /* Search Button */

@@ -179,10 +179,6 @@ export const HotelFilter = () => {
                       <span className="reset-btn disabled d-flex align-items-center"><i className="bi me-1 bi-arrow-clockwise"></i> Reset</span>
                     </div>
 
-                    <div className="filter-search">
-                      <input type="text" placeholder="Search by Hotel Names" />
-                    </div>
-
                     <div className="filter-section suggested-section">
                       <h6 className="mb-3">Suggested For You</h6>
 

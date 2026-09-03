@@ -92,6 +92,11 @@
   width: 20px;
 }
 
+.attraction-list{
+  display: flex;
+  flex-wrap: wrap;
+}
+
 /* LIST */
 .amenity-item {
   display: flex;
@@ -99,7 +104,7 @@
   width: 19%;
   margin-bottom: 1.4rem;
   gap: 5px;
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .amenity-item img {
@@ -666,7 +671,7 @@
 .gallery-modal {
   /* display: none; */
   position: fixed;
-  z-index: 9999;
+  z-index: 99999;
   padding-top: 50px;
   left: 0;
   top: 0;
@@ -675,8 +680,18 @@
   background: rgba(0, 0, 0, 0.9);
 }
 
+.gallery-modal .close-btn{
+  background: transparent;
+  color: #fff;
+  border: none;
+}
+
 .modal-content-custom {
   text-align: center;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-content-custom img {
@@ -698,7 +713,7 @@
 /* Thumbnails */
 .gallery-thumbs {
   margin-top: 20px;
-  text-align: center;
+  text-align: center;  
 }
 
 .gallery-thumbs img {
@@ -1249,6 +1264,37 @@ h6.jkvnxlkjvkxccv {
   font-weight: 500;
 }
 
+.gallery-thumbs .swiper{
+  padding-inline: 4rem;
+}
+
+.gallery-thumbs .swiper-button-prev,
+.gallery-thumbs .swiper-button-next{
+  width: 2rem;
+  height: 2rem;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.gallery-thumbs .swiper-button-prev{
+  left: 3px;
+  top: 60%;
+  border: var(--blue-primary-color);
+}
+
+.gallery-thumbs .swiper-button-next{
+  right: 3px;
+  top: 60%;
+  border: var(--blue-primary-color);
+}
+
+.gallery-thumbs .swiper-button-next svg,
+.gallery-thumbs .swiper-button-prev svg{
+  width: 1.2rem;
+  height: 1.2rem;
+  color: var(--blue-secondary-color);
+}
+
 
 
 
@@ -1265,5 +1311,59 @@ h6.jkvnxlkjvkxccv {
 
   .hgcghghvfhg img {
     margin-top: 10px;
+  }
+  
+  .duijewkijuler-tabs .mkooijokerr.sticky-top{
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .duijewkijuler-tabs .mkooijokerr button.nav-link {
+    white-space: nowrap;
+  }
+
+  .sdbhjsdfds{
+    flex-direction: column;
+  }
+
+  .bcbsdbszsd{
+    align-items: center;
+  }
+
+  .bcbsdbszsd .rating-box{
+    padding: 2px 10px;
+  }
+
+  .sbfsdvfsf{
+    margin-bottom: 0.5rem;
+  }
+
+  .asfdgsqwe li {
+    font-size: 0.7rem;
+  }
+
+  .duiswijfjsdf{
+    margin-top: 0;
+  }
+
+  .amenity-item span {
+    white-space: nowrap;
+  }
+
+  .amenity-item {
+    margin-bottom: 0.5rem;
+  }  
+}
+
+
+
+@media only screen and (max-width: 600px){
+  .hotel-card h4 {
+    font-size: 1.1rem;
+  }
+
+  .dsvbjhdvsdc p{
+    font-size: 14px;
   }
 }

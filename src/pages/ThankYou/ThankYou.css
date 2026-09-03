@@ -1,191 +1,500 @@
-.thank-you-page{
-    min-height:100vh;
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#f8fafc;
-    padding:30px 20px;
-    position:relative;
-    overflow:hidden;
+/* ---------- PAGE ---------- */
+.thank-you-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 72px 24px;
+    background: var(--paper);
+    color: var(--ink);
+    position: relative;
+    overflow: hidden;
 }
 
-.thank-you-page::before{
-    content:"";
-    position:absolute;
-    width:500px;
-    height:500px;
-    background:linear-gradient(135deg,#22c55e,#16a34a);
-    border-radius:50%;
-    top:-220px;
-    right:-150px;
-    opacity:.08;
+.thank-you-page::before {
+    content: "";
+    position: absolute;
+    top: -140px;
+    right: -120px;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
 }
 
-.thank-you-page::after{
-    content:"";
-    position:absolute;
-    width:400px;
-    height:400px;
-    background:linear-gradient(135deg,#3b82f6,#06b6d4);
-    border-radius:50%;
-    bottom:-180px;
-    left:-120px;
-    opacity:.08;
+.thank-you-page::after {
+    content: "";
+    position: absolute;
+    bottom: -160px;
+    left: -140px;
+    width: 380px;
+    height: 380px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--success-soft) 0%, transparent 70%);
 }
 
-.thank-you-card{
-    width:100%;
-    max-width:650px;
-    background:#fff;
-    border-radius:30px;
-    padding:70px 50px;
-    text-align:center;
-    box-shadow:0 15px 45px rgba(0,0,0,0.08);
-    position:relative;
-    z-index:2;
+/* ---------- CARD ---------- */
+.thank-you-card {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 20px 40px -12px rgba(14, 27, 51, 0.12);
+    padding: 44px 40px 36px;
+    text-align: center;
+    z-index: 1;
+    animation: card-in 0.5s ease both;
 }
 
-.success-animation{
-    margin-bottom:30px;
-}
+@keyframes card-in {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 
-.circle{
-    width:120px;
-    height:120px;
-    margin:auto;
-    border-radius:50%;
-    background:#ecfdf5;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    animation:pulse 2s infinite;
-}
-
-.checkmark{
-    width:70px;
-    height:70px;
-}
-
-.checkmark-circle{
-    stroke:#22c55e;
-    stroke-width:2;
-    stroke-miterlimit:10;
-    stroke-dasharray:166;
-    stroke-dashoffset:166;
-    animation:stroke 0.6s ease forwards;
-}
-
-.checkmark-check{
-    stroke:#22c55e;
-    stroke-width:3;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-    stroke-dasharray:48;
-    stroke-dashoffset:48;
-    animation:stroke 0.4s 0.6s ease forwards;
-}
-
-.thank-you-card h1{
-    font-size:48px;
-    color:#111827;
-    margin-bottom:18px;
-    font-weight:800;
-}
-
-.thank-you-card p{
-    font-size:17px;
-    line-height:1.8;
-    color:#6b7280;
-    max-width:500px;
-    margin:auto;
-}
-
-.thank-you-buttons{
-    display:flex;
-    justify-content:center;
-    gap:20px;
-    flex-wrap:wrap;
-    margin-top:40px;
-}
-
-.home-btn,
-.contact-btn{
-    padding:15px 32px;
-    border-radius:60px;
-    text-decoration:none;
-    font-size:16px;
-    font-weight:600;
-    transition:.3s ease;
-}
-
-.home-btn{
-    background:#22c55e;
-    color:#fff;
-}
-
-.home-btn:hover{
-    background:#16a34a;
-    transform:translateY(-3px);
-}
-
-.contact-btn{
-    background:#eff6ff;
-    color:#111827;
-}
-
-.contact-btn:hover{
-    background:#dbeafe;
-    transform:translateY(-3px);
-}
-
-@keyframes stroke{
-    to{
-    stroke-dashoffset:0;
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-@keyframes pulse{
-    0%{
-    transform:scale(1);
+.thank-you-card::before,
+.thank-you-card::after {
+    content: "";
+    position: absolute;
+    top: calc(100% - 1px);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 1px solid var(--line);
+}
+
+.thank-you-card::before {
+    left: -10px;
+}
+
+.thank-you-card::after {
+    right: -10px;
+}
+
+/* staggered reveal of card content, one beat after the card itself lands */
+.thank-you-card>* {
+    animation: rise-in 0.45s ease both;
+}
+
+.thank-you-card>*:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.thank-you-card>*:nth-child(2) {
+    animation-delay: 0.12s;
+}
+
+.thank-you-card>*:nth-child(3) {
+    animation-delay: 0.19s;
+}
+
+.thank-you-card>*:nth-child(4) {
+    animation-delay: 0.26s;
+}
+
+.thank-you-card>*:nth-child(5) {
+    animation-delay: 0.33s;
+}
+
+.thank-you-card>*:nth-child(6) {
+    animation-delay: 0.40s;
+}
+
+.thank-you-card>*:nth-child(7) {
+    animation-delay: 0.47s;
+}
+
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
     }
-    50%{
-    transform:scale(1.05);
-    }
-    100%{
-    transform:scale(1);
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-@media(max-width:768px){
-    .thank-you-card{
-    padding:50px 25px;
+/* ---------- CONFETTI ---------- */
+.confetti-layer {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    pointer-events: none;
+    z-index: 2;
+    animation: none;
+}
+
+.confetti-piece {
+    position: absolute;
+    top: -5%;
+    border-radius: 1px;
+    opacity: 0.9;
+    animation-name: confetti-fall;
+    animation-timing-function: ease-in;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+@keyframes confetti-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.95;
     }
 
-    .thank-you-card h1{
-    font-size:36px;
+    85% {
+        opacity: 0.9;
     }
 
-    .thank-you-card p{
-    font-size:15px;
+    100% {
+        transform: translateY(420px) rotate(340deg);
+        opacity: 0;
+    }
+}
+
+/* ---------- STATUS ICON ---------- */
+.success-animation {
+    margin: 0 auto 22px;
+    width: 64px;
+    height: 64px;
+    position: relative;
+    z-index: 3;
+}
+
+.success-animation .circle {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+/* success — drawn checkmark */
+.success-animation.success .circle {
+    background: var(--success-soft);
+    animation: pop-in 0.4s ease 0.15s both;
+}
+
+@keyframes pop-in {
+    0% {
+        transform: scale(0.7);
+        opacity: 0;
     }
 
-    .thank-you-buttons{
-    flex-direction:column;
+    70% {
+        transform: scale(1.08);
+        opacity: 1;
     }
 
-    .home-btn,
-    .contact-btn{
-    width:100%;
+    100% {
+        transform: scale(1);
+    }
+}
+
+.checkmark {
+    width: 36px;
+    height: 36px;
+}
+
+.checkmark-circle {
+    stroke: var(--success);
+    stroke-width: 2;
+    stroke-dasharray: 158;
+    stroke-dashoffset: 158;
+    animation: draw-circle 0.5s 0.15s ease forwards;
+}
+
+.checkmark-check {
+    stroke: var(--success);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 36;
+    stroke-dashoffset: 36;
+    animation: draw-check 0.35s 0.6s ease forwards;
+}
+
+@keyframes draw-circle {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes draw-check {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* pending */
+.success-animation.pending .circle {
+    background: var(--amber-soft);
+    color: var(--amber);
+}
+
+.success-animation.pending .circle::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid var(--amber);
+    opacity: 0.5;
+    animation: ring 1.8s ease-out infinite;
+}
+
+@keyframes ring {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.55;
     }
 
-    .circle{
-    width:100px;
-    height:100px;
+    100% {
+        transform: scale(1.35);
+        opacity: 0;
+    }
+}
+
+.pending .status-icon {
+    font-size: 24px;
+}
+
+/* failed */
+.success-animation.failed .circle {
+    background: var(--danger-soft);
+    color: var(--danger);
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
     }
 
-    .checkmark{
-    width:60px;
-    height:60px;
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+/* ---------- TITLE / MESSAGE ---------- */
+.thank-you-card h1 {
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.25;
+    margin: 0 0 10px;
+    color: var(--navy);
+}
+
+.thank-you-card>p {
+    font-size: 14.5px;
+    color: var(--subtle);
+    line-height: 1.6;
+    margin: 0 auto 26px;
+    max-width: 360px;
+}
+
+/* ---------- BOOKING REFERENCE ---------- */
+.booking-confirmation-box {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    text-align: left;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.booking-confirmation-box:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.booking-label {
+    font-size: 11px;
+    color: var(--subtle);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+}
+
+.booking-value-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.booking-reference {
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+}
+
+.copy-btn {
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 7px;
+    padding: 5px 11px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.copy-btn:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+}
+
+.copy-btn:active {
+    transform: scale(0.95);
+}
+
+/* ---------- CONFIRMED DETAILS ---------- */
+.booking-details-box {
+    border-top: 1px dashed var(--line);
+    padding-top: 16px;
+    margin-bottom: 22px;
+    text-align: left;
+}
+
+.booking-detail {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    font-size: 13.5px;
+}
+
+.booking-detail span {
+    color: var(--subtle);
+}
+
+.booking-detail strong {
+    font-weight: 600;
+    color: var(--ink);
+}
+
+.confirmed-status {
+    color: var(--success);
+}
+
+/* ---------- INFO BOXES ---------- */
+.booking-info {
+    border-radius: 12px;
+    padding: 16px 18px;
+    text-align: left;
+    margin-bottom: 26px;
+}
+
+.booking-info strong {
+    display: block;
+    font-size: 13.5px;
+    margin-bottom: 4px;
+}
+
+.booking-info p {
+    font-size: 12.5px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.pending-info {
+    background: var(--amber-soft);
+}
+
+.pending-info strong {
+    color: #8A5A16;
+}
+
+.pending-info p {
+    color: #8A6A38;
+}
+
+.failed-info {
+    background: var(--danger-soft);
+}
+
+.failed-info strong {
+    color: #8C3229;
+}
+
+.failed-info p {
+    color: #8C4A42;
+}
+
+/* ---------- BUTTONS ---------- */
+.thank-you-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.thank-you-buttons .btn-tour:first-child {
+    border: none;
+    border-radius: 10px;
+    padding: 13px 24px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    background: var(--navy);
+    color: #fff;
+    transition: transform 0.12s ease, background 0.15s ease, box-shadow 0.12s ease;
+}
+
+.thank-you-buttons .btn-tour:first-child:hover {
+    background: #182a4d;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgba(14, 27, 51, 0.4);
+}
+
+.thank-you-buttons .btn-tour:active {
+    transform: translateY(0);
+}
+
+.thank-you-buttons .contact-btn:hover {
+    background: #dde8fd;
+    transform: translateY(-1px);
+}
+
+.thank-you-buttons .contact-btn:active {
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .thank-you-card,
+    .thank-you-card>*,
+    .checkmark-circle,
+    .checkmark-check,
+    .success-animation.success .circle,
+    .success-animation.pending .circle::after,
+    .success-animation.failed .circle,
+    .confetti-piece {
+        animation: none !important;
     }
 }

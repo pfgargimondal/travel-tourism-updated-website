@@ -2,9 +2,9 @@ export const FlightTicket = () => {
     // ---- Design tokens ----
     const colors = {
         ink: "#111827",
-        subtle: "#6b7280",
+        subtle: "#000",
         line: "#e5e7eb",
-        navy: "#0b2545",
+        navy: "var(--blue-secondary-color)",
         navySoft: "#13355e",
         paper: "#ffffff",
         mist: "#f7f8fa",
@@ -67,6 +67,11 @@ export const FlightTicket = () => {
         color: colors.ink,
     };
 
+    // Outer table used purely as the page/card wrapper so the whole
+    // document is table-based, while every inner "row" of content is
+    // also its own <table> so cell widths/alignment behave predictably.
+    const fullTable = { width: "100%", borderCollapse: "collapse", tableLayout: "fixed" };
+
     const section = { padding: "28px 32px" };
 
     const label = {
@@ -90,8 +95,8 @@ export const FlightTicket = () => {
         fontWeight: 600,
     };
 
-    const PlaneIcon = ({ size = 18, color = colors.accent }) => (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: "block" }}>
+    const PlaneIcon = ({ size = 30, color = colors.accent }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ display: "block", margin: "0 auto" }}>
             <path
                 d="M21 15.5v-2l-8-5V4.5a1.5 1.5 0 0 0-3 0v4l-8 5v2l8-2.5V17l-2.5 2v1.5l3.5-1 3.5 1V19l-2.5-2v-4.5l8 2.5Z"
                 fill={color}
@@ -101,271 +106,295 @@ export const FlightTicket = () => {
 
     return (
         <div style={card}>
-            {/* HEADER */}
-            <div
-                style={{
-                    background: "#fff",
-                    padding: "24px 32px",
-                    color: "#000",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderBottom: `1px solid ${colors.line}`
-                }}
-            >
-                <div>
-                    <div style={{ fontSize: "12px", letterSpacing: "0.06em", fontWeight: 600, color: "#000", marginBottom: "4px" }}>
-                        E-TICKET
-                    </div>
-                    <div style={{ fontSize: "20px", fontWeight: 600 }}>IndiGo</div>
-                </div>
+            <table style={fullTable} cellPadding={0} cellSpacing={0}>
+                <tbody>
+                    {/* HEADER */}
+                    <tr>
+                        <td style={{ padding: "24px 32px", color: "#000", borderBottom: `1px solid ${colors.line}` }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ width: "33%", textAlign: "left", verticalAlign: "middle" }}>
+                                            <div style={{ fontSize: "12px", letterSpacing: "0.06em", fontWeight: 600, color: "#000", marginBottom: "4px" }}>
+                                                E-TICKET
+                                            </div>
+                                            <div style={{ fontSize: "20px", fontWeight: 600 }}>IndiGo</div>
+                                        </td>
+                                        <td style={{ width: "34%", textAlign: "center", verticalAlign: "middle" }} className="agency-logo">
+                                            <img src="/images/COlgfJcjQfjCUywmAAiIwIAxQnnk1YYYP4j3NGUu.png" style={{ height: "2rem" }} alt="" />
+                                        </td>
+                                        <td style={{ width: "33%", textAlign: "right", verticalAlign: "middle" }}>
+                                            <div style={{ fontSize: "12px", fontWeight: 600, color: "#000", marginBottom: "2px" }}>PNR</div>
+                                            <div style={{ fontFamily: mono, fontSize: "18px", fontWeight: 600, letterSpacing: "0.06em" }}>
+                                                PYK7FZ
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
 
-                <div className="agency-logo">
-                    <img src="/images/COlgfJcjQfjCUywmAAiIwIAxQnnk1YYYP4j3NGUu.png" style={{ height: "2rem" }} alt="" />
-                </div>
+                    {/* AGENCY + BOOKING META */}
+                    <tr>
+                        <td style={{ ...section, paddingTop: "20px", paddingBottom: "20px", borderBottom: `1px solid ${colors.line}` }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ verticalAlign: "top", textAlign: "left" }}>
+                                            <div style={value}><b>My Cheap Tickets</b></div>
+                                            <div style={{ fontSize: "13px", color: "#000", marginTop: "2px" }}>
+                                                15A, Kamal Darshan, Plot No. 188, Road No. 28A, SION EAST, MUMBAI (INDIA)
+                                            </div>
+                                        </td>
 
-                <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "12px", fontWeight: 600, color: "#000", marginBottom: "2px" }}>PNR</div>
-                    <div style={{ fontFamily: mono, fontSize: "18px", fontWeight: 600, letterSpacing: "0.06em" }}>
-                        PYK7FZ
-                    </div>
-                </div>
-            </div>
+                                        <td style={{ width: "1%", whiteSpace: "nowrap", verticalAlign: "top" }}>
+                                            <table style={{ borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                                <tbody>
+                                                    <tr>
+                                                        <td style={{ padding: "0 14px 0 0", verticalAlign: "top" }}>
+                                                            <div style={label}><b>BOOKING ID</b></div>
+                                                            <div style={{ ...value, fontFamily: mono }}>FLYB7LFV3</div>
+                                                        </td>
+                                                        <td style={{ padding: "0 14px", verticalAlign: "top" }}>
+                                                            <div style={label}><b>ISSUED</b></div>
+                                                            <div style={value}>26 Aug 2026</div>
+                                                        </td>
+                                                        <td style={{ padding: "0 0 0 14px", verticalAlign: "top" }}>
+                                                            <div style={label}><b>STATUS</b></div>
+                                                            <span style={pill}>
+                                                                <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: colors.good }} />
+                                                                Confirmed
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
 
-            {/* AGENCY + BOOKING META */}
-            <div
-                style={{
-                    ...section,
-                    paddingTop: "20px",
-                    paddingBottom: "20px",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: "24px",
-                    borderBottom: `1px solid ${colors.line}`,
-                    flexWrap: "wrap",
-                }}
-            >
-                <div>
-                    <div style={value}>My Cheap Tickets</div>
-                    <div style={{ fontSize: "13px", color: colors.subtle, marginTop: "2px" }}>
-                        15A, Kamal Darshan, Plot No. 188, <br /> Road No. 28A, SION EAST, MUMBAI (INDIA)
-                    </div>
-                </div>
-                <div style={{ display: "flex", gap: "28px" }}>
-                    <div>
-                        <div style={label}>BOOKING ID</div>
-                        <div style={{ ...value, fontFamily: mono }}>FLYB7LFV3</div>
-                    </div>
-                    <div>
-                        <div style={label}>ISSUED</div>
-                        <div style={value}>26 Aug 2026</div>
-                    </div>
-                    <div>
-                        <div style={label}>STATUS</div>
-                        <span style={pill}>
-                            <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: colors.good }} />
-                            Confirmed
-                        </span>
-                    </div>
-                </div>
-            </div>
+                    {/* ITINERARY */}
+                    <tr>
+                        <td style={section}>
+                            <div style={{ ...label, marginBottom: "16px" }}><b>ITINERARY</b></div>
 
-            {/* ITINERARY */}
-            <div style={section}>
-                <div style={{ ...label, marginBottom: "16px" }}>ITINERARY</div>
+                            <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "0 6px" }} cellPadding={0} cellSpacing={0}>
+                                <tbody>
+                                    {segments.map((seg, i) =>
+                                        seg.layover ? (
+                                            <tr key={i}>
+                                                <td colSpan={3} style={{ padding: "8px 0" }}>
+                                                    <table style={{ width: "100%", borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style={{ borderTop: `1px dashed ${colors.line}`, width: "40%" }} />
+                                                                <td
+                                                                    style={{
+                                                                        textAlign: "center",
+                                                                        whiteSpace: "nowrap",
+                                                                        padding: "0 10px",
+                                                                        fontSize: "12px",
+                                                                        color: colors.subtle,
+                                                                    }}
+                                                                >
+                                                                    {seg.layover}
+                                                                </td>
+                                                                <td style={{ borderTop: `1px dashed ${colors.line}`, width: "40%" }} />
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            <tr key={i} style={{ background: colors.mist }}>
+                                                <td style={{ width: "88px", padding: "16px 0 16px 16px", borderRadius: "12px 0 0 12px", verticalAlign: "middle" }}>
+                                                    <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>{seg.from.code}</div>
+                                                    <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "4px" }}>{seg.from.city}</div>
+                                                    <div style={{ fontSize: "13px", fontWeight: 500, marginTop: "6px" }}>{seg.from.time}</div>
+                                                    <div style={{ fontSize: "11px", color: colors.subtle }}>{seg.from.date} · T{seg.from.terminal}</div>
+                                                </td>
 
-                {segments.map((seg, i) =>
-                    seg.layover ? (
-                        <div
-                            key={i}
+                                                <td style={{ padding: "16px", textAlign: "center", verticalAlign: "middle" }}>
+                                                    <div style={{ fontSize: "12px", color: colors.subtle, marginBottom: "6px" }}>{seg.duration}</div>
+                                                    <table style={{ width: "100%", borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td style={{ borderTop: `1px solid ${colors.line}` }} />
+                                                                <td style={{ width: "24px", padding: "0 6px" }}>
+                                                                    <PlaneIcon />
+                                                                </td>
+                                                                <td style={{ borderTop: `1px solid ${colors.line}` }} />
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                    <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "6px" }}>
+                                                        {seg.flightNo} · {seg.aircraft}
+                                                    </div>
+                                                    <div style={{ fontSize: "11px", color: colors.accent, marginTop: "2px" }}>{seg.fareClass}</div>
+                                                </td>
+
+                                                <td style={{ width: "88px", padding: "16px 16px 16px 0", borderRadius: "0 12px 12px 0", textAlign: "right", verticalAlign: "middle" }}>
+                                                    <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>{seg.to.code}</div>
+                                                    <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "4px" }}>{seg.to.city}</div>
+                                                    <div style={{ fontSize: "13px", fontWeight: 500, marginTop: "6px" }}>{seg.to.time}</div>
+                                                    <div style={{ fontSize: "11px", color: colors.subtle }}>{seg.to.date} · T{seg.to.terminal}</div>
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {/* PERFORATED DIVIDER */}
+                    <tr>
+                        <td style={{ position: "relative", height: "0", padding: 0 }}>
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    left: "-10px",
+                                    top: "-10px",
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: "50%",
+                                    background: "var(--page-bg, #fff)",
+                                    border: `1px solid ${colors.line}`,
+                                }}
+                            />
+                            <div
+                                style={{
+                                    position: "absolute",
+                                    right: "-10px",
+                                    top: "-10px",
+                                    width: "20px",
+                                    height: "20px",
+                                    borderRadius: "50%",
+                                    background: "var(--page-bg, #fff)",
+                                    border: `1px solid ${colors.line}`,
+                                }}
+                            />
+                            <div style={{ borderTop: `1px dashed ${colors.line}`, margin: "0 24px" }} />
+                        </td>
+                    </tr>
+
+                    {/* PASSENGERS */}
+                    <tr>
+                        <td style={section}>
+                            <div style={{ ...label, marginBottom: "12px" }}><b>PASSENGERS</b></div>
+                            <table width="100%" style={{ borderCollapse: "collapse", fontSize: "13px" }}>
+                                <thead>
+                                    <tr style={{ borderBottom: `1px solid ${colors.line}` }}>
+                                        {["Name", "Ticket No.", "Seat", "Meal", "Baggage"].map((h) => (
+                                            <th
+                                                key={h}
+                                                style={{
+                                                    textAlign: "left",
+                                                    padding: "0 0 8px",
+                                                    fontSize: "11px",
+                                                    color: colors.subtle,
+                                                    fontWeight: 600,
+                                                    letterSpacing: "0.03em",
+                                                }}
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {passengers.map((p, i) => (
+                                        <tr key={i} style={{ borderBottom: i === passengers.length - 1 ? "none" : `1px solid ${colors.line}` }}>
+                                            <td style={{ padding: "10px 0", fontWeight: 500 }}>{p.name}</td>
+                                            <td style={{ padding: "10px 0", fontFamily: mono, color: colors.subtle }}>{p.ticketNo}</td>
+                                            <td style={{ padding: "10px 0" }}>{p.seat}</td>
+                                            <td style={{ padding: "10px 0" }}>{p.meal}</td>
+                                            <td style={{ padding: "10px 0", color: colors.subtle }}>{p.bag}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {/* FARE SUMMARY */}
+                    <tr>
+                        <td style={{ ...section, paddingTop: 0 }}>
+                            <div style={{ ...label, marginBottom: "12px" }}>FARE SUMMARY</div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }} cellPadding={0} cellSpacing={0}>
+                                <tbody>
+                                    <tr>
+                                        <td style={{ padding: "6px 0", color: colors.subtle, textAlign: "left" }}>Base fare</td>
+                                        <td style={{ padding: "6px 0", color: colors.subtle, textAlign: "right" }}>₹22,017</td>
+                                    </tr>
+                                    <tr>
+                                        <td style={{ padding: "6px 0", color: colors.subtle, textAlign: "left" }}>Taxes & fees</td>
+                                        <td style={{ padding: "6px 0", color: colors.subtle, textAlign: "right" }}>₹7,983</td>
+                                    </tr>
+                                    <tr>
+                                        <td colSpan={2} style={{ paddingTop: "10px" }}>
+                                            <table style={{ width: "100%", borderCollapse: "collapse", background: colors.navy, borderRadius: "10px" }} cellPadding={0} cellSpacing={0}>
+                                                <tbody>
+                                                    <tr>
+                                                        <td style={{ padding: "14px 16px", color: "#fff", fontSize: "13px", fontWeight: 500, textAlign: "left" }}>
+                                                            Total fare
+                                                        </td>
+                                                        <td style={{ padding: "14px 16px", color: "#fff", fontSize: "20px", fontWeight: 700, textAlign: "right" }}>
+                                                            ₹30,000
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {/* IMPORTANT INFORMATION */}
+                    <tr>
+                        <td style={{ ...section, paddingTop: 0 }}>
+                            <div style={{ ...label, marginBottom: "10px" }}><b>GOOD TO KNOW</b></div>
+                            <table style={{ width: "100%", borderCollapse: "collapse" }} cellPadding={0} cellSpacing={0}>
+                                <tbody>
+                                    {terms.map((t, i) => (
+                                        <tr key={i}>
+                                            <td style={{ width: "18px", verticalAlign: "top", padding: "6px 0", fontSize: "12.5px", color: colors.accent, fontWeight: 700 }}>
+                                                ·
+                                            </td>
+                                            <td style={{ padding: "6px 0", fontSize: "12.5px", color: colors.subtle, lineHeight: 1.5 }}>
+                                                {t}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    {/* FOOTER */}
+                    <tr>
+                        <td
                             style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "10px",
-                                margin: "14px 0",
+                                padding: "16px 32px",
+                                borderTop: `1px solid ${colors.line}`,
+                                background: colors.mist,
+                                textAlign: "center",
                                 fontSize: "12px",
                                 color: colors.subtle,
                             }}
                         >
-                            <div style={{ flex: 1, borderTop: `1px dashed ${colors.line}` }} />
-                            <span>{seg.layover}</span>
-                            <div style={{ flex: 1, borderTop: `1px dashed ${colors.line}` }} />
-                        </div>
-                    ) : (
-                        <div
-                            key={i}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: "18px",
-                                padding: "16px",
-                                background: colors.mist,
-                                borderRadius: "12px",
-                                marginBottom: "6px",
-                            }}
-                        >
-                            <div style={{ width: "88px" }}>
-                                <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>{seg.from.code}</div>
-                                <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "4px" }}>{seg.from.city}</div>
-                                <div style={{ fontSize: "13px", fontWeight: 500, marginTop: "6px" }}>{seg.from.time}</div>
-                                <div style={{ fontSize: "11px", color: colors.subtle }}>{seg.from.date} · T{seg.from.terminal}</div>
-                            </div>
-
-                            <div style={{ flex: 1, textAlign: "center" }}>
-                                <div style={{ fontSize: "12px", color: colors.subtle, marginBottom: "6px" }}>{seg.duration}</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                    <div style={{ flex: 1, height: "1px", background: colors.line }} />
-                                    <PlaneIcon />
-                                    <div style={{ flex: 1, height: "1px", background: colors.line }} />
-                                </div>
-                                <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "6px" }}>
-                                    {seg.flightNo} · {seg.aircraft}
-                                </div>
-                                <div style={{ fontSize: "11px", color: colors.accent, marginTop: "2px" }}>{seg.fareClass}</div>
-                            </div>
-
-                            <div style={{ width: "88px", textAlign: "right" }}>
-                                <div style={{ fontSize: "24px", fontWeight: 700, lineHeight: 1 }}>{seg.to.code}</div>
-                                <div style={{ fontSize: "12px", color: colors.subtle, marginTop: "4px" }}>{seg.to.city}</div>
-                                <div style={{ fontSize: "13px", fontWeight: 500, marginTop: "6px" }}>{seg.to.time}</div>
-                                <div style={{ fontSize: "11px", color: colors.subtle }}>{seg.to.date} · T{seg.to.terminal}</div>
-                            </div>
-                        </div>
-                    )
-                )}
-            </div>
-
-            {/* PERFORATED DIVIDER */}
-            <div style={{ position: "relative", height: "0" }}>
-                <div
-                    style={{
-                        position: "absolute",
-                        left: "-10px",
-                        top: "-10px",
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        background: "var(--page-bg, #fff)",
-                        border: `1px solid ${colors.line}`,
-                    }}
-                />
-                <div
-                    style={{
-                        position: "absolute",
-                        right: "-10px",
-                        top: "-10px",
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        background: "var(--page-bg, #fff)",
-                        border: `1px solid ${colors.line}`,
-                    }}
-                />
-            </div>
-            <div style={{ borderTop: `1px dashed ${colors.line}`, margin: "0 24px" }} />
-
-            {/* PASSENGERS */}
-            <div style={section}>
-                <div style={{ ...label, marginBottom: "12px" }}>PASSENGERS</div>
-                <table width="100%" style={{ borderCollapse: "collapse", fontSize: "13px" }}>
-                    <thead>
-                        <tr style={{ borderBottom: `1px solid ${colors.line}` }}>
-                            {["Name", "Ticket No.", "Seat", "Meal", "Baggage"].map((h) => (
-                                <th
-                                    key={h}
-                                    style={{
-                                        textAlign: "left",
-                                        padding: "0 0 8px",
-                                        fontSize: "11px",
-                                        color: colors.subtle,
-                                        fontWeight: 600,
-                                        letterSpacing: "0.03em",
-                                    }}
-                                >
-                                    {h}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {passengers.map((p, i) => (
-                            <tr key={i} style={{ borderBottom: i === passengers.length - 1 ? "none" : `1px solid ${colors.line}` }}>
-                                <td style={{ padding: "10px 0", fontWeight: 500 }}>{p.name}</td>
-                                <td style={{ padding: "10px 0", fontFamily: mono, color: colors.subtle }}>{p.ticketNo}</td>
-                                <td style={{ padding: "10px 0" }}>{p.seat}</td>
-                                <td style={{ padding: "10px 0" }}>{p.meal}</td>
-                                <td style={{ padding: "10px 0", color: colors.subtle }}>{p.bag}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* FARE SUMMARY */}
-            <div style={{ ...section, paddingTop: 0 }}>
-                <div style={{ ...label, marginBottom: "12px" }}>FARE SUMMARY</div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", padding: "6px 0", color: colors.subtle }}>
-                    <span>Base fare</span>
-                    <span>₹22,017</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", padding: "6px 0", color: colors.subtle }}>
-                    <span>Taxes & fees</span>
-                    <span>₹7,983</span>
-                </div>
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginTop: "10px",
-                        padding: "14px 16px",
-                        borderRadius: "10px",
-                        background: colors.navy,
-                        color: "#fff",
-                    }}
-                >
-                    <span style={{ fontSize: "13px", fontWeight: 500 }}>Total fare</span>
-                    <span style={{ fontSize: "20px", fontWeight: 700 }}>₹30,000</span>
-                </div>
-            </div>
-
-            {/* IMPORTANT INFORMATION */}
-            <div style={{ ...section, paddingTop: 0 }}>
-                <div style={{ ...label, marginBottom: "10px" }}>GOOD TO KNOW</div>
-                <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
-                    {terms.map((t, i) => (
-                        <li
-                            key={i}
-                            style={{
-                                display: "flex",
-                                gap: "10px",
-                                fontSize: "12.5px",
-                                color: colors.subtle,
-                                padding: "6px 0",
-                                lineHeight: 1.5,
-                            }}
-                        >
-                            <span style={{ color: colors.accent, fontWeight: 700 }}>·</span>
-                            <span>{t}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
-
-            {/* FOOTER */}
-            <div
-                style={{
-                    padding: "16px 32px",
-                    borderTop: `1px solid ${colors.line}`,
-                    background: colors.mist,
-                    textAlign: "center",
-                    fontSize: "12px",
-                    color: colors.subtle,
-                }}
-            >
-                Need help with this booking? Contact{" "}
-                <span style={{ color: colors.accent, fontWeight: 500 }}>support@skylinetravel.example</span> or call +91 98765 43210
-            </div>
+                            Need help with this booking? Contact{" "}
+                            <span style={{ color: colors.accent, fontWeight: 500 }}>support@mycheaptickets.com</span> or call +91 98765 43210
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     );
 };

@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import "./FlightBookingPending.css";
+
+const POLL_INTERVAL_SECONDS = 30;
 
 export const FlightBookingPending = () => {
   const location = useLocation();
@@ -70,6 +73,53 @@ export const FlightBookingPending = () => {
   }
 
 
+  // =====================================================
+  // COPY BOOKING REFERENCE
+  // =====================================================
+
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyReference = async () => {
+    if (!bookingReference) return;
+
+    try {
+      await navigator.clipboard.writeText(bookingReference);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // clipboard access denied — fail silently, reference is still visible on screen
+    }
+  };
+
+
+  // =====================================================
+  // LIVE STATUS COUNTDOWN
+  // (purely a UI cue — wire this up to your real status-poll
+  // call when one is available)
+  // =====================================================
+
+  const [secondsToNextCheck, setSecondsToNextCheck] = useState(
+    POLL_INTERVAL_SECONDS
+  );
+
+  useEffect(() => {
+    if (isTicketingFailed) return;
+
+    if (secondsToNextCheck <= 0) {
+      // TODO: replace with the real booking-status polling call
+      setSecondsToNextCheck(POLL_INTERVAL_SECONDS);
+      return;
+    }
+
+    const timer = setTimeout(
+      () => setSecondsToNextCheck((s) => s - 1),
+      1000
+    );
+
+    return () => clearTimeout(timer);
+  }, [secondsToNextCheck, isTicketingFailed]);
+
+
   return (
     <div className="booking-status-page">
 
@@ -105,6 +155,28 @@ export const FlightBookingPending = () => {
 
 
         {/* ================================================= */}
+        {/* LIVE STATUS STRIP */}
+        {/* ================================================= */}
+
+        <div className="status-strip">
+          <div className="status-track">
+            <div
+              className={`status-track-fill ${
+                isTicketingFailed ? "failed" : ""
+              }`}
+            />
+          </div>
+          <div className="status-strip-labels">
+            <span className="done">Booked</span>
+            <span className={isTicketingFailed ? "failed" : "active"}>
+              {isTicketingFailed ? "Not confirmed" : "Confirming"}
+            </span>
+            <span className="upcoming">Confirmed</span>
+          </div>
+        </div>
+
+
+        {/* ================================================= */}
         {/* BOOKING REFERENCE */}
         {/* ================================================= */}
 
@@ -113,7 +185,18 @@ export const FlightBookingPending = () => {
 
             <span>Booking Reference</span>
 
-            <strong>{bookingReference}</strong>
+            <div className="reference-value-row">
+              <strong>{bookingReference}</strong>
+
+              <button
+                type="button"
+                className="copy-btn"
+                onClick={handleCopyReference}
+                aria-label="Copy booking reference"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
 
           </div>
         )}
@@ -179,6 +262,11 @@ export const FlightBookingPending = () => {
               and provide your booking reference.
             </p>
 
+            <div className="poll-indicator">
+              <span className="poll-dot" />
+              Rechecking status in {secondsToNextCheck}s
+            </div>
+
           </div>
         )}
 
@@ -199,7 +287,7 @@ export const FlightBookingPending = () => {
 
           <Link
             to="/"
-            className="btn btn-home"
+            className="btn btn-tour"
           >
             Back To Home
           </Link>

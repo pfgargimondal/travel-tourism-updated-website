@@ -3,7 +3,15 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import http from "../../http";
 import Loader from "../../component/Loader/Loader";
+import { Navigation, Scrollbar, A11y } from 'swiper/modules';
+
+import { Swiper, SwiperSlide } from 'swiper/react';
+
 import "./HotelDetails.css";
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/scrollbar';
 
 export const HotelDetails = () => {
   const { slug } = useParams();
@@ -929,19 +937,32 @@ export const HotelDetails = () => {
 
                             {/* Thumbnails */}
                             <div className="gallery-thumbs">
-                              {hotelDetails?.hotel_images?.map((hotelImage, index) => (
-                                <img
-                                  key={index}
-                                  src={hotelImage.image_url}
-                                  alt={`Hotel thumbnail ${index + 1}`}
-                                  onClick={() => setSelectedImage(hotelImage.image_url)}
-                                  className={
-                                    selectedImage === hotelImage.image_url
-                                      ? "active-thumb"
-                                      : ""
-                                  }
-                                />
-                              ))}
+                              <Swiper
+                                // install Swiper modules
+                                modules={[Navigation, Scrollbar, A11y]}
+                                spaceBetween={50}
+                                slidesPerView={12}
+                                navigation
+                                scrollbar={{ draggable: true }}
+                                onSwiper={(swiper) => console.log(swiper)}
+                                onSlideChange={() => console.log('slide change')}
+                              >
+                                {hotelDetails?.hotel_images?.map((hotelImage, index) => (
+                                  <SwiperSlide>
+                                    <img
+                                      key={index}
+                                      src={hotelImage.image_url}
+                                      alt={`Hotel thumbnail ${index + 1}`}
+                                      onClick={() => setSelectedImage(hotelImage.image_url)}
+                                      className={
+                                        selectedImage === hotelImage.image_url
+                                          ? "active-thumb"
+                                          : ""
+                                      }
+                                    />
+                                  </SwiperSlide>
+                                ))}                    
+                              </Swiper>
                             </div>
                           </div>
                         )}
@@ -954,15 +975,6 @@ export const HotelDetails = () => {
                           <div className="diuejfmjsdf d-flex justify-content-between align-items-center mb-3">
                             <h5 className="mb-3">User Rating & Reviews</h5>
                             <span className="verified">✔ Verified Reviews</span>
-                          </div>
-
-                          <div className="review-tabs mb-3">
-                            <span className="active">Everyone</span>
-                            <span>Group</span>
-                            <span>Couple</span>
-                            <span>Solo</span>
-                            <span>Business</span>
-                            <span>Family</span>
                           </div>
 
                           <div className="row">

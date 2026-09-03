@@ -25,8 +25,8 @@ function App() {
   const excludeNavs = pathName.includes("/flight-ticket");
 
   useEffect(() => {
-    const isHeaderNewIncluded = ["/thank-you", "/user-profile", "/account-information", "/user-booking", "/change-password", "/wishlist"].some(path => pathName.includes(path));
-    const isHeaderBlackTextIncluded = ["/hotel-booking", "/hotel-payment", "/hotel-details", "/flight-details", "/flight-payment", "/flight-booking-pending"].some(path => pathName.includes(path));
+    const isHeaderNewIncluded = ["/thank-you", "/flight-booking-pending", "/user-profile", "/account-information", "/user-booking", "/change-password", "/wishlist"].some(path => pathName.includes(path));
+    const isHeaderBlackTextIncluded = ["/hotel-booking", "/hotel-payment", "/hotel-details", "/flight-details", "/flight-payment"].some(path => pathName.includes(path));
     const isHeaderStickyIncluded = ["/flight-filter", "/hotel-filter"].some(path => pathName.includes(path));
 
     isHeaderNewIncluded ? setHeaderNew(true) : setHeaderNew(false);
