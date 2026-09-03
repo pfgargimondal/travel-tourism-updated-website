@@ -3585,11 +3585,11 @@ console.log(selectedSeats, 'selectedSeats');
                                           {passengerList.map((passenger, index) => {
 
                                               const passengerName =
-                                                  `${passenger?.First_Name || ""} ${
-                                                      passenger?.Last_Name || ""
+                                                  `${passenger?.firstName || ""} ${
+                                                      passenger?.lastName || ""
                                                   }`.trim() ||
                                                   `Passenger ${index + 1}`;
-
+                                              // eslint-disable-next-line
                                               const passengerMeal =
                                                   selectedMeals?.[index];
 
@@ -3607,12 +3607,11 @@ console.log(selectedSeats, 'selectedSeats');
                                                       }
                                                   >
                                                       <span className="pax-label">
-                                                          {passengerName} -
+                                                          {passengerName} 
                                                       </span>
-
-                                                      <span className="pax-seat">
+                                                      {/* <span className="pax-seat">
                                                           {passengerMeal?.SSR_TypeName || "--"}
-                                                      </span>
+                                                      </span> */}
                                                   </button>
                                               );
                                           })}
@@ -3712,16 +3711,6 @@ console.log(selectedSeats, 'selectedSeats');
                                           })
                                           .map((meal, index) => {
 
-                                              /*
-                                              * IMPORTANT:
-                                              * selectedMeals is an object:
-                                              *
-                                              * {
-                                              *   0: mealForPax1,
-                                              *   1: mealForPax2
-                                              * }
-                                              */
-
                                               const activePaxId =
                                                   activeMealPassenger !== null
                                                       ? activeMealPassenger + 1
@@ -3776,8 +3765,8 @@ console.log(selectedSeats, 'selectedSeats');
                                                           Number(passengerIndex)
                                                       ];
                                                   const passengerName =
-                                                      `${passenger?.First_Name || ""} ${
-                                                          passenger?.Last_Name || ""
+                                                      `${passenger?.firstName || ""} ${
+                                                          passenger?.lastName || ""
                                                       }`.trim() ||
                                                       `Passenger ${
                                                           Number(passengerIndex) + 1
@@ -3789,7 +3778,7 @@ console.log(selectedSeats, 'selectedSeats');
                                                       >
                                                           <div>
                                                               <small className="text-muted">
-                                                                  {passengerName}
+                                                                  Passenger {Number(passengerIndex) + 1} - {passengerName}
                                                               </small>
                                                               <p className="mb-0">
                                                                   {getMealName(meal)}
@@ -3899,10 +3888,8 @@ console.log(selectedSeats, 'selectedSeats');
                     {/* =========================================================
                           MEAL CONTINUE
                       ========================================================= */}
-                      {activeSeatMealTab === "meals" && (
+                      {/* {activeSeatMealTab === "meals" && (
                           <div className="d-flex align-items-center gap-3 mt-3">
-
-                              {/* SKIP MEALS */}
                               <button
                                   type="button"
                                   className="btn btn-link text-muted text-decoration-none"
@@ -3910,8 +3897,6 @@ console.log(selectedSeats, 'selectedSeats');
                               >
                                   Skip Meals
                               </button>
-
-                              {/* CONTINUE */}
                               <button
                                   type="button"
                                   className="btn btn-primary rounded-pill px-4"
@@ -3921,7 +3906,7 @@ console.log(selectedSeats, 'selectedSeats');
                               </button>
 
                           </div>
-                      )}
+                      )} */}
                   </>
                 )}
               </div>
