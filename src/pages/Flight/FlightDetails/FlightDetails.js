@@ -2000,6 +2000,7 @@ console.log("Recommended Seat:", recommendedSeats);
                 response?.data?.Booking_Id ||
                 response?.data?.BookingId ||
                 response?.data?.Booking_Reference ||
+                response?.data?.booking_reference ||
                 response?.data?.BookingReference || "";
 
         if (!bookingReference) {
@@ -2009,7 +2010,7 @@ console.log("Recommended Seat:", recommendedSeats);
         const ticketingType = "0";
 
         const ticketingPayload = {
-            Booking_RefNo: bookingReference,
+            BookingReference: bookingReference,
             Ticketing_Type: ticketingType,
         };
 
