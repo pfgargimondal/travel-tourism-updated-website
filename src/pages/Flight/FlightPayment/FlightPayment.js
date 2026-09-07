@@ -31,6 +31,7 @@ export const FlightPayment = () => {
     seatCharges = 0,
     mealCharges = 0,
     extraBaggageCharges = 0,
+    extraAddOnCharges = 0,
     otherCharges = 0,
     totallAmountt = 0,
     cabinClassName = "",
@@ -1553,13 +1554,21 @@ export const FlightPayment = () => {
 
                       <p className="mb-0">{formatAmount(mealCharges)}</p>
                     </div>
-                  )}
+                  )} 
 
                   {extraBaggageCharges > 0 && (
                     <div className="price-row">
                       <span>Extra Baggage</span>
 
                       <p className="mb-0">{formatAmount(extraBaggageCharges)}</p>
+                    </div>
+                  )}
+
+                  {extraAddOnCharges > 0 && (
+                    <div className="price-row">
+                      <span>Extra Add-On</span>
+
+                      <p className="mb-0">{formatAmount(extraAddOnCharges)}</p>
                     </div>
                   )}
 

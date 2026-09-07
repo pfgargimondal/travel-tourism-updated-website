@@ -76,10 +76,11 @@ export const FlightDetails = () => {
 
   const [selectedMeals, setSelectedMeals] = useState({});
   const [activeMealFilter, setActiveMealFilter] = useState("all");
-  const [activeMealPassenger, setActiveMealPassenger] = useState(null);
+  const [activeMealPassenger, setActiveMealPassenger] = useState(0);
 
   const [showSeatRecommendationModal, setShowSeatRecommendationModal] =
     useState(false);
+  const [selectedExtraAddOns, setSelectedExtraAddOns] = useState([]);
   // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
   // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
 
@@ -1150,18 +1151,18 @@ console.log("Recommended Seat:", recommendedSeats);
 
   const totalDuration = `${hours}h ${minutes}m`;
 
-  const excludedTypes = ["SEAT", "COMPLIMENTORY_MEALS", "MEALS"];
+  const baggageTypes = ["ADDITIONALBAGGAGE", "BAGGAGE"];
 
   const baggageList =
     ssrData?.[0]?.SSRDetails?.filter(
-      (item) => !excludedTypes.includes(item.SSR_TypeName),
+      (item) => baggageTypes.includes(item.SSR_TypeName),
     ) || [];
+
 
   const hasMeal = Array.isArray(mealsList) && mealsList.length > 0;
 
   const hasSeat = Array.isArray(seatMap) && seatMap.length > 0;
 
-  const hasSeatOrMeal = hasSeat || hasMeal;
 
   const handleSelectSSR = (bag) => {
     if (!selectedPassenger) {
@@ -1285,48 +1286,6 @@ console.log("Recommended Seat:", recommendedSeats);
     0,
   );
 
-  const handleMealSelect = (meal) => {
-    if (!meal) return;
-    let passengerIndex;
-    // If a passenger tab is selected,
-    // keep selecting/replacing meals for that passenger
-    if (activeMealPassenger !== null) {
-        passengerIndex = activeMealPassenger;
-    } else {
-        // No tab selected → automatically assign next passenger
-        const totalPassengers =
-            Number(adultCount || 0) +
-            Number(childCount || 0);
-
-        passengerIndex = null;
-
-        for (let i = 0; i < totalPassengers; i++) {
-            if (!selectedMeals?.[i]) {
-                passengerIndex = i;
-                break;
-            }
-        }
-
-        if (passengerIndex === null) {
-            return;
-        }
-    }
-
-    setSelectedMeals((prev) => ({
-        ...prev,
-        [passengerIndex]: {
-            ...meal,
-            paxId: passengerIndex + 1,
-            paxType:
-                passengerIndex < Number(adultCount || 0)
-                    ? 0
-                    : 1,
-        },
-    }));
-  };
-
-  console.log(selectedMeals, 'selectedMeals'); 
-
   const handleMealRemove = (passengerIndex) => {
     setSelectedMeals((prev) => {
       const next = { ...prev };
@@ -1442,27 +1401,93 @@ console.log("Recommended Seat:", recommendedSeats);
   ];
 
   const handleSeatMealContinue = () => {
+    // =====================================================
+    // SEATS
+    // =====================================================
     if (activeSeatMealTab === "seats") {
-      // Seat validation
-      if (!isSeatSelectionComplete) {
-        return;
-      }
+        // Seat validation
+        if (!isSeatSelectionComplete) {
+            return;
+        }
 
-      if (hasMeal) {
-        // Go to meal tab
-        setActiveSeatMealTab("meals");
-      } else {
-        // No meal → open booking modal
+        if (hasMeal) {
+            // Seats → Meals
+            setActiveSeatMealTab("meals");
+        } else if (hasExtraAddOn) {
+            // Seats → Extra Add-ons
+            setActiveSeatMealTab("extraAddOns");
+        } else {
+            // No meals / no extra add-ons → Booking
+            setShowSeatMealSection(true);
+            setFlightBookingModal(true);
+        }
+    }
+
+    // =====================================================
+    // MEALS
+    // =====================================================
+    if (activeSeatMealTab === "meals") {
+        if (hasExtraAddOn) {
+            // Meals → Extra Add-ons
+            setActiveSeatMealTab("extraAddOns");
+        } else {
+            // No extra add-ons → Booking
+            setShowSeatMealSection(true);
+            setFlightBookingModal(true);
+        }
+    }
+
+    // =====================================================
+    // EXTRA ADD-ONS
+    // =====================================================
+    if (activeSeatMealTab === "extraAddOns") {
+        // Extra Add-ons → Booking
         setShowSeatMealSection(true);
         setFlightBookingModal(true);
-      }
+    }
+  };
+
+
+  const getExtraAddOnPrice = (addOn) => {
+    return Number(
+      addOn?.Total_Amount ??
+        addOn?.Amount ??
+        addOn?.Price ??
+        0
+    );
+  };
+
+  const extraAddOnCharges = selectedExtraAddOns.reduce(
+    (total, addOn) => total + getExtraAddOnPrice(addOn),
+    0
+  );
+
+  const handleExtraAddOnSelect = (addOn) => {
+    if (!addOn?.SSR_Key) {
+        return;
     }
 
-    if (activeSeatMealTab === "meals") {
-      // Meal completed → open booking modal
-      setShowSeatMealSection(true);
-      setFlightBookingModal(true);
-    }
+    setSelectedExtraAddOns((prev) => {
+        const alreadySelected = prev.some(
+            (item) => item?.SSR_Key === addOn?.SSR_Key
+        );
+
+        if (alreadySelected) {
+            // Remove if clicked again
+            return prev.filter(
+                (item) => item?.SSR_Key !== addOn?.SSR_Key
+            );
+        }
+
+        // Add
+        return [...prev, addOn];
+    });
+  };
+
+  const handleExtraAddOnSkip = () => {
+    // Skip extra add-ons → Booking
+    setShowSeatMealSection(true);
+    setFlightBookingModal(true);
   };
 
   const formatDepartureDateTime = (dateTime) => {
@@ -1558,7 +1583,46 @@ console.log("Recommended Seat:", recommendedSeats);
     0
   );
 
+  useEffect(() => {
+    if (activeSeatMealTab === "meals" && passengerList?.length > 0) {
+        setActiveMealPassenger(0);
+    }
+  }, [activeSeatMealTab, passengerList?.length]);
+
+  const handleMealSelect = (meal) => {
+    if (activeMealPassenger === null || !meal) {
+        return;
+    }
+
+    setSelectedMeals((prev) => ({
+        ...prev,
+        [activeMealPassenger]: meal,
+    }));
+
+    // Automatically move to the next passenger
+    const nextPassenger = activeMealPassenger + 1;
+
+    if (nextPassenger < passengerList.length) {
+        setActiveMealPassenger(nextPassenger);
+    }
+  };
+
+  console.log(selectedMeals, 'selectedMeals'); 
+
   console.log(selectedMealList, 'selectedMealList');
+
+  const extraAddOnTypes = ["ADDITIONALBAGGAGE", "BAGGAGE", "SEAT", "COMPLIMENTORY_MEALS", "MEALS"];
+
+  const extraAddOnList =
+    ssrData?.[0]?.SSRDetails?.filter(
+      (item) => !extraAddOnTypes.includes(item.SSR_TypeName),
+    ) || [];
+
+  const hasExtraAddOn = extraAddOnList.length > 0;
+
+  const hasSeatOrMeal = hasSeat || hasMeal || hasExtraAddOn;
+
+  console.log(extraAddOnList, 'extraAddOnList'); 
 
 
   const extraBaggageCharges = Object.values(selectedSSR || {}).reduce(
@@ -1629,7 +1693,7 @@ console.log("Recommended Seat:", recommendedSeats);
     taxAmount +
     otherCharges +
     seatCharges +
-    mealCharges + Number(extraBaggageCharges || 0);
+    mealCharges + extraAddOnCharges + Number(extraBaggageCharges || 0);
     // discountAmount;
 
   // ============================================================
@@ -1669,6 +1733,7 @@ console.log("Recommended Seat:", recommendedSeats);
       seatCharges,
       mealCharges,
       extraBaggageCharges,
+      extraAddOnCharges,
       otherCharges,
       totallAmountt,
       cabinClassName,
@@ -3422,7 +3487,7 @@ console.log(selectedSeats, 'selectedSeats');
                   </button>
                 </div>
 
-                {showSeatMealSection && hasSeatOrMeal && (
+                {showSeatMealSection && hasSeatOrMeal && hasExtraAddOn &&(
                   <>
                     <div className="ucbhsduodkf mt-4">
                       {/* =========================================================
@@ -3479,6 +3544,24 @@ console.log(selectedSeats, 'selectedSeats');
                               </button>
                             </li>
                           )}
+
+                          {/* ================= EXTRA ADD-ONS TAB ================= */}
+                          {hasExtraAddOn && (
+                            <li className="nav-item" role="presentation">
+                                <button
+                                    type="button"
+                                    className={`nav-link ${
+                                        activeSeatMealTab === "extraAddOns" ? "active" : ""
+                                    }`}
+                                    id="extra-addons-tab"
+                                    role="tab"
+                                    aria-selected={activeSeatMealTab === "extraAddOns"}
+                                    onClick={() => setActiveSeatMealTab("extraAddOns")}
+                                >
+                                    Extra Add-ons
+                                </button>
+                            </li>
+                          )}
                         </ul>
                       </div>
 
@@ -3522,6 +3605,7 @@ console.log(selectedSeats, 'selectedSeats');
                         {/* =======================================================
                               MEALS
                           ======================================================= */}
+                          {hasMeal && (
                           <div
                               className={`tab-pane ${
                                   activeSeatMealTab === "meals" ? "show active" : ""
@@ -3581,41 +3665,27 @@ console.log(selectedSeats, 'selectedSeats');
                                       ===================================================== */}
 
                                       <div className="passenger-tabs d-flex flex-wrap gap-2 mb-3">
-
                                           {passengerList.map((passenger, index) => {
-
                                               const passengerName =
                                                   `${passenger?.firstName || ""} ${
                                                       passenger?.lastName || ""
-                                                  }`.trim() ||
-                                                  `Passenger ${index + 1}`;
-                                              // eslint-disable-next-line
-                                              const passengerMeal =
-                                                  selectedMeals?.[index];
+                                                  }`.trim() || `Passenger ${index + 1}`;
 
                                               return (
                                                   <button
                                                       key={index}
                                                       type="button"
                                                       className={`passenger-seat-tab btn btn-tour ${
-                                                          activeMealPassenger === index
-                                                              ? "active"
-                                                              : ""
+                                                          activeMealPassenger === index ? "active" : ""
                                                       }`}
-                                                      onClick={() =>
-                                                          setActiveMealPassenger(index)
-                                                      }
+                                                      onClick={() => setActiveMealPassenger(index)}
                                                   >
                                                       <span className="pax-label">
-                                                          {passengerName} 
+                                                          {passengerName}
                                                       </span>
-                                                      {/* <span className="pax-seat">
-                                                          {passengerMeal?.SSR_TypeName || "--"}
-                                                      </span> */}
                                                   </button>
                                               );
                                           })}
-
                                       </div>
 
 
@@ -3691,13 +3761,7 @@ console.log(selectedSeats, 'selectedSeats');
 
                                   </div>
 
-
-                                  {/* =====================================================
-                                      MEAL LIST
-                                  ===================================================== */}
-
                                   <div className="dmiwejrwer row">
-
                                       {mealsList
                                           ?.filter((meal) => {
 
@@ -3851,6 +3915,162 @@ console.log(selectedSeats, 'selectedSeats');
                                   )}
                               </div>
                           </div>
+                          )}
+
+                          {/* =======================================================
+                              EXTRA ADD-ONS
+                          ======================================================= */}
+                          {hasExtraAddOn && (
+                            <div
+                              className={`tab-pane ${
+                                activeSeatMealTab === "extraAddOns" ? "show active" : ""
+                              }`}
+                              id="extraAddOns"
+                              role="tabpanel"
+                              aria-labelledby="extra-addons-tab"
+                            >
+                              <div className="doismkfjhisd py-3">
+                                <div className="d-flex justify-content-between align-items-center mb-3">
+                                  <div>
+                                    <h5 className="mb-1">Select Extra Add-ons</h5>
+                                    <p className="text-muted mb-0">
+                                      Choose additional services for your flight
+                                    </p>
+                                  </div>
+
+                                  <span>{selectedExtraAddOns.length} selected</span>
+                                </div>
+
+                                <div className="row">
+                                  {extraAddOnList.map((addOn, index) => {
+                                    const isSelected = selectedExtraAddOns.some(
+                                      (item) => item?.SSR_Key === addOn?.SSR_Key
+                                    );
+
+                                    const addOnName =
+                                      addOn?.SSR_TypeDesc ||
+                                      addOn?.SSR_Name ||
+                                      addOn?.SSR_Desc ||
+                                      addOn?.Description ||
+                                      addOn?.SSR_Code ||
+                                      "Extra Add-on";
+
+                                    const addOnPrice = getExtraAddOnPrice(addOn);
+
+                                    return (
+                                      <div
+                                        className="col-lg-6 mb-3"
+                                        key={`${addOn?.SSR_Key || addOn?.SSR_Code}-${index}`}
+                                      >
+                                        <button
+                                          type="button"
+                                          className={`w-100 text-start border rounded-3 p-3 bg-white ${
+                                            isSelected ? "border-primary" : ""
+                                          }`}
+                                          onClick={() => handleExtraAddOnSelect(addOn)}
+                                        >
+                                          <div className="d-flex justify-content-between align-items-start">
+                                            <div>
+                                              <h6 className="mb-1">{addOnName}</h6>
+
+                                              <small className="text-muted">
+                                                {addOn?.SSR_TypeName || ""}
+                                              </small>
+                                            </div>
+
+                                            <div className="text-end">
+                                              <b>
+                                                {addOn?.Currency_Code || "INR"}{" "}
+                                                {addOnPrice.toFixed(2)}
+                                              </b>
+
+                                              <div className="mt-2">
+                                                {isSelected ? (
+                                                  <span className="badge bg-primary">
+                                                    Selected
+                                                  </span>
+                                                ) : (
+                                                  <span className="badge bg-light text-dark">
+                                                    Add
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                          {addOn?.SSR_Desc && (
+                                            <p className="mb-0 mt-2 text-muted">
+                                              {addOn.SSR_Desc}
+                                            </p>
+                                          )}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {selectedExtraAddOns.length > 0 && (
+                                  <div className="border rounded-3 p-3 mt-2">
+                                    <div className="d-flex justify-content-between mb-3">
+                                      <h6 className="mb-0">Selected Add-ons</h6>
+
+                                      <b>
+                                        INR {extraAddOnCharges.toFixed(2)}
+                                      </b>
+                                    </div>
+
+                                    {selectedExtraAddOns.map((addOn, index) => (
+                                      <div
+                                        key={addOn?.SSR_Key || index}
+                                        className="d-flex justify-content-between align-items-center border-bottom py-2"
+                                      >
+                                        <div>
+                                          <p className="mb-0">
+                                            {addOn?.SSR_TypeDesc ||
+                                              addOn?.SSR_Name ||
+                                              addOn?.SSR_Code}
+                                          </p>
+                                        </div>
+
+                                        <div className="d-flex align-items-center gap-3">
+                                          <b>
+                                            {addOn?.Currency_Code || "INR"}{" "}
+                                            {getExtraAddOnPrice(addOn).toFixed(2)}
+                                          </b>
+
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-danger"
+                                            onClick={() => handleExtraAddOnSelect(addOn)}
+                                          >
+                                            REMOVE
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                <div className="d-flex align-items-center gap-3 mt-3">
+                                  <button
+                                    type="button"
+                                    className="btn btn-link text-muted text-decoration-none"
+                                    onClick={handleExtraAddOnSkip}
+                                  >
+                                    Skip Extra Add-ons
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="btn btn-primary rounded-pill px-4"
+                                    onClick={handleSeatMealContinue}
+                                  >
+                                    Continue
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                       </div>
                     </div>
 
@@ -5149,9 +5369,9 @@ console.log(selectedSeats, 'selectedSeats');
 
                 <p className="uinfiknke mb-0"> 
                   {totalPassengers}{" "}
-                {totalPassengers === 1
-                  ? "Passenger"
-                  : "Passengers"}
+                  {totalPassengers === 1
+                    ? "Passenger"
+                    : "Passengers"}
                 </p>
               </div>              
 
@@ -5183,19 +5403,21 @@ console.log(selectedSeats, 'selectedSeats');
               <div className="ergvdfsdd d-flex justify-content-between">
                 <div className="dhbnubfhusfdf d-flex align-items-center">
                   <i className="fa-solid fa-suitcase-rolling me-2"></i>
-                  
                   <p className="jinkmnjsdf mb-0">Baggage</p>
                 </div>
                 
                 <div className="uidbjewh d-flex align-items-center">
-                  <p className="uinfiknke mb-0">  {adultFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Adult</p>
-                  
+                  {adultCount > 0 && (
+                    <p className="uinfiknke mb-0">  {adultFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Adult</p>
+                  )}
+                  {childCount > 0 && (
                   <p className="uinfiknke mb-0">  {childFare?.Free_Baggage?.Check_In_Baggage || "15 Kgs"} / Child</p>
-                  
+                  )}
+                  {infantCount > 0 && (
                   <p className="uinfiknke mb-0">  {infantFare?.Free_Baggage?.Check_In_Baggage || "0 Kg"} / Infant</p> 
+                  )}
                 </div>
               </div>
-
               {bookingPassengers.length > 0 && (
               <div className="mt-3">
 
@@ -5366,6 +5588,18 @@ console.log(selectedSeats, 'selectedSeats');
                   </p>
                 </div>
               )}
+              {/* Extra Add-on Charges */}
+              {extraAddOnCharges > 0 && (
+                <div className="ihinoioijosdkf d-flex justify-content-between mb-2">
+                  <p className="mb-0">
+                    Extra Add-ons
+                  </p>
+
+                  <p className="mb-0">
+                    {formatAmount(extraAddOnCharges)}
+                  </p>
+                </div>
+              )}
               {/* Other Charges */}
 
               {otherCharges > 0 && (
@@ -5515,6 +5749,56 @@ console.log(selectedSeats, 'selectedSeats');
                   )
                 )}
 
+              </div>
+            )}
+
+            {/* ===================================================
+                SELECTED EXTRA ADD-ONS
+            ==================================================== */}
+            {selectedExtraAddOns.length > 0 && (
+              <div className="border rounded-3 p-3 mb-3">
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <div className="d-flex align-items-center gap-1">
+                    <h6 className="fw-bold mb-0">
+                      Selected Extra Add-ons
+                    </h6>
+                  </div>
+
+                  <p className="jomkodokofjdf mb-0 small">
+                    {selectedExtraAddOns.length} selected
+                  </p>
+                </div>
+
+                {selectedExtraAddOns.map((addOn, index) => (
+                  <div
+                    key={addOn?.SSR_Key || index}
+                    className="omhicnsdmf d-flex justify-content-between align-items-center mb-2"
+                  >
+                    <div>
+                      <p className="mb-0">
+                        {addOn?.SSR_TypeDesc ||
+                          addOn?.SSR_Name ||
+                          addOn?.SSR_Desc ||
+                          addOn?.Description ||
+                          addOn?.SSR_Code ||
+                          "Extra Add-on"}
+                      </p>
+
+                      <small className="text-muted">
+                        {addOn?.SSR_TypeName || ""}
+                      </small>
+                    </div>
+
+                    <p className="ibindnvxcv mb-0">
+                      {formatAmount(getExtraAddOnPrice(addOn))}
+                    </p>
+                  </div>
+                ))}
+
+                <div className="d-flex justify-content-between border-top pt-2 mt-2">
+                  <strong>Extra Add-ons Total</strong>
+                  <strong>{formatAmount(extraAddOnCharges)}</strong>
+                </div>
               </div>
             )}
           </div>
