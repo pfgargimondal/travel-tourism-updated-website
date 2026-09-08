@@ -12,8 +12,7 @@ export const InfantsFields = ({infant, index, infantRule, handleInfantChange}) =
                     handleInfantChange(index, "title", e.target.value)
                     }
                 >
-                    <option value="Mr">Mr</option>
-                    <option value="Mrs">Mrs</option>
+                    <option value="MSTR">MSTR</option>
                     <option value="Miss">Miss</option>
                 </select>
                 </div>

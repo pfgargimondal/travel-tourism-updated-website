@@ -8,9 +8,11 @@ import { AdultFields } from "./Components/AdultFields";
 import { ChildFields } from "./Components/ChildFields";
 import { InfantsFields } from "./Components/InfantsFields";
 import { Meal } from "./Components/Meal";
+import { useAuth } from "../../../context/AuthContext";
 
 export const FlightDetails = () => {
   const navigate = useNavigate();
+  const { isLoggedIn, setLoginRegModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [imprtntInfoModal, setImprtntInfoModal] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState(null);
@@ -855,6 +857,14 @@ export const FlightDetails = () => {
         });
     }
 
+    for (let i = 0; i < Number(infantCount || 0); i++) {
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 2,
+            type: "Infant"
+        });
+    }
+
     // Infants normally do not require a seat.
     // Do not add infants to the seat-selection list.
 
@@ -1010,7 +1020,7 @@ export const FlightDetails = () => {
      */
     const totalRequiredSeats =
         Number(adultCount || 0) +
-        Number(childCount || 0);
+        Number(childCount || 0) + Number(infantCount || 0);
 
     /*
      * Only update selectedSeats.
@@ -1060,9 +1070,9 @@ export const FlightDetails = () => {
         .slice(
             0,
             Number(adultCount || 0) +
-                Number(childCount || 0)
+                Number(childCount || 0) + Number(infantCount || 0)
         );
-  }, [seatMap, adultCount, childCount]);
+  }, [seatMap, adultCount, childCount, infantCount]);
 
 console.log("Recommended Seat:", recommendedSeats);
 
@@ -2190,17 +2200,18 @@ console.log(selectedSeats, 'selectedSeats');
                                       <p className="fw-semibold mb-0 d-flex flex-column gap-1">
                                         <span>{segment.Origin_City}</span>
                                       </p>
-
-                                      <small
-                                        style={{
-                                          fontWeight: 500,
-                                          color:
-                                            "var(--light-highlighted-text-color)",
-                                        }}
-                                      >
-                                        Terminal{" "}
-                                        {segment.Origin_Terminal || "-"}
-                                      </small>
+                                      {segment.Origin_Terminal && (
+                                        <small
+                                          style={{
+                                            fontWeight: 500,
+                                            color:
+                                              "var(--light-highlighted-text-color)",
+                                          }}
+                                        >
+                                          Terminal{" "}
+                                          {segment.Origin_Terminal || "-"}
+                                        </small>
+                                      )}
                                     </div>
                                   </div>
 
@@ -2238,17 +2249,18 @@ console.log(selectedSeats, 'selectedSeats');
                                       <p className="fw-semibold mb-0 d-flex flex-column gap-1">
                                         <span>{segment.Destination_City}</span>
                                       </p>
-
-                                      <small
-                                        style={{
-                                          fontWeight: 500,
-                                          color:
-                                            "var(--light-highlighted-text-color)",
-                                        }}
-                                      >
-                                        Terminal{" "}
-                                        {segment.Destination_Terminal || "-"}
-                                      </small>
+                                      {segment.Destination_Terminal && (
+                                        <small
+                                          style={{
+                                            fontWeight: 500,
+                                            color:
+                                              "var(--light-highlighted-text-color)",
+                                          }}
+                                        >
+                                          Terminal{" "}
+                                          {segment.Destination_Terminal || "-"}
+                                        </small>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
@@ -2983,6 +2995,7 @@ console.log(selectedSeats, 'selectedSeats');
                     <h5 className="mb-3">Traveller Details</h5>
 
                     {/* Login Box */}
+                    {!isLoggedIn && (
                     <div className="login-box mb-3 px-0 py-2 text-center">
                       <span>
                         <i
@@ -2992,16 +3005,20 @@ console.log(selectedSeats, 'selectedSeats');
                         Log in to view your saved traveller list, unlock amazing
                         deals & much more!
                       </span>{" "}
-                      <a
+                      <button
+                        type="button"
+                        onClick={() => setLoginRegModal(true)}
+                        className="btn btn-link p-0 ms-1"
                         style={{
-                          color: "var(--blue-primary-color)",
-                          fontWeight: 500,
+                            color: "var(--blue-primary-color)",
+                            fontWeight: 500,
+                            textDecoration: "none",
                         }}
-                        href="/"
                       >
                         LOGIN NOW
-                      </a>
+                      </button>
                     </div>
+                    )}
 
                     {/* Adult Section */}
                     {/* <div className="d-flex justify-content-between align-items-center mb-2">

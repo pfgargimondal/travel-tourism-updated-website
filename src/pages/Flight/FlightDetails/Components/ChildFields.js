@@ -10,8 +10,7 @@ export const ChildFields = ({ child, index, childRule, handleChildChange }) => {
             value={child.title}
             onChange={(e) => handleChildChange(index, "title", e.target.value)}
           >
-            <option value="Mr">Mr</option>
-            <option value="Mrs">Mrs</option>
+            <option value="MSTR">MSTR</option>
             <option value="Miss">Miss</option>
           </select>
         </div>

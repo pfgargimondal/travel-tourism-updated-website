@@ -13,31 +13,40 @@ export const FlightSeats = ({
     onSeatSelectionComplete
 }) => {
 
-
     const requiredSeats =
-    Number(adultCount || 0) +
-    Number(childCount || 0);
-    // Number(infantCount || 0);  
+        Number(adultCount || 0) +
+        Number(childCount || 0) +
+        Number(infantCount || 0);
 
     const safeSelectedSeats = Array.isArray(selectedSeats)
         ? selectedSeats
         : [];
 
-
-    // const [selectedSeats, setSelectedSeats] = useState([]);
     const [activePassenger, setActivePassenger] = useState(null);
+    const [seatError, setSeatError] = useState("");
+
+    const showSeatError = (message) => {
+        setSeatError(message);
+
+        setTimeout(() => {
+            setSeatError("");
+        }, 3000);
+    };
 
     const findSeatSegments = (obj) => {
         if (!obj || typeof obj !== "object") {
             return null;
         }
+
         if (Array.isArray(obj)) {
             for (const item of obj) {
                 const result = findSeatSegments(item);
+
                 if (result) {
                     return result;
                 }
             }
+
             return null;
         }
 
@@ -47,37 +56,46 @@ export const FlightSeats = ({
 
         for (const key of Object.keys(obj)) {
             const result = findSeatSegments(obj[key]);
+
             if (result) {
                 return result;
             }
         }
+
         return null;
     };
 
     const seatDetails = useMemo(() => {
         const seatSegments = findSeatSegments(seatMap);
+
         console.log("FOUND Seat_Segments:", seatSegments);
+
         if (!seatSegments) {
             console.log("Seat_Segments not found");
             return [];
         }
+
         const rows = seatSegments.flatMap(
             segment => segment?.Seat_Row || []
         );
+
         console.log("FOUND Seat Rows:", rows);
         console.log("Seat Row Count:", rows.length);
+
         const details = rows.flatMap(
             row => row?.Seat_Details || []
         );
 
         return details;
-          // eslint-disable-next-line
+
+        // eslint-disable-next-line
     }, [seatMap]);
 
     const seats = useMemo(() => {
 
         const seatMapObject = {};
-        console.log(seatDetails, 'seatDetails');
+
+        console.log(seatDetails, "seatDetails");
 
         seatDetails.forEach(seat => {
 
@@ -108,6 +126,7 @@ export const FlightSeats = ({
              * Sometimes API contains duplicate records
              * for the same seat.
              */
+
             if (!seatMapObject[id]) {
 
                 seatMapObject[id] = {
@@ -121,7 +140,15 @@ export const FlightSeats = ({
                     type: seat.SSR_TypeName,
                     description: seat.SSR_TypeDesc,
                     flightId: seat.Flight_ID,
-                    segmentId: seat.Segment_Id
+                    segmentId: seat.Segment_Id,
+
+                    // IMPORTANT:
+                    // Preserve ApplicablePaxTypes from API
+                    ApplicablePaxTypes: Array.isArray(
+                        seat.ApplicablePaxTypes
+                    )
+                        ? seat.ApplicablePaxTypes.map(Number)
+                        : []
                 };
 
             } else {
@@ -130,18 +157,29 @@ export const FlightSeats = ({
                  * If duplicate seat exists, prefer actual
                  * seat record instead of generic "SEAT".
                  */
+
                 if (
                     seat.SSR_TypeName === id &&
                     seatMapObject[id].type !== id
                 ) {
+
                     seatMapObject[id] = {
                         ...seatMapObject[id],
                         status: seat.SSR_Status,
                         amount: Number(seat.Total_Amount || 0),
                         ssrKey: seat.SSR_Key,
                         type: seat.SSR_TypeName,
-                        description: seat.SSR_TypeDesc
+                        description: seat.SSR_TypeDesc,
+
+                        // IMPORTANT:
+                        // Preserve passenger types
+                        ApplicablePaxTypes: Array.isArray(
+                            seat.ApplicablePaxTypes
+                        )
+                            ? seat.ApplicablePaxTypes.map(Number)
+                            : seatMapObject[id].ApplicablePaxTypes
                     };
+
                 }
 
             }
@@ -211,6 +249,7 @@ export const FlightSeats = ({
         }
 
         return "price-above-1500";
+
     };
 
     const isAvailable = (seat) => {
@@ -220,49 +259,152 @@ export const FlightSeats = ({
         }
 
         /*
-         * Based on the API data you provided:
+         * Based on your API data:
          * SSR_Status = 1 -> actual available seat
          */
+
         return Number(seat.status) === 1;
 
     };
 
+    // =========================================================
+    // FINAL SEAT SELECTION FUNCTION
+    // =========================================================
+
     const toggleSeat = (seat) => {
+
         if (!seat || !isAvailable(seat)) {
             return;
         }
 
         setSelectedSeats((prev) => {
-            const currentSeats = Array.isArray(prev) ? prev : [];
+
+            const currentSeats = Array.isArray(prev)
+                ? prev
+                : [];
 
             let paxId;
 
-            // Passenger tab selected → keep changing that passenger's seat
+            // =================================================
+            // 1. PASSENGER TAB SELECTED
+            // =================================================
+
             if (activePassenger !== null) {
+
                 paxId = activePassenger + 1;
+
             } else {
-                // No tab selected → automatically assign next unassigned passenger
+
+                // =================================================
+                // 2. NO TAB SELECTED
+                // AUTOMATICALLY ASSIGN NEXT UNASSIGNED PASSENGER
+                // =================================================
+
                 const assignedPaxIds = new Set(
-                    currentSeats.map((item) => Number(item?.paxId))
+                    currentSeats.map(
+                        item => Number(item?.paxId)
+                    )
                 );
 
                 paxId = null;
 
                 for (let i = 1; i <= requiredSeats; i++) {
+
                     if (!assignedPaxIds.has(i)) {
+
                         paxId = i;
+
                         break;
                     }
+
                 }
 
+                // All passengers already have seats
                 if (!paxId) {
                     return currentSeats;
                 }
+
             }
 
-            // Do not allow a seat already assigned to another passenger
+            // =================================================
+            // 3. DETERMINE PASSENGER TYPE
+            // =================================================
+
+            const adultTotal = Number(adultCount || 0);
+            const childTotal = Number(childCount || 0);
+
+            let paxType;
+            let passengerType;
+
+            if (paxId <= adultTotal) {
+
+                // Adult = 0
+                paxType = 0;
+                passengerType = "Adult";
+
+            } else if (
+                paxId <= adultTotal + childTotal
+            ) {
+
+                // Child = 1
+                paxType = 1;
+                passengerType = "Child";
+
+            } else {
+
+                // Infant = 2
+                paxType = 2;
+                passengerType = "Infant";
+
+            }
+
+            // =================================================
+            // 4. CHECK APPLICABLE PASSENGER TYPES
+            // =================================================
+
+            const applicablePaxTypes = Array.isArray(
+                seat?.ApplicablePaxTypes
+            )
+                ? seat.ApplicablePaxTypes.map(Number)
+                : [];
+
+            /*
+             * Adult  → 0
+             * Child  → 1
+             * Infant → 2
+             *
+             * [0, 1]       → Adult + Child
+             * [2]          → Infant only
+             * [0, 1, 2]     → Adult + Child + Infant
+             */
+
+            if (!applicablePaxTypes.includes(paxType)) {
+
+                console.log(
+                    "Seat not allowed for passenger:",
+                    {
+                        seatId: seat?.id,
+                        paxId,
+                        paxType,
+                        passengerType,
+                        applicablePaxTypes
+                    }
+                );
+
+                showSeatError(
+                    `Seat ${seat?.id} is not available for ${passengerType}.`
+                );
+
+                return currentSeats;
+
+            }
+
+            // =================================================
+            // 5. DO NOT ALLOW SAME SEAT FOR ANOTHER PASSENGER
+            // =================================================
+
             const seatAlreadyUsed = currentSeats.some(
-                (item) =>
+                item =>
                     item?.id === seat?.id &&
                     Number(item?.paxId) !== paxId
             );
@@ -271,31 +413,43 @@ export const FlightSeats = ({
                 return currentSeats;
             }
 
+            setSeatError("");
+
+            // =================================================
+            // 6. CREATE SELECTED SEAT
+            // =================================================
+
             const selectedSeat = {
                 ...seat,
                 paxId,
-                paxType:
-                    paxId <= Number(adultCount || 0) ? 0 : 1,
-                passengerType:
-                    paxId <= Number(adultCount || 0)
-                        ? "Adult"
-                        : "Child"
+                paxType,
+                passengerType
             };
 
-            // Replace only this passenger's previous seat
+            // =================================================
+            // 7. REPLACE ONLY THIS PASSENGER'S PREVIOUS SEAT
+            // =================================================
+
             const updatedSeats = currentSeats.filter(
-                (item) => Number(item?.paxId) !== paxId
+                item =>
+                    Number(item?.paxId) !== paxId
             );
 
             updatedSeats.push(selectedSeat);
 
+            // =================================================
+            // 8. SEND UPDATED SEATS TO PARENT
+            // =================================================
+
             onSeatChange?.(updatedSeats);
 
             return updatedSeats;
+
         });
 
-        // DO NOT reset activePassenger here.
+        // DO NOT RESET activePassenger HERE.
         // The selected passenger tab stays active.
+
     };
 
     const selectedTotal = safeSelectedSeats.reduce(
@@ -310,12 +464,14 @@ export const FlightSeats = ({
 
         // No seat at this position
         if (!seat) {
+
             return (
                 <div
                     key={`${row}${column}`}
                     className="seat empty-seat"
                 />
             );
+
         }
 
         const available = isAvailable(seat);
@@ -329,7 +485,9 @@ export const FlightSeats = ({
                 key={seat.id}
                 type="button"
                 disabled={!available}
-                onClick={() => available && toggleSeat(seat)}
+                onClick={() =>
+                    available && toggleSeat(seat)
+                }
                 title={
                     available
                         ? `${seat.id} - ₹${seat.amount}`
@@ -347,16 +505,27 @@ export const FlightSeats = ({
                 <span>{seat.column}</span>
             </button>
         );
+
     };
 
     const isSeatSelectionComplete =
-    selectedSeats.length === requiredSeats;
+        safeSelectedSeats.length === requiredSeats;
 
     useEffect(() => {
-        onSeatSelectionComplete?.(isSeatSelectionComplete);
-    }, [isSeatSelectionComplete, onSeatSelectionComplete]);
 
-  console.log(bookingPassengers, 'bookingPassengers');
+        onSeatSelectionComplete?.(
+            isSeatSelectionComplete
+        );
+
+    }, [
+        isSeatSelectionComplete,
+        onSeatSelectionComplete
+    ]);
+
+    console.log(
+        bookingPassengers,
+        "bookingPassengers"
+    );
 
     return (
         <div className="page-shell">
@@ -366,47 +535,82 @@ export const FlightSeats = ({
             ===================================================== */}
 
             <div className="passenger-seat-tabs sticky-top d-inline-block">
+                {seatError && (
+                    <div
+                        className="alert alert-warning alert-dismissible fade show mt-2 mb-3"
+                        role="alert"
+                    >
+                        <i className="bi bi-exclamation-triangle me-2"></i>
+                        {seatError}
+                    </div>
+                )}
 
                 <span className="seat-select-label">
                     Select seat for:
                 </span>
 
-                {Array.from({ length: requiredSeats }, (_, index) => {
-                    const passengerSeat = safeSelectedSeats.find(
-                        (seat) => Number(seat?.paxId) === index + 1
-                    );
+                {Array.from(
+                    { length: requiredSeats },
+                    (_, index) => {
 
-                    return (
-                        <button
-                            key={index}
-                            type="button"
-                            className={`passenger-seat-tab btn btn-tour ms-2 ${
-                                activePassenger === index ? "active" : ""
-                            }`}
-                            onClick={() => setActivePassenger(index)}
-                        >
-                            <span className="pax-label">
-                                Pax {index + 1} -
-                            </span>
+                        const passengerSeat =
+                            safeSelectedSeats.find(
+                                seat =>
+                                    Number(seat?.paxId) === index + 1
+                            );
 
-                            <span className="pax-seat">
-                                {passengerSeat?.id || "--"}
-                            </span>
-                        </button>
-                    );
-                })}
+                        return (
+                            <button
+                                key={index}
+                                type="button"
+                                className={`
+                                    passenger-seat-tab
+                                    btn btn-tour ms-2
+                                    ${
+                                        activePassenger === index
+                                            ? "active"
+                                            : ""
+                                    }
+                                `}
+                                onClick={() =>
+                                    setActivePassenger(index)
+                                }
+                            >
+
+                                <span className="pax-label">
+                                    Pax {index + 1} -
+                                </span>
+
+                                <span className="pax-seat">
+                                    {passengerSeat?.id || "--"}
+                                </span>
+
+                            </button>
+                        );
+
+                    }
+                )}
+
             </div>
+
             <div className="selection-status">
-                {selectedSeats.length === 0 ? (
+
+                {safeSelectedSeats.length === 0 ? (
+
                     "No seat selected yet"
+
                 ) : (
 
                     <>
+
                         <div className="mt-1">
+
                             Total Seat Fare:
+
                             <strong className="ms-1">
                                 ₹{selectedTotal}
                             </strong>
+
                         </div>
 
                     </>
@@ -414,7 +618,6 @@ export const FlightSeats = ({
                 )}
 
             </div>
-
 
             {/* =====================================================
                 AIRCRAFT
@@ -439,6 +642,7 @@ export const FlightSeats = ({
                             x2="1"
                             y2="0"
                         >
+
                             <stop
                                 offset="0"
                                 stopColor="#e9edf1"
@@ -463,6 +667,7 @@ export const FlightSeats = ({
                             x2="0"
                             y2="1"
                         >
+
                             <stop
                                 offset="0"
                                 stopColor="#e3e7eb"
@@ -477,7 +682,6 @@ export const FlightSeats = ({
 
                     </defs>
 
-
                     {/* LEFT WING */}
 
                     <polygon
@@ -487,7 +691,6 @@ export const FlightSeats = ({
                         strokeWidth="2.5"
                     />
 
-
                     {/* RIGHT WING */}
 
                     <polygon
@@ -496,7 +699,6 @@ export const FlightSeats = ({
                         stroke="#c3cad1"
                         strokeWidth="2.5"
                     />
-
 
                     {/* LEFT ENGINE */}
 
@@ -511,7 +713,6 @@ export const FlightSeats = ({
                         strokeWidth="2"
                     />
 
-
                     {/* RIGHT ENGINE */}
 
                     <rect
@@ -524,7 +725,6 @@ export const FlightSeats = ({
                         stroke="#c3cad1"
                         strokeWidth="2"
                     />
-
 
                     {/* TAIL */}
 
@@ -542,7 +742,6 @@ export const FlightSeats = ({
                         strokeWidth="2"
                     />
 
-
                     {/* VERTICAL TAIL */}
 
                     <path
@@ -551,7 +750,6 @@ export const FlightSeats = ({
                         stroke="#c3cad1"
                         strokeWidth="2.5"
                     />
-
 
                     {/* FUSELAGE */}
 
@@ -574,7 +772,6 @@ export const FlightSeats = ({
 
                 </svg>
 
-
                 <div className="cabin-content">
 
                     {/* COCKPIT */}
@@ -589,8 +786,8 @@ export const FlightSeats = ({
 
                     </div>
 
-
                     <div className="cabin-divider">
+
                         <span className="line"></span>
 
                         <span className="tag">
@@ -598,8 +795,8 @@ export const FlightSeats = ({
                         </span>
 
                         <span className="line"></span>
-                    </div>
 
+                    </div>
 
                     {/* =================================================
                         DYNAMIC SEAT MAP
@@ -621,7 +818,6 @@ export const FlightSeats = ({
                                         {rowNum}
                                     </div>
 
-
                                     {/* LEFT A B C */}
 
                                     {["A", "B", "C"].map(
@@ -632,11 +828,9 @@ export const FlightSeats = ({
                                             )
                                     )}
 
-
                                     {/* AISLE */}
 
                                     <div className="aisle-gap"></div>
-
 
                                     {/* RIGHT D E F */}
 
@@ -647,7 +841,6 @@ export const FlightSeats = ({
                                                 column
                                             )
                                     )}
-
 
                                     {/* RIGHT ROW NUMBER */}
 
@@ -662,8 +855,8 @@ export const FlightSeats = ({
 
                     </div>
 
-
                     <div className="uheiuwrwer">
+
                         <div className="cabin-divider">
 
                             <span className="line"></span>
@@ -683,10 +876,12 @@ export const FlightSeats = ({
                             </div>
 
                         </div>
-                    </div>
-                </div>
-            </div>
 
+                    </div>
+
+                </div>
+
+            </div>
 
             {/* =====================================================
                 LEGEND

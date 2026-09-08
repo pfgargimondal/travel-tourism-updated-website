@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-
-
+import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 import axios from "axios";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -9,7 +8,7 @@ import http from "../../http";
 
 
 export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal, setGoogleUser }) => {
-
+    const { login } = useAuth(); 
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             try {
@@ -24,8 +23,6 @@ export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal, 
                 );
 
                 const googleUser = response.data;
-
-                console.log("Google User:", googleUser);
 
                 // Send Google user to Laravel
                 const loginResponse = await http.post(
@@ -43,19 +40,16 @@ export const Login = ({ loginRegModal, setLoginRegModal, regModal, setRegModal, 
                 if (loginResponse.data.status === "login") {
 
                     // Existing user
-                    localStorage.setItem(
-                        "token",
-                        loginResponse.data.token
-                    );
+                    const token = loginResponse.data.token;
+                    const userData = loginResponse.data.user;
 
-                    localStorage.setItem(
-                        "user",
-                        JSON.stringify(loginResponse.data.user)
-                    );
+                    // AuthContext handles localStorage + React state
+                    login(token, userData);
 
                     setLoginRegModal(false);
 
-                    window.location.reload();
+
+                    // window.location.reload();
                 }
 
                 if (loginResponse.data.status === "register") {

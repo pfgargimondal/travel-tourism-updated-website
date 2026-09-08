@@ -11,21 +11,21 @@ import Logo from "../../assets/images/COlgfJcjQfjCUywmAAiIwIAxQnnk1YYYP4j3NGUu.p
 
 import "./Header.css";
 import "./HeaderResponsive.css";
+import { useAuth } from "../../context/AuthContext";
 
 
 
 export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
     const [headerSticky, setHeaderSticky] = useState(false);
-    const [loginRegModal, setLoginRegModal] = useState(false);
+    // const [loginRegModal, setLoginRegModal] = useState(false);
     const [regModal, setRegModal] = useState(false);
     const [resNavToggle, setResNavToggle] = useState(false);
     const [crrncyLangModal, setCrrncyLangModal] = useState(false);
     // eslint-disable-next-line
     const [resHomeFlightSearchToggle, setResHomeFlightSearchToggle] = useState(false);
-    // eslint-disable-next-line
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [googleUser, setGoogleUser] = useState(null);
     const [userDropdownToggle, setUserDropdownToggle] = useState(false);
+    const { isLoggedIn, user, logout, loginRegModal, setLoginRegModal, } = useAuth();
 
 
     useEffect(() => {
@@ -150,7 +150,7 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
                                                 <span className="dinniihfrtet d-flex align-items-center gap-1" onClick={(e) => {e.stopPropagation(); setUserDropdownToggle(prev => !prev)}}>
                                                     <i className="bi bi-person-fill"></i>
                                                     
-                                                    <span className="d-inline-block">Virat Kohli</span>
+                                                    <span className="d-inline-block">{user?.name || "User"}</span>
                                                     
                                                     <i className="bi ms-1 bi-chevron-down"></i>
                                                 </span>
@@ -169,7 +169,7 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
                                                             <Link to=""><i className="bi me-1 bi-person-fill-lock"></i> Password Change</Link>
                                                         </li>
 
-                                                        <li><i className="bi me-1 bi-door-closed-fill"></i> Log Out</li>
+                                                        <li onClick={logout} style={{ cursor: "pointer" }}><i className="bi me-1 bi-door-closed-fill"></i> Log Out</li>
                                                     </ul>
                                                 </div>
                                             </span>
@@ -200,7 +200,7 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
                                             <button onClick={() => setResNavToggle(prev => !prev)} className="fsdgsadehtrfdewe px-1 btn text-white">
                                                 <i className="bi bi-person-fill"></i>
 
-                                                <span>Virat Kohli</span>
+                                                <span>{user?.name || "User"}</span>
 
                                                 <i className="bi ms-1 bi-chevron-down"></i>
                                             </button>                                            
@@ -228,9 +228,9 @@ export const Header = ({ headerNew, headerBlackText, headerStickyShow }) => {
 
                     {isLoggedIn ? (
                         <div className="res-nav-user d-flex align-items-center justify-content-between mb-3 pb-2">
-                            <p className="mb-0"><b>Hi, Virat Kohli</b></p>
+                            <p className="mb-0"><b>Hi, {user?.name || "User"}</b></p>
 
-                            <p className="mb-0">Logout</p>
+                            <p className="mb-0" onClick={logout}>Logout</p>
                         </div>
                     ) : (
                         <button onClick={() => setLoginRegModal(prev => !prev)} className="w-100 fsdgsadehtrfdewe btn btn-tour px-3 mb-3">
