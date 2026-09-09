@@ -793,6 +793,20 @@ export const FlightFilter = () => {
     }, 1500);
   };
 
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setFlightDrpdwn(false);
+    };
+
+    if (flightDrpdwn) {
+      document.addEventListener("click", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [flightDrpdwn]);
+
 
   if (loading) return <Loader />;
 
@@ -1047,16 +1061,17 @@ export const FlightFilter = () => {
 
                                 <div
                                   className="form-control hotel-input vdxbfcsffff"
-                                  onClick={() =>
-                                    setFlightDrpdwn((prev) => !prev)
-                                  }
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setFlightDrpdwn((prev) => !prev);
+                                  }}
                                 >
                                   {adultCount} Adult{adultCount > 1 ? "s" : ""}{" "}
                                   • {childrenCount} Child • {infantCount} Infant
                                 </div>
 
                                 {flightDrpdwn && (
-                                  <div className="rg-drpdwn dfghdgfsfee position-absolute p-4 rounded-2 bg-white">
+                                  <div onClick={(e) => e.stopPropagation()} className="rg-drpdwn dfghdgfsfee position-absolute p-4 rounded-2 bg-white">
                                     <div className="d-flex align-items-center justify-content-between mb-3">
                                       <div className="diweirkwer d-flex flex-column">
                                         <p className="mb-0 dnfreqer">Adults</p>

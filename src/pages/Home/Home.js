@@ -312,6 +312,20 @@ const [infantAges, setInfantAges] = useState([]);
     }
   }, [tripType]);
 
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setFlightDrpdwn(false);
+    };
+
+    if (flightDrpdwn) {
+      document.addEventListener("click", handleOutsideClick);
+    }
+
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, [flightDrpdwn]);
+
   if (loading) return <Loader />;
   if (!slide) return null;
 
@@ -558,7 +572,7 @@ const [infantAges, setInfantAges] = useState([]);
                       <label className="form-label">Travellers & Class</label>
 
                       <div className="form-control hotel-input vdxbfcsffff"
-                          onClick={() => setFlightDrpdwn(prev => !prev)}
+                          onClick={(e) => {e.stopPropagation(); setFlightDrpdwn(prev => !prev);}}
                       >
                           {adultCount} Adult{adultCount > 1 ? "s" : ""} •{" "}
                           {childrenCount} Child{childrenCount > 0 ? "ren" : ""} •{" "}
@@ -566,7 +580,7 @@ const [infantAges, setInfantAges] = useState([]);
                       </div>
                       
                       {flightDrpdwn && (
-                        <div className="rg-drpdwn dfghdgfsfee position-absolute p-4 rounded-2 bg-white">
+                        <div onClick={(e) => e.stopPropagation()} className="rg-drpdwn dfghdgfsfee position-absolute p-4 rounded-2 bg-white">
                             <div className="d-flex align-items-center justify-content-between mb-3">
                                 <div className="diweirkwer d-flex flex-column">
                                     <p className="mb-0 dnfreqer">Adults</p>
@@ -808,17 +822,17 @@ const [infantAges, setInfantAges] = useState([]);
                 <button className="flight-search-btn" onClick={handleFlightSearch}>Search</button>
               </div>
             )}
-          </div>
-        </div>
-      </section>
 
-      {window.innerWidth > 991 && (
-        <div className="ghaadasd">
-          <div className="text-center mt-4 ">
-            <button className="flight-search-btn" onClick={handleFlightSearch}>Search</button>
+            {window.innerWidth > 991 && (
+              <div className="ghaadasd">
+                <div className="text-center mt-4 ">
+                  <button className="flight-search-btn" onClick={handleFlightSearch}>Search</button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </section>      
 
       <section className="top-destinations py-5">
         <div className="container">

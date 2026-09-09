@@ -165,6 +165,7 @@
 .res-btwn-crcl .circle i{
     color: var(--blue-secondary-color);
     margin-left: 0;
+    line-height: 2.4;
 }
 
 .form h6{
@@ -754,6 +755,7 @@ h2.secondary-heading{
 {
     margin-top: -160px;
     position: relative;
+    z-index: 9999;
 }
 
 

@@ -25,6 +25,17 @@ export const FlightSeats = ({
     const [activePassenger, setActivePassenger] = useState(null);
     const [seatError, setSeatError] = useState("");
 
+    // Get passenger name
+    const getPassengerName = (paxId) => {
+        const passenger = bookingPassengers?.[paxId - 1];
+
+        if (!passenger) {
+            return `Pax ${paxId}`;
+        }
+
+        return `${passenger.firstName || ""} ${passenger.lastName || ""}`.trim();
+    };
+
     const showSeatError = (message) => {
         setSeatError(message);
 
@@ -578,7 +589,8 @@ export const FlightSeats = ({
                             >
 
                                 <span className="pax-label">
-                                    Pax {index + 1} -
+                                    {/* Pax {index + 1} - */}
+                                    {getPassengerName(index + 1)} -{" "}
                                 </span>
 
                                 <span className="pax-seat">

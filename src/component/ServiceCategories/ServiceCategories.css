@@ -6,9 +6,10 @@
 .flight-menu-wrapper.gjhkdfgdf{
     width: 85%;
     margin:auto;
-    border-bottom:1px solid #e6e6e6;
+    border-bottom: 0;
     background:#fff;
     border-radius: 12px;
+    position: relative;
 }
 
 .flight-menu-wrapper.gjhkdfgdf .flight-menu-item span{
@@ -23,12 +24,6 @@
 }
 
 /* ===== Main Card ===== */
-.flight-main-card{
-    background:#fff;
-    border-radius:14px;
-    padding: 20px 30px;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 3px 0px;    padding:20px 0 30px;
-}
 
 .flight-menu-item{
     width:80px;

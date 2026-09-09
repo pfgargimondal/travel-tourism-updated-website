@@ -299,9 +299,9 @@ input[type="range"] {
 /* CARD */
 .flight-main-card {
     background: #fff;
-    padding: 25px;
-    padding-bottom: 44px;
+    padding: 25px 25px 0 25px;
     border-radius: 15px;
+    border: 1px solid var(--border);
 }
 
 /* INPUT STYLE */
@@ -360,12 +360,6 @@ input[type="range"] {
     cursor: pointer;
 }
 
-.ghaadasd {
-    margin-top: -75px;
-    position: relative;
-    z-index: 9;
-}
-
 /* Search Button */
 .flight-search-btn {
     background: linear-gradient(to right, #07c6b9, #00b4a8);
@@ -374,8 +368,8 @@ input[type="range"] {
     border-radius: 25px;
     padding: 12px 60px;
     font-size: 18px;
-    /* margin-top: -90px; */
     position: relative;
+    top: 1.5rem;
 }
 
 /* Active text */
@@ -844,7 +838,7 @@ input[type="range"] {
 
 .rg-drpdwn{
     width: 450px;
-    z-index: 999;
+    z-index: 9999;
     left: 50%;
     transform: translateX(-50%);
     box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 10px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
