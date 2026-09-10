@@ -15,7 +15,6 @@ export const FlightDetails = () => {
   const { isLoggedIn, setLoginRegModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [imprtntInfoModal, setImprtntInfoModal] = useState(false);
-  const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [allCouponModal, setAllCouponModal] = useState(false);
   const [flightRePrice, setflightRePrice] = useState(null);
   const [ssrData, setSsrData] = useState(null);
@@ -62,6 +61,10 @@ export const FlightDetails = () => {
 
   const [addBaggageModal, setAddBaggageModal] = useState(false);
   const [countryCode, setCountryCode] = useState([]);
+  const [couponCode, setCouponCode] = useState([]);
+  const [couponInput, setCouponInput] = useState("");
+  const [selectedCoupon, setSelectedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
 
   const [showGST, setShowGST] = useState(false);
   const [gstNumber, setGstNumber] = useState("");
@@ -230,10 +233,6 @@ export const FlightDetails = () => {
     setImprtntInfoModal((prev) => !prev);
   };
 
-  const handleSelectedModal = (value) => {
-    setSelectedCoupon((prev) => (prev === value ? null : value));
-  };
- 
   useEffect(() => {
     const html = document.querySelector("html");
 
@@ -1074,7 +1073,6 @@ export const FlightDetails = () => {
         );
   }, [seatMap, adultCount, childCount, infantCount]);
 
-console.log("Recommended Seat:", recommendedSeats);
 
   const totalPassengers =
     Number(adultCount || 0) +
@@ -1634,7 +1632,6 @@ console.log("Recommended Seat:", recommendedSeats);
 
   console.log(extraAddOnList, 'extraAddOnList'); 
 
-
   const extraBaggageCharges = Object.values(selectedSSR || {}).reduce(
     (total, passengerSSR) => {
       const ssrItems = Object.values(passengerSSR || {});
@@ -1653,6 +1650,7 @@ console.log("Recommended Seat:", recommendedSeats);
     },
     0
   );
+
   // ============================================================
   // FARE
   // ============================================================
@@ -1719,6 +1717,114 @@ console.log("Recommended Seat:", recommendedSeats);
   const formatAmount = (amount) => {
     return `${currency} ${Number(amount || 0).toLocaleString("en-IN")}`;
   };
+
+  useEffect(() => {
+    const fetchCouponCode = async () => {
+      try {
+        setLoading(true);
+        const response = await http.get("/fetch-coupon-code");
+        setCouponCode(response.data?.data || []);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCouponCode();
+  }, []);
+
+  console.log(couponCode, 'couponCode');
+  const handleSelectedModal = (code) => {
+    setCouponError("");
+
+    const coupon = couponCode.find(
+      (item) =>
+        item.code?.toUpperCase() === code?.toUpperCase()
+    );
+
+    if (!coupon) {
+      setCouponError("Invalid coupon code.");
+      return;
+    }
+
+    // Check minimum order amount
+    const minimumAmount = Number(coupon.min_order_amount || 0);
+
+    if (totallAmountt < minimumAmount) {
+      setCouponError(
+        `Minimum booking amount of ₹${minimumAmount.toLocaleString(
+          "en-IN"
+        )} is required for this coupon.`
+      );
+
+      setSelectedCoupon(null);
+      return;
+    }
+
+    setSelectedCoupon(coupon);
+    setCouponInput(coupon.code);
+  };
+
+  const handleApplyCoupon = () => {
+    setCouponError("");
+
+    const enteredCode = couponInput?.trim().toUpperCase();
+
+    if (!enteredCode) {
+      setCouponError("Please enter a coupon code.");
+      return;
+    }
+
+    const coupon = couponCode.find(
+      (item) =>
+        item.code?.toUpperCase() === enteredCode
+    );
+
+    if (!coupon) {
+      setSelectedCoupon(null);
+      setCouponError("Invalid coupon code.");
+      return;
+    }
+
+    const minimumAmount = Number(coupon.min_order_amount || 0);
+
+    if (totallAmountt < minimumAmount) {
+      setSelectedCoupon(null);
+
+      setCouponError(
+        `Minimum booking amount of ₹${minimumAmount.toLocaleString(
+          "en-IN"
+        )} is required for this coupon.`
+      );
+
+      return;
+    }
+
+    setSelectedCoupon(coupon);
+    setCouponInput(coupon.code);
+  };
+
+  const handleRemoveCoupon = () => {
+    setSelectedCoupon(null);
+    setCouponInput("");
+    setCouponError("");
+  };
+
+  const couponDiscount = selectedCoupon
+    ? Math.min(
+        totallAmountt,
+        selectedCoupon.type === "fixed"
+          ? Number(selectedCoupon.value || 0)
+          : (totallAmountt * Number(selectedCoupon.value || 0)) / 100
+      )
+    : 0;
+
+  const finalAmount = Math.max(
+    0,
+    totallAmountt - couponDiscount
+  );
+
 
   const handleProceedToPayment = () => {
     setFlightBookingModal(false);
@@ -3495,9 +3601,12 @@ console.log(selectedSeats, 'selectedSeats');
                   <button
                     type="button"
                     className="btn btn-outline-primary rounded-pill px-4"
-                    onClick={() => {
-                      handleContinue();
-                      // setFlightBookingModal(prev => !prev);
+                    onClick={() => { 
+                      if (!isLoggedIn) { 
+                      setLoginRegModal(true);
+                      return; 
+                      } 
+                      handleContinue(); 
                     }}
                   >
                     Continue
@@ -4243,6 +4352,38 @@ console.log(selectedSeats, 'selectedSeats');
                           </td>
                         </tr>
 
+                        {/* ============================= */}
+                        {/* COUPON DISCOUNT */}
+                        {/* ============================= */}
+
+                        {selectedCoupon && couponDiscount > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{
+                                color: "#198754",
+                                fontWeight: 500,
+                              }}
+                            >
+                              Coupon Discount
+                              <span className="ms-1">
+                                ({selectedCoupon.code})
+                              </span>
+                            </td>
+
+                            <td
+                              style={{
+                                color: "#198754",
+                                fontWeight: 500,
+                              }}
+                            >
+                              - ₹{" "}
+                              {couponDiscount.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+
+
                         {/* Divider */}
                         <tr>
                           <td
@@ -4259,7 +4400,11 @@ console.log(selectedSeats, 'selectedSeats');
                           <td style={{ fontWeight: 600 }}>Total Amount</td>
 
                           <td style={{ fontWeight: 600 }}>
-                            ₹ {totalAmount.toLocaleString("en-IN")}
+                            ₹ {(
+                                selectedCoupon
+                                  ? finalAmount
+                                  : totalAmount
+                              ).toLocaleString("en-IN")}
                           </td>
                         </tr>
                       </table>
@@ -4269,179 +4414,270 @@ console.log(selectedSeats, 'selectedSeats');
                 {/* COUPON */}
                 <div className="dfdff5585">
                   <div className="coupon-box">
-                    <div className="hjhjk">
-                      <h6 className="mb-0 px-3 py-2">
-                        <i className="bi me-1 bi-tags"></i>Coupon Codes
-                      </h6>
+                    {/* ============================= */}
+                      {/* HEADER */}
+                      {/* ============================= */}
 
-                      <div className="bg-white udnjeweopelr px-3 mt-3">
-                        <div className="deiwhrwerwer position-relative mb-3">
-                          <div className="position-relative">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter coupon code"
-                              value={selectedCoupon ? selectedCoupon : ""}
-                              onChange={() => setSelectedCoupon(null)}
-                              disabled={selectedCoupon ? true : false}
-                            />
+                      <div className="hjhjk">
+                        <h6 className="mb-0 px-3 py-2">
+                          <i className="bi me-1 bi-tags"></i>
+                          Coupon Codes
+                        </h6>
 
-                            <button
-                              onClick={() => setSelectedCoupon(null)}
-                              className={
-                                selectedCoupon
-                                  ? "btn remove-coupon-btn position-absolute"
-                                  : "btn position-absolute"
-                              }
-                            >
-                              {selectedCoupon ? "Remove" : "Apply"}
-                            </button>
+                        <div className="bg-white udnjeweopelr px-3 mt-3">
+
+                          {/* ============================= */}
+                          {/* COUPON INPUT */}
+                          {/* ============================= */}
+
+                          <div className="deiwhrwerwer position-relative mb-3">
+                            <div className="position-relative">
+
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Enter coupon code"
+                                value={couponInput}
+                                onChange={(e) => {
+                                  setCouponInput(
+                                    e.target.value.toUpperCase()
+                                  );
+
+                                  setCouponError("");
+                                }}
+                              />
+
+                              <button
+                                type="button"
+                                onClick={
+                                  selectedCoupon
+                                    ? handleRemoveCoupon
+                                    : handleApplyCoupon
+                                }
+                                className={
+                                  selectedCoupon
+                                    ? "btn remove-coupon-btn position-absolute"
+                                    : "btn position-absolute"
+                                }
+                              >
+                                {selectedCoupon ? "Remove" : "Apply"}
+                              </button>
+
+                            </div>
+
+                            {/* ============================= */}
+                            {/* SUCCESS */}
+                            {/* ============================= */}
+
+                            {selectedCoupon && (
+                              <p className="copn-msge my-2">
+                                Congratulations! Instant Discount of ₹
+                                {couponDiscount.toLocaleString("en-IN")}
+                                {" "}has been applied successfully.
+                              </p>
+                            )}
+
+                            {/* ============================= */}
+                            {/* ERROR */}
+                            {/* ============================= */}
+
+                            {couponError && (
+                              <div className="alert alert-danger py-2 px-3 mt-2 mb-0">
+                                {couponError}
+                              </div>
+                            )}
+
                           </div>
 
-                          {selectedCoupon && (
-                            <p className="copn-msge my-2">
-                              Congratulations! Instant Discount of Rs. ₹229 has
-                              been applied successfully.
-                            </p>
-                          )}
-                        </div>
 
-                        <div className="deiwhrwerwer">
-                          <label htmlFor="c1" className="coupon-card">
-                            <input
-                              type="radio"
-                              checked={selectedCoupon === "MMTTRAVEL"}
-                              onChange={() => handleSelectedModal("MMTTRAVEL")}
-                              name="ucfewfrew"
-                              id="c1"
-                              className="d-none position-absolute"
-                            />
+                          {/* ============================= */}
+                          {/* COUPON LIST */}
+                          {/* ============================= */}
 
-                            <div className="coupon-top d-flex align-items-center justify-content-between mb-1">
-                              <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                                <img
-                                  src="/images/discount.png"
-                                  className="coupon-icon"
-                                  alt=""
-                                />
-                                <strong className="frgrfg5559">
-                                  MMTTRAVEL
-                                </strong>
+                          <div className="deiwhrwerwer">
+
+                            {couponCode && couponCode.length > 0 ? (
+
+                              couponCode
+                                .filter(
+                                  (coupon) =>
+                                    Number(coupon.status) === 1
+                                )
+                                .slice(0, 4)
+                                .map((coupon) => {
+
+                                  const minimumAmount = Number(
+                                    coupon.min_order_amount || 0
+                                  );
+
+                                  const couponValue = Number(
+                                    coupon.value || 0
+                                  );
+
+                                  const isSelected =
+                                    selectedCoupon?.id === coupon.id;
+
+                                  const isEligible =
+                                    totallAmountt >= minimumAmount;
+
+                                  return (
+                                    <label
+                                      htmlFor={`main-coupon-${coupon.id}`}
+                                      className={`coupon-card ${
+                                        isSelected
+                                          ? "coupon-card-selected"
+                                          : ""
+                                      }`}
+                                      key={coupon.id}
+                                      style={{
+                                        cursor: isEligible
+                                          ? "pointer"
+                                          : "not-allowed",
+                                        opacity: isEligible
+                                          ? 1
+                                          : 0.6,
+                                      }}
+                                    >
+
+                                      <input
+                                        type="radio"
+                                        checked={isSelected}
+                                        onChange={() => {
+                                          if (isEligible) {
+                                            handleSelectedModal(
+                                              coupon.code
+                                            );
+                                          }
+                                        }}
+                                        name="main-coupon"
+                                        id={`main-coupon-${coupon.id}`}
+                                        className="d-none position-absolute"
+                                        disabled={!isEligible}
+                                      />
+
+                                      {/* ============================= */}
+                                      {/* TOP */}
+                                      {/* ============================= */}
+
+                                      <div className="coupon-top d-flex align-items-center justify-content-between mb-1">
+
+                                        <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
+
+                                          <img
+                                            src="/images/discount.png"
+                                            className="coupon-icon"
+                                            alt="Discount"
+                                          />
+
+                                          <strong className="frgrfg5559">
+                                            {coupon.code}
+                                          </strong>
+
+                                        </div>
+
+                                        <span className="discount">
+
+                                          {coupon.type === "fixed"
+                                            ? `₹${couponValue.toLocaleString(
+                                                "en-IN"
+                                              )} off`
+                                            : `${couponValue}% off`}
+
+                                        </span>
+
+                                      </div>
+
+
+                                      {/* ============================= */}
+                                      {/* DESCRIPTION */}
+                                      {/* ============================= */}
+
+                                      <p
+                                        className="desc mb-0"
+                                        style={{
+                                          whiteSpace: "pre-line",
+                                        }}
+                                      >
+                                        {coupon.coupon_description}
+                                      </p>
+
+
+                                      {/* ============================= */}
+                                      {/* MINIMUM AMOUNT */}
+                                      {/* ============================= */}
+
+                                      <small className="text-muted d-block mt-2">
+
+                                        Min. booking amount: ₹
+                                        {minimumAmount.toLocaleString(
+                                          "en-IN"
+                                        )}
+
+                                      </small>
+
+
+                                      {/* ============================= */}
+                                      {/* NOT ELIGIBLE */}
+                                      {/* ============================= */}
+
+                                      {!isEligible && (
+                                        <small className="text-danger d-block mt-1">
+
+                                          Add ₹
+                                          {(
+                                            minimumAmount -
+                                            totallAmountt
+                                          ).toLocaleString(
+                                            "en-IN"
+                                          )}
+                                          {" "}more to use this coupon.
+
+                                        </small>
+                                      )}
+
+                                    </label>
+                                  );
+                                })
+
+                            ) : (
+
+                              <div className="text-center py-3">
+                                <p className="text-muted mb-0">
+                                  No coupons available
+                                </p>
                               </div>
 
-                              <span className="discount">₹229 off</span>
-                            </div>
-                            <p className="desc mb-0">
-                              Log in to get up to 15% OFF.
-                              <br />
-                              Offer valid for new users only
-                            </p>
-                          </label>
+                            )}
 
-                          <label htmlFor="c2" className="coupon-card">
-                            <input
-                              type="radio"
-                              checked={selectedCoupon === "MMTSECUREV"}
-                              onChange={() => handleSelectedModal("MMTSECUREV")}
-                              name="ucfewfrew"
-                              id="c2"
-                              className="d-none position-absolute"
-                            />
+                          </div>
 
-                            <div className="coupon-top d-flex align-items-center justify-content-between">
-                              <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                                <img
-                                  src="/images/discount.png"
-                                  className="coupon-icon"
-                                  alt=""
-                                />
-                                <strong className="frgrfg5559">
-                                  MMTSECUREV
-                                </strong>
-                              </div>
-                              <span className="discount">₹229 off</span>
-                            </div>
-                            <p className="desc mb-0">
-                              Get an instant discount of ₹229 on your flight
-                              booking
-                              <br />
-                              and Trip Secure combo
-                            </p>
-                          </label>
-
-                          <label htmlFor="c3" className="coupon-card">
-                            <input
-                              type="radio"
-                              checked={selectedCoupon === "MMTSECUREL"}
-                              onChange={() => handleSelectedModal("MMTSECUREL")}
-                              name="ucfewfrew"
-                              id="c3"
-                              className="d-none position-absolute"
-                            />
-
-                            <div className="coupon-top d-flex align-items-center justify-content-between">
-                              <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                                <img
-                                  src="/images/discount.png"
-                                  className="coupon-icon"
-                                  alt=""
-                                />
-                                <strong className="frgrfg5559">
-                                  MMTSECUREL
-                                </strong>
-                              </div>
-                              <span className="discount">₹229 off</span>
-                            </div>
-                            <p className="desc mb-0">
-                              Get an instant discount of ₹229 on your flight
-                              booking
-                              <br />
-                              and Trip Secure combo
-                            </p>
-                          </label>
-
-                          <label htmlFor="c4" className="coupon-card">
-                            <input
-                              type="radio"
-                              checked={selectedCoupon === "MMTSECUREJ"}
-                              onChange={() => handleSelectedModal("MMTSECUREJ")}
-                              name="ucfewfrew"
-                              id="c4"
-                              className="d-none position-absolute"
-                            />
-
-                            <div className="coupon-top d-flex align-items-center justify-content-between">
-                              <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                                <img
-                                  src="/images/discount.png"
-                                  className="coupon-icon"
-                                  alt=""
-                                />
-                                <strong className="frgrfg5559">
-                                  MMTSECUREJ
-                                </strong>
-                              </div>
-                              <span className="discount">₹ 229 off</span>
-                            </div>
-                            <p className="desc mb-0">
-                              Get an instant discount of ₹229 on your flight
-                              booking
-                              <br />
-                              and Trip Secure combo
-                            </p>
-                          </label>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="fgderhsraerr text-center">
-                      <button
-                        onClick={handleAllModalToggle}
-                        className="btn sgsfeqaedqrrr pb-2"
-                      >
-                        View All Coupons
-                      </button>
-                    </div>
+
+                      {/* ============================= */}
+                      {/* VIEW ALL COUPONS */}
+                      {/* ============================= */}
+
+                      {couponCode &&
+                        couponCode.filter(
+                          (coupon) =>
+                            Number(coupon.status) === 1
+                        ).length > 4 && (
+
+                        <div className="fgderhsraerr text-center">
+
+                          <button
+                            type="button"
+                            onClick={handleAllModalToggle}
+                            className="btn sgsfeqaedqrrr pb-2"
+                          >
+                            View All Coupons
+                          </button>
+
+                        </div>
+
+                      )}
                   </div>
                 </div>
               </div>
@@ -5118,19 +5354,32 @@ console.log(selectedSeats, 'selectedSeats');
 
         <div className="all-coupon-modal-body">
           <div className="mt-3">
+
+            {/* ============================= */}
+            {/* COUPON INPUT */}
+            {/* ============================= */}
+
             <div className="deiwhrwerwer position-relative mb-3">
               <div className="position-relative">
+
                 <input
                   type="text"
-                  className="form-control"
+                  className="form-control pe-5"
                   placeholder="Enter coupon code"
-                  value={selectedCoupon ? selectedCoupon : ""}
-                  onChange={() => setSelectedCoupon(null)}
-                  disabled={selectedCoupon ? true : false}
+                  value={couponInput}
+                  onChange={(e) => {
+                    setCouponInput(e.target.value.toUpperCase());
+                    setCouponError("");
+                  }}
                 />
 
                 <button
-                  onClick={() => setSelectedCoupon(null)}
+                  type="button"
+                  onClick={
+                    selectedCoupon
+                      ? handleRemoveCoupon
+                      : handleApplyCoupon
+                  }
                   className={
                     selectedCoupon
                       ? "btn remove-coupon-btn position-absolute"
@@ -5139,158 +5388,194 @@ console.log(selectedSeats, 'selectedSeats');
                 >
                   {selectedCoupon ? "Remove" : "Apply"}
                 </button>
+
               </div>
+
+              {/* ============================= */}
+              {/* SUCCESS MESSAGE */}
+              {/* ============================= */}
 
               {selectedCoupon && (
                 <p className="copn-msge my-2">
-                  Congratulations! Instant Discount of Rs. ₹229 has been applied
-                  successfully.
+                  Congratulations! Instant Discount of ₹
+                  {couponDiscount.toLocaleString("en-IN")}
+                  {" "}has been applied successfully.
                 </p>
+              )}
+
+              {/* ============================= */}
+              {/* ERROR MESSAGE */}
+              {/* ============================= */}
+
+              {couponError && (
+                <div
+                  className="alert alert-danger py-2 px-3 mt-2 mb-0"
+                  role="alert"
+                >
+                  {couponError}
+                </div>
               )}
             </div>
 
+
+            {/* ============================= */}
+            {/* AVAILABLE COUPONS */}
+            {/* ============================= */}
+
             <div className="deiwhrwerwer hjiejfriwejrwer pe-2">
-              <label htmlFor="c1" className="coupon-card">
-                <input
-                  type="radio"
-                  checked={selectedCoupon === "MMTTRAVEL"}
-                  onChange={() => handleSelectedModal("MMTTRAVEL")}
-                  name="ucfewfrew"
-                  id="c1"
-                  className="d-none position-absolute"
-                />
 
-                <div className="coupon-top d-flex align-items-center justify-content-between mb-1">
-                  <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                    <img
-                      src="/images/discount.png"
-                      className="coupon-icon"
-                      alt=""
-                    />
-                    <strong className="frgrfg5559">MMTTRAVEL</strong>
-                  </div>
+              {couponCode && couponCode.length > 0 ? (
 
-                  <span className="discount">₹229 off</span>
+                couponCode.map((coupon) => {
+
+                  const minimumAmount = Number(
+                    coupon.min_order_amount || 0
+                  );
+
+                  const couponValue = Number(
+                    coupon.value || 0
+                  );
+
+                  const isSelected =
+                    selectedCoupon?.id === coupon.id;
+
+                  const isMinimumAmountSatisfied =
+                    totallAmountt >= minimumAmount;
+
+                  return (
+                    <label
+                      htmlFor={`coupon-${coupon.id}`}
+                      className={`coupon-card ${
+                        isSelected
+                          ? "coupon-card-selected"
+                          : ""
+                      } ${
+                        !isMinimumAmountSatisfied
+                          ? "coupon-card-disabled"
+                          : ""
+                      }`}
+                      key={coupon.id}
+                      style={{
+                        cursor: isMinimumAmountSatisfied
+                          ? "pointer"
+                          : "not-allowed",
+                        opacity: isMinimumAmountSatisfied
+                          ? 1
+                          : 0.6,
+                      }}
+                    >
+
+                      <input
+                        type="radio"
+                        checked={isSelected}
+                        onChange={() => {
+                          if (isMinimumAmountSatisfied) {
+                            handleSelectedModal(coupon.code);
+                          }
+                        }}
+                        name="coupon"
+                        id={`coupon-${coupon.id}`}
+                        className="d-none position-absolute"
+                        disabled={!isMinimumAmountSatisfied}
+                      />
+
+                      {/* ============================= */}
+                      {/* COUPON HEADER */}
+                      {/* ============================= */}
+
+                      <div className="coupon-top d-flex align-items-center justify-content-between mb-1">
+
+                        <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
+
+                          <img
+                            src="/images/discount.png"
+                            className="coupon-icon"
+                            alt="Discount"
+                          />
+
+                          <strong className="frgrfg5559">
+                            {coupon.code}
+                          </strong>
+
+                        </div>
+
+                        <span className="discount">
+
+                          {coupon.type === "fixed"
+                            ? `₹${couponValue.toLocaleString(
+                                "en-IN"
+                              )} off`
+                            : `${couponValue}% off`}
+
+                        </span>
+
+                      </div>
+
+
+                      {/* ============================= */}
+                      {/* COUPON DESCRIPTION */}
+                      {/* ============================= */}
+
+                      <p
+                        className="desc mb-0"
+                        style={{
+                          whiteSpace: "pre-line",
+                        }}
+                      >
+                        {coupon.coupon_description}
+                      </p>
+
+
+                      {/* ============================= */}
+                      {/* MINIMUM ORDER */}
+                      {/* ============================= */}
+
+                      <small className="text-muted d-block mt-2">
+
+                        Min. booking amount: ₹
+                        {minimumAmount.toLocaleString(
+                          "en-IN"
+                        )}
+
+                      </small>
+
+
+                      {/* ============================= */}
+                      {/* NOT ELIGIBLE MESSAGE */}
+                      {/* ============================= */}
+
+                      {!isMinimumAmountSatisfied && (
+                        <small className="text-danger d-block mt-1">
+
+                          Add ₹
+                          {(
+                            minimumAmount -
+                            totallAmountt
+                          ).toLocaleString("en-IN")}
+
+                          {" "}more to use this coupon.
+
+                        </small>
+                      )}
+
+                    </label>
+                  );
+                })
+
+              ) : (
+
+                <div className="text-center py-4">
+
+                  <p className="text-muted mb-0">
+                    No coupons available
+                  </p>
+
                 </div>
-                <p className="desc mb-0">
-                  Log in to get up to 15% OFF.
-                  <br />
-                  Offer valid for new users only
-                </p>
-              </label>
 
-              <label htmlFor="c2" className="coupon-card">
-                <input
-                  type="radio"
-                  checked={selectedCoupon === "MMTSECUREV"}
-                  onChange={() => handleSelectedModal("MMTSECUREV")}
-                  name="ucfewfrew"
-                  id="c2"
-                  className="d-none position-absolute"
-                />
+              )}
 
-                <div className="coupon-top d-flex align-items-center justify-content-between">
-                  <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                    <img
-                      src="/images/discount.png"
-                      className="coupon-icon"
-                      alt=""
-                    />
-                    <strong className="frgrfg5559">MMTSECUREV</strong>
-                  </div>
-                  <span className="discount">₹229 off</span>
-                </div>
-                <p className="desc mb-0">
-                  Get an instant discount of ₹229 on your flight booking
-                  <br />
-                  and Trip Secure combo
-                </p>
-              </label>
-
-              <label htmlFor="c3" className="coupon-card">
-                <input
-                  type="radio"
-                  checked={selectedCoupon === "MMTSECUREL"}
-                  onChange={() => handleSelectedModal("MMTSECUREL")}
-                  name="ucfewfrew"
-                  id="c3"
-                  className="d-none position-absolute"
-                />
-
-                <div className="coupon-top d-flex align-items-center justify-content-between">
-                  <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                    <img
-                      src="/images/discount.png"
-                      className="coupon-icon"
-                      alt=""
-                    />
-                    <strong className="frgrfg5559">MMTSECUREL</strong>
-                  </div>
-                  <span className="discount">₹229 off</span>
-                </div>
-                <p className="desc mb-0">
-                  Get an instant discount of ₹229 on your flight booking
-                  <br />
-                  and Trip Secure combo
-                </p>
-              </label>
-
-              <label htmlFor="c4" className="coupon-card">
-                <input
-                  type="radio"
-                  checked={selectedCoupon === "MMTSECUREJ"}
-                  onChange={() => handleSelectedModal("MMTSECUREJ")}
-                  name="ucfewfrew"
-                  id="c4"
-                  className="d-none position-absolute"
-                />
-
-                <div className="coupon-top d-flex align-items-center justify-content-between">
-                  <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                    <img
-                      src="/images/discount.png"
-                      className="coupon-icon"
-                      alt=""
-                    />
-                    <strong className="frgrfg5559">MMTSECUREJ</strong>
-                  </div>
-                  <span className="discount">₹ 229 off</span>
-                </div>
-                <p className="desc mb-0">
-                  Get an instant discount of ₹229 on your flight booking
-                  <br />
-                  and Trip Secure combo
-                </p>
-              </label>
-
-              <label htmlFor="c5" className="coupon-card">
-                <input
-                  type="radio"
-                  checked={selectedCoupon === "MMTSECURER"}
-                  onChange={() => handleSelectedModal("MMTSECURER")}
-                  name="ucfewfrew"
-                  id="c5"
-                  className="d-none position-absolute"
-                />
-
-                <div className="coupon-top d-flex align-items-center justify-content-between">
-                  <div className="dagsjrsfwertt d-flex align-items-center gap-2 px-2 py-1">
-                    <img
-                      src="/images/discount.png"
-                      className="coupon-icon"
-                      alt=""
-                    />
-                    <strong className="frgrfg5559">MMTSECURER</strong>
-                  </div>
-                  <span className="discount">₹ 229 off</span>
-                </div>
-                <p className="desc mb-0">
-                  Get an instant discount of ₹229 on your flight booking
-                  <br />
-                  and Trip Secure combo
-                </p>
-              </label>
             </div>
+
           </div>
         </div>
       </div>
