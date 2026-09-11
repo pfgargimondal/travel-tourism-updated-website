@@ -92,3 +92,16 @@
     animation: none !important;
   }
 }
+
+
+
+@media only screen and (max-width: 991px){
+  .tp-preloader{
+    text-align: center;
+  }
+}
+
+
+
+
+

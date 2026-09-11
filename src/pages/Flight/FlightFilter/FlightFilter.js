@@ -452,9 +452,9 @@ export const FlightFilter = () => {
   const DefenceFare_Search = searchParams.get("DefenceFare_Search");
 
   const [specialFare, setSpecialFare] = useState(() => {
-    if (StudentFare_Search) return "student";
-    if (DefenceFare_Search) return "defence";
-    if (SrCitizen_Search) return "senior";
+    if (StudentFare_Search === "true") return "student";
+    if (DefenceFare_Search === "true") return "defence";
+    if (SrCitizen_Search === "true") return "senior";
 
     return "regular";
   });
@@ -1947,11 +1947,11 @@ export const FlightFilter = () => {
                     pagination={false}
                     loop={false}
                     breakpoints={{
-                      320: {
-                        slidesPerView: 1,
+                      280: {
+                        slidesPerView: 3,
                       },
                       768: {
-                        slidesPerView: 2,
+                        slidesPerView: 5,
                       },
                       992: {
                         slidesPerView: 7,

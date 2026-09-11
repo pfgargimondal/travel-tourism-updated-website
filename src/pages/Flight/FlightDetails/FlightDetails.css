@@ -1629,3 +1629,109 @@ p.jomkodokofjdf{
   font-weight: 600;
   color: var(--light-black-text-color) !important;
 }
+
+
+
+@media only screen and (max-width: 991px){
+  .flight-details-wrapper .jianjdlkmjosdjif span:first-child{
+    flex-shrink: 0;
+  }
+
+  .table-wrapper table{
+    min-width: 500px;
+  }
+
+  .table-wrapper{
+    overflow-x: auto;
+  }
+}
+
+
+
+
+
+@media only screen and (max-width: 600px){
+  .fsdfsdfsd.fghdzgsd{
+    display: flex;
+    align-items: center;
+  }
+
+  .flight-details-wrapper .modal-body button.nav-link {
+    font-size: 0.8rem !important;
+  }
+
+  .flight-wrppr .flight-header{
+    flex-direction: column;
+  }
+
+  .diwehidmsad span{
+    width: max-content;
+  }
+
+  .flight-details-wrapper .diwehidmsad button{
+    justify-content: initial;
+  }
+
+  .diwehidmsad{
+    margin-top: 1rem;
+  }
+
+  .diwehidmsad.flex-column{
+    flex-direction: row !important;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .flight-details-wrapper .recommend{
+    flex-direction: column;
+  }
+
+  .flight-details-wrapper .trip-card.d-flex{
+    flex-direction: column;
+  }
+
+  .flight-details-wrapper .time-wrapper h5{
+    font-size: 14px;
+  }
+
+  .flight-details-wrapper .udnehnewr > p{
+    font-size: 12px;
+  }
+
+  .flight-details-wrapper .time-wrapper.gap-5{
+    gap: 1rem !important;
+  }
+}
+
+
+
+
+@media only screen and (max-width: 412px){
+  .flight-details-wrapper .modal-body .nav.nav-tabs{
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .flight-details-wrapper .modal-body button.nav-link{
+    white-space: nowrap;
+  }
+
+  .flight-details-wrapper .modal-body .nav.nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .flight-details-wrapper .card-box,
+  .state-box{
+    padding: 10px;
+  }
+}
+
+
+
+
+@media only screen and (max-width: 360px){
+  span.inmokkojjeorr {
+    font-size: 12px;
+  }
+}

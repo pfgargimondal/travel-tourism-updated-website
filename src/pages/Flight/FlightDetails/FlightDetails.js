@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "./FlightDetails.css";
 import http from "../../../http";
@@ -83,13 +83,14 @@ export const FlightDetails = () => {
   const [activeMealFilter, setActiveMealFilter] = useState("all");
   const [activeMealPassenger, setActiveMealPassenger] = useState(0);
 
-  const [showSeatRecommendationModal, setShowSeatRecommendationModal] =
-    useState(false);
+  const [showSeatRecommendationModal, setShowSeatRecommendationModal] = useState(false);
+  const [assignedRecommendedSeats, setAssignedRecommendedSeats] = useState([]);
+  const [seatRecommendationError, setSeatRecommendationError] = useState("");
+
   const [selectedExtraAddOns, setSelectedExtraAddOns] = useState([]);
   // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
   // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
-
-
+ 
 
   useEffect(() => {
     const fetchCountryCode = async () => {
@@ -821,8 +822,12 @@ export const FlightDetails = () => {
   const handleAcceptRecommendedSeat = (recommendedSeats) => {
     console.log("Recommended seats:", recommendedSeats);
 
+    setSeatRecommendationError("");
+
     if (!recommendedSeats) {
-        console.log("No recommended seat available");
+        setSeatRecommendationError(
+            "No recommended seats are available. Please choose your seats manually."
+        );
         return;
     }
 
@@ -905,7 +910,6 @@ export const FlightDetails = () => {
     const usedSeatNames = new Set();
 
     const selectedRecommendedSeats = [];
-
     /*
      * Assign recommendations passenger by passenger.
      */
@@ -919,6 +923,7 @@ export const FlightDetails = () => {
                     passenger.paxType
                 )
         );
+
 
         if (!recommendation) {
             console.log(
@@ -961,45 +966,30 @@ export const FlightDetails = () => {
 
         const selectedSeat = {
             id: actualSeat.SSR_TypeName,
-
             row: Number(match[1]),
-
             column: match[2],
-
             status: Number(actualSeat.SSR_Status),
-
             amount: Number(
                 actualSeat.Total_Amount || 0
             ),
-
             currency:
                 actualSeat.Currency_Code,
-
             ssrKey:
                 actualSeat.SSR_Key,
-
             type:
                 actualSeat.SSR_TypeName,
-
             description:
                 actualSeat.SSR_TypeDesc,
-
             flightId:
                 actualSeat.Flight_ID,
-
             segmentId:
                 actualSeat.Segment_Id,
-
             applicablePaxTypes:
                 actualSeat.ApplicablePaxTypes || [],
-
             // Correct passenger assignment
             paxId: passenger.paxId,
-
             paxType: passenger.paxType,
-
             passengerType: passenger.type,
-
             isRecommended: true
         };
 
@@ -1069,9 +1059,335 @@ export const FlightDetails = () => {
         .slice(
             0,
             Number(adultCount || 0) +
-                Number(childCount || 0) + Number(infantCount || 0)
+                Number(childCount || 0)
         );
-  }, [seatMap, adultCount, childCount, infantCount]);
+  }, [seatMap, adultCount, childCount]);
+
+
+  const generatePassengerRecommendations = useCallback(() => {
+    console.log(
+        "Generating passenger recommendations:",
+        recommendedSeats
+    );
+
+    /*
+     * -----------------------------------------
+     * CREATE PASSENGER LIST
+     * -----------------------------------------
+     *
+     * PaxType:
+     * 0 = Adult
+     * 1 = Child
+     * 2 = Infant
+     *
+     * Infants are NOT added here because
+     * infants normally do not require seats.
+     */
+
+    const passengers = [];
+
+    for (let i = 0; i < Number(adultCount || 0); i++) {
+      const passenger = adultForms?.[i];
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 0,
+            type: "Adult",
+            name: `${passenger?.firstName || ""} ${passenger?.lastName || ""}`.trim()
+        });
+    }
+
+    for (let i = 0; i < Number(childCount || 0); i++) {
+        const passenger = childForms?.[i];
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 1,
+            type: "Child",
+            name: `${passenger?.firstName || ""} ${passenger?.lastName || ""}`.trim()
+        });
+    }
+
+    for (let i = 0; i < Number(infantCount || 0); i++) {
+      const passenger = infantForms?.[i];
+        passengers.push({
+            paxId: passengers.length + 1,
+            paxType: 2,
+            type: "Infant",
+            name: `${passenger?.firstName || ""} ${passenger?.lastName || ""}`.trim()
+        });
+    }
+
+    console.log("Passengers:", passengers);
+
+    /*
+     * -----------------------------------------
+     * VARIABLES
+     * -----------------------------------------
+     */
+
+    const usedSeats = new Set();
+
+    const assignedSeats = [];
+
+    const missingPassengers = [];
+
+    /*
+     * -----------------------------------------
+     * ASSIGN RECOMMENDED SEAT
+     * PASSENGER BY PASSENGER
+     * -----------------------------------------
+     */
+
+    passengers.forEach((passenger) => {
+        console.log(
+            `Finding seat for ${passenger.type} ${passenger.paxId}`,
+            {
+                paxType: passenger.paxType,
+            }
+        );
+
+        /*
+         * Find the first recommended seat which:
+         *
+         * 1. Has not already been assigned
+         * 2. Supports this passenger type
+         */
+
+        const recommendation = recommendedSeats.find((seat) => {
+            const seatName = seat?.SSR_TypeName;
+
+            /*
+             * Don't assign same seat twice
+             */
+            if (usedSeats.has(seatName)) {
+                return false;
+            }
+
+            /*
+             * Get ApplicablePaxTypes
+             */
+            const applicablePaxTypes = Array.isArray(
+                seat?.ApplicablePaxTypes
+            )
+                ? seat.ApplicablePaxTypes
+                : [];
+
+            console.log(
+                "Checking seat:",
+                {
+                    seat: seatName,
+                    passenger: `${passenger.type} ${passenger.paxId}`,
+                    passengerPaxType: passenger.paxType,
+                    applicablePaxTypes,
+                }
+            );
+
+            /*
+             * -----------------------------------------
+             * IMPORTANT VALIDATION
+             * -----------------------------------------
+             *
+             * Adult = 0
+             * Child = 1
+             * Infant = 2
+             *
+             * Example:
+             *
+             * ApplicablePaxTypes = [0]
+             * Passenger paxType = 0
+             *
+             * TRUE -> seat can be assigned
+             *
+             * ApplicablePaxTypes = [0]
+             * Passenger paxType = 1
+             *
+             * FALSE -> don't assign
+             */
+
+            if (
+                !applicablePaxTypes.includes(
+                    passenger.paxType
+                )
+            ) {
+                console.log(
+                    `Seat ${seatName} is NOT allowed for ${passenger.type} ${passenger.paxId}`
+                );
+
+                return false;
+            }
+
+            /*
+             * Passenger type matches
+             */
+            console.log(
+                `Seat ${seatName} IS allowed for ${passenger.type} ${passenger.paxId}`
+            );
+
+            return true;
+        });
+
+        /*
+         * -----------------------------------------
+         * NO COMPATIBLE SEAT FOUND
+         * -----------------------------------------
+         */
+
+        if (!recommendation) {
+            console.log(
+                `No compatible recommendation for ${passenger.type} ${passenger.paxId}`
+            );
+
+            missingPassengers.push(passenger);
+
+            return;
+        }
+
+        /*
+         * -----------------------------------------
+         * COMPATIBLE SEAT FOUND
+         * -----------------------------------------
+         */
+
+        const seatName = recommendation?.SSR_TypeName;
+
+        /*
+         * Mark this seat as used
+         */
+        usedSeats.add(seatName);
+
+        /*
+         * Save passenger-specific recommendation
+         */
+        assignedSeats.push({
+            ...recommendation,
+
+            paxId: passenger.paxId,
+
+            paxType: passenger.paxType,
+
+            passengerType: passenger.type,
+
+            isRecommended: true,
+        });
+
+        console.log(
+            `Assigned ${seatName} to ${passenger.type} ${passenger.paxId}`
+        );
+    });
+
+    /*
+     * -----------------------------------------
+     * LOG RESULTS
+     * -----------------------------------------
+     */
+
+    console.log(
+        "Successfully assigned recommended seats:",
+        assignedSeats
+    );
+
+    console.log(
+        "Passengers without compatible seats:",
+        missingPassengers
+    );
+
+    /*
+     * -----------------------------------------
+     * SAVE SUCCESSFULLY ASSIGNED SEATS
+     * -----------------------------------------
+     */
+
+    setAssignedRecommendedSeats(assignedSeats);
+
+    /*
+     * -----------------------------------------
+     * CHECK FOR MISSING PASSENGERS
+     * -----------------------------------------
+     */
+    console.log(missingPassengers, 'missingPassengers');
+
+    if (missingPassengers.length > 0) {
+        const missingPassengerText =
+            missingPassengers
+                .map(
+                    (passenger) =>
+                        `${passenger.type} - ${passenger.name}`
+                )
+                .join(", ");
+
+        setSeatRecommendationError(
+            `We couldn't find a suitable recommended seat for ${missingPassengerText}. Please choose the seat manually.`
+        );
+    } else {
+        /*
+         * Everyone got a compatible seat
+         */
+        setSeatRecommendationError("");
+    }
+
+    /*
+     * -----------------------------------------
+     * OPEN RECOMMENDATION MODAL
+     * -----------------------------------------
+     */
+
+    setShowSeatRecommendationModal(true);
+  }, [
+      recommendedSeats,
+      adultCount,
+      childCount,
+      infantCount,
+      adultForms,
+      childForms,
+      infantForms
+  ]);
+
+  useEffect(() => {
+    /*
+     * No seat map
+     */
+    if (
+        !Array.isArray(seatMap) ||
+        seatMap.length === 0
+    ) {
+        return;
+    }
+
+    /*
+     * No adults or children
+     */
+    if (
+        Number(adultCount || 0) === 0 &&
+        Number(childCount || 0) === 0
+    ) {
+        return;
+    }
+
+    /*
+     * No recommended seats
+     */
+    if (
+        !recommendedSeats ||
+        recommendedSeats.length === 0
+    ) {
+        return;
+    }
+
+    console.log(
+        "Seat map updated. Generating passenger recommendations..."
+    );
+
+    /*
+     * Now seatMap is updated,
+     * so generate recommendations.
+     */
+    generatePassengerRecommendations();
+  }, [
+      seatMap,
+      adultCount,
+      childCount,
+      recommendedSeats,
+      generatePassengerRecommendations
+  ]);  
 
 
   const totalPassengers =
@@ -4734,121 +5050,123 @@ console.log(selectedSeats, 'selectedSeats');
 
                 {/* Cancellation */}
 
-                {activeTab === "cancel" && (
-                  <table className="table table-bordered mb-0">
-                    <thead className="table-light">
-                      <tr>
-                        <th width="50%">
-                          Applicable Time
-                          <br />
-                          (From Scheduled Flight departure)
-                        </th>
-                        <th width="50%">
-                          Charges
-                          <br />
-                          (Per passenger)
-                        </th>
-                      </tr>
-                    </thead>
+                <div className="table-wrapper">
+                  {activeTab === "cancel" && (
+                    <table className="table table-bordered mb-0">
+                      <thead className="table-light">
+                        <tr>
+                          <th width="50%">
+                            Applicable Time
+                            <br />
+                            (From Scheduled Flight departure)
+                          </th>
+                          <th width="50%">
+                            Charges
+                            <br />
+                            (Per passenger)
+                          </th>
+                        </tr>
+                      </thead>
 
-                    <tbody>
-                      {(() => {
-                        // Collect all cancellation charges from Adult/Child/Infant
-                        const allCharges = allfareDetails.flatMap(
-                          (fareDetail) =>
-                            (fareDetail?.CancellationCharges || []).map(
-                              (charge) => ({
-                                ...charge,
-                                paxType: fareDetail.PAX_Type,
-                              }),
-                            ),
-                        );
+                      <tbody>
+                        {(() => {
+                          // Collect all cancellation charges from Adult/Child/Infant
+                          const allCharges = allfareDetails.flatMap(
+                            (fareDetail) =>
+                              (fareDetail?.CancellationCharges || []).map(
+                                (charge) => ({
+                                  ...charge,
+                                  paxType: fareDetail.PAX_Type,
+                                }),
+                              ),
+                          );
 
-                        // Group charges by duration
-                        const groupedCharges = allCharges.reduce(
-                          (groups, charge) => {
-                            const key = `${charge.DurationFrom}-${charge.DurationTo}-${charge.DurationTypeFrom}-${charge.DurationTypeTo}`;
+                          // Group charges by duration
+                          const groupedCharges = allCharges.reduce(
+                            (groups, charge) => {
+                              const key = `${charge.DurationFrom}-${charge.DurationTo}-${charge.DurationTypeFrom}-${charge.DurationTypeTo}`;
 
-                            if (!groups[key]) {
-                              groups[key] = [];
-                            }
-
-                            groups[key].push(charge);
-
-                            return groups;
-                          },
-                          {},
-                        );
-
-                        return Object.values(groupedCharges).map(
-                          (charges, index) => {
-                            const firstCharge = charges[0];
-
-                            const getPassengerName = (paxType) => {
-                              if (paxType === 0) return "ADULT";
-                              if (paxType === 1) return "CHILD";
-                              if (paxType === 2) return "INFANT";
-
-                              return "PASSENGER";
-                            };
-
-                            const formatCharge = (charge) => {
-                              if (!charge) return "₹0";
-
-                              if (
-                                charge.Value === undefined ||
-                                charge.Value === null ||
-                                charge.Value === ""
-                              ) {
-                                return "₹0";
+                              if (!groups[key]) {
+                                groups[key] = [];
                               }
 
-                              if (charge.ValueType === 1) {
-                                return `${charge.Value}% of Fare`;
-                              }
+                              groups[key].push(charge);
 
-                              if (isNaN(Number(charge.Value))) {
-                                return charge.Value;
-                              }
+                              return groups;
+                            },
+                            {},
+                          );
 
-                              return `₹${Number(charge.Value).toLocaleString("en-IN")}`;
-                            };
+                          return Object.values(groupedCharges).map(
+                            (charges, index) => {
+                              const firstCharge = charges[0];
 
-                            return (
-                              <tr key={index}>
-                                {/* Applicable Time */}
-                                <td>
-                                  If cancelled between{" "}
-                                  <strong>{firstCharge.DurationFrom} </strong>
-                                  {firstCharge.DurationTypeFrom === 0
-                                    ? "hours"
-                                    : "days"}{" "}
-                                  to <strong>{firstCharge.DurationTo} </strong>
-                                  {firstCharge.DurationTypeTo === 0
-                                    ? "hours"
-                                    : "days"}{" "}
-                                  before departure
-                                </td>
+                              const getPassengerName = (paxType) => {
+                                if (paxType === 0) return "ADULT";
+                                if (paxType === 1) return "CHILD";
+                                if (paxType === 2) return "INFANT";
 
-                                {/* Charge */}
-                                <td style={{ fontWeight: 500 }}>
-                                  {charges.map((charge) => (
-                                    <div key={charge.paxType} className="mb-1">
-                                      <strong>
-                                        {getPassengerName(charge.paxType)}:
-                                      </strong>{" "}
-                                      {formatCharge(charge)}
-                                    </div>
-                                  ))}
-                                </td>
-                              </tr>
-                            );
-                          },
-                        );
-                      })()}
-                    </tbody>
-                  </table>
-                )}
+                                return "PASSENGER";
+                              };
+
+                              const formatCharge = (charge) => {
+                                if (!charge) return "₹0";
+
+                                if (
+                                  charge.Value === undefined ||
+                                  charge.Value === null ||
+                                  charge.Value === ""
+                                ) {
+                                  return "₹0";
+                                }
+
+                                if (charge.ValueType === 1) {
+                                  return `${charge.Value}% of Fare`;
+                                }
+
+                                if (isNaN(Number(charge.Value))) {
+                                  return charge.Value;
+                                }
+
+                                return `₹${Number(charge.Value).toLocaleString("en-IN")}`;
+                              };
+
+                              return (
+                                <tr key={index}>
+                                  {/* Applicable Time */}
+                                  <td>
+                                    If cancelled between{" "}
+                                    <strong>{firstCharge.DurationFrom} </strong>
+                                    {firstCharge.DurationTypeFrom === 0
+                                      ? "hours"
+                                      : "days"}{" "}
+                                    to <strong>{firstCharge.DurationTo} </strong>
+                                    {firstCharge.DurationTypeTo === 0
+                                      ? "hours"
+                                      : "days"}{" "}
+                                    before departure
+                                  </td>
+
+                                  {/* Charge */}
+                                  <td style={{ fontWeight: 500 }}>
+                                    {charges.map((charge) => (
+                                      <div key={charge.paxType} className="mb-1">
+                                        <strong>
+                                          {getPassengerName(charge.paxType)}:
+                                        </strong>{" "}
+                                        {formatCharge(charge)}
+                                      </div>
+                                    ))}
+                                  </td>
+                                </tr>
+                              );
+                            },
+                          );
+                        })()}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
 
                 {/* Reschedule */}
 
@@ -5270,28 +5588,76 @@ console.log(selectedSeats, 'selectedSeats');
                       )}
                   </div>
 
+                  {seatRecommendationError && (
+                    <div
+                        className="alert alert-warning mt-3 mb-3"
+                        role="alert"
+                    >
+                        <div className="d-flex align-items-start gap-2">
+
+                            <i className="bi bi-exclamation-triangle-fill"></i>
+
+                            <div>
+                                {seatRecommendationError}
+                            </div>
+
+                        </div>
+                    </div>
+                  )}
+
                   {/* RECOMMENDED SEAT */}
 
-                  {recommendedSeats.map((seat, index) => (
-                      <div
-                          className="recommended-seat-box"
-                          key={`${seat?.SSR_TypeName}-${index}`}
-                      >
-                          <div className="recommended-seat-name">
-                              <strong>
-                                  Passenger {index + 1}: {seat?.SSR_TypeName}
-                              </strong>
+                  {assignedRecommendedSeats.length > 0 ? (
+                <div className="recommended-seat-list">
 
-                              <span>
-                                  ({seat?.SSR_TypeDesc || "WINDOW"})
-                              </span>
-                          </div>
+                    {assignedRecommendedSeats.map(
+                        (seat) => (
+                            <div
+                                className="recommended-seat-box"
+                                key={`${seat?.SSR_TypeName}-${seat?.paxId}`}
+                            >
 
-                          <div className="recommended-seat-price">
-                              ₹ {seat?.Total_Amount || 0}
-                          </div>
+                                <div className="recommended-seat-name">
+
+                                    <strong>
+                                        {seat?.passengerType}{" "}
+                                        {seat?.paxId}
+                                        
+                                    </strong>
+
+                                    <span>
+                                        Seat{" "}
+                                        {seat?.SSR_TypeName}
+
+                                        {" "}
+
+                                        (
+                                        {seat?.SSR_TypeDesc ||
+                                            "SEAT"}
+                                        )
+                                    </span>
+
+                                </div>
+
+                                <div className="recommended-seat-price">
+                                    ₹{" "}
+                                    {Number(
+                                        seat?.Total_Amount ||
+                                            0
+                                    )}
+                                </div>
+
+                            </div>
+                        )
+                    )}
+
+                </div>
+                  ) : (
+                      <div className="alert alert-warning mt-3">
+                          No compatible recommended seat
+                          is available.
                       </div>
-                  ))}
+                  )}
 
                   {/* BUTTONS */}
                   <div className="seat-recommendation-buttons">
@@ -5307,13 +5673,17 @@ console.log(selectedSeats, 'selectedSeats');
 
                       {/* ACCEPT */}
                       <button
-                          type="button"
-                          className="btn btn-primary rounded-pill"
-                          onClick={() =>
-                              handleAcceptRecommendedSeat(
-                                  recommendedSeats,
-                              )
-                          }
+                        type="button"
+                        className="btn btn-primary rounded-pill"
+                        disabled={
+                            assignedRecommendedSeats.length ===
+                            0
+                        }
+                        onClick={() =>
+                            handleAcceptRecommendedSeat(
+                                assignedRecommendedSeats
+                            )
+                        }
                       >
                           Yes, I Like It
                       </button>

@@ -1344,11 +1344,7 @@ label.nihnuidnuiwehrwer img{
     
     .react-datepicker-wrapper{
         width: 100%;
-    }
-
-    .flight-filtr-wrppr .flight-body .dikijasdlfdsf button.mb-2{
-        margin-bottom: 1.4rem !important;
-    }
+    }    
 
     .dikijasdlfdsf.pt-3{
         padding-top: 0 !important;
@@ -1356,10 +1352,23 @@ label.nihnuidnuiwehrwer img{
 
     .dikijasdlfdsf{
         border-left: 0;
+        margin-bottom: 1rem;
+    }
+    
+    .dikijasdlfdsf.flex-column{
+        flex-direction: row !important;
     }
 
     .dikijasdlfdsf.text-end{
         text-align: center !important;
+    }
+
+    .dikijasdlfdsf .btn-tour{
+        margin-bottom: 0 !important;
+    }
+
+    .dikijasdlfdsf.align-items-end{
+        align-items: center !important;
     }
 
     .offer-strip{
@@ -1410,8 +1419,25 @@ label.nihnuidnuiwehrwer img{
     .sdjkcnsidjcije{
         overflow-y: auto;
     }
+
+    .res-btwn-crcl .circle{
+        margin-inline: auto;
+    }
+
+    .dubyasyufsdf .table th.text-start:nth-of-type(5n - 1){
+        text-align: right !important;
+    }
 }
 
+
+
+
+
+@media only screen and (max-width: 624px){
+    .dinsdlcjiodsfc p {
+        font-size: 10px !important;
+    }
+}
 
 
 
@@ -1585,17 +1611,13 @@ label.nihnuidnuiwehrwer img{
     }
 
     .uhncoikcdf p {
-        font-size: 0.7rem;
+        font-size: 10px;
         padding-right: 10px;
     }
 
     .stop-info{
         font-size: 0.7rem;
         padding-inline: 10px;
-    }    
-
-    .dinsdlcjiodsfc p {
-        font-size: 0.8rem !important;
     }
 
     .dinsdlcjiodsfc small {
@@ -1633,6 +1655,23 @@ label.nihnuidnuiwehrwer img{
 
 
 
+@media (max-width:562px){
+    .uhncoikcdf p,
+    .dinsdlcjiodsfc small,
+    .dinsdlcjiodsfc p {
+        white-space: nowrap;
+    }
+
+    .flight-top{
+        flex-wrap: wrap;
+    }
+}
+
+
+
+
+
+
 @media only screen and (max-width: 470px){
     .srch-filtr-wrpper .flight-trip-type > .container {
         justify-content: initial;
@@ -1651,6 +1690,19 @@ label.nihnuidnuiwehrwer img{
 @media only screen and (max-width: 393px) {
     .filter-card .filter-header h5{
         font-size: 1rem;
+    }
+
+    .time-wrapper.ps-3{
+        padding-left: 0 !important;
+    }
+
+    .gfjh55 h5 span:first-child,
+    .time-wrapper h5 {
+        font-size: 0.8rem;
+    }
+
+    .dikijasdlfdsf .btn-tour {
+        font-size: 12px;
     }
 }
 
