@@ -12,7 +12,7 @@ import { useAuth } from "../../../context/AuthContext";
 
 export const FlightDetails = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, setLoginRegModal } = useAuth();
+  const { user, isLoggedIn, setLoginRegModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [imprtntInfoModal, setImprtntInfoModal] = useState(false);
   const [allCouponModal, setAllCouponModal] = useState(false);
@@ -2012,6 +2012,7 @@ export const FlightDetails = () => {
   // TOTAL
   // ============================================================
 
+
   const totallAmountt =
     baseFareTotal +
     taxAmount +
@@ -2127,6 +2128,8 @@ export const FlightDetails = () => {
     setCouponError("");
   };
 
+
+
   const couponDiscount = selectedCoupon
     ? Math.min(
         totallAmountt,
@@ -2141,6 +2144,8 @@ export const FlightDetails = () => {
     totallAmountt - couponDiscount
   );
 
+  console.log(totallAmountt, 'totallAmountt');
+  console.log(finalAmount, 'finalAmount');
 
   const handleProceedToPayment = () => {
     setFlightBookingModal(false);
@@ -2168,6 +2173,9 @@ export const FlightDetails = () => {
       extraAddOnCharges,
       otherCharges,
       totallAmountt,
+      finalAmount,
+      selectedCoupon,
+      couponDiscount,
       cabinClassName,
       adultFare,
     };
@@ -2422,18 +2430,18 @@ export const FlightDetails = () => {
         console.log(response, 'response temp booking');
 
       const bookingReference =  response?.booking_reference ||
-                response?.BookingId ||
-                response?.booking_id ||
-                response?.Booking_Reference ||
-                response?.BookingReference ||
-                response?.BookingRef ||
-                response?.PNR ||
-                response?.pnr ||
-                response?.data?.Booking_Id ||
-                response?.data?.BookingId ||
-                response?.data?.Booking_Reference ||
-                response?.data?.booking_reference ||
-                response?.data?.BookingReference || "";
+              response?.BookingId ||
+              response?.booking_id ||
+              response?.Booking_Reference ||
+              response?.BookingReference ||
+              response?.BookingRef ||
+              response?.PNR ||
+              response?.pnr ||
+              response?.data?.Booking_Id ||
+              response?.data?.BookingId ||
+              response?.data?.Booking_Reference ||
+              response?.data?.booking_reference ||
+              response?.data?.BookingReference || "";
 
         if (!bookingReference) {
             throw new Error("Booking reference not found from Temp Booking response.");
@@ -2444,6 +2452,7 @@ export const FlightDetails = () => {
         const ticketingPayload = {
             BookingReference: bookingReference,
             Ticketing_Type: ticketingType,
+            User_id: user?.id,
         };
 
 
@@ -4668,6 +4677,81 @@ console.log(selectedSeats, 'selectedSeats');
                           </td>
                         </tr>
 
+                        {seatCharges > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{ borderBottom: 0 }}
+                            >
+                              Seat Charges
+                            </td>
+
+                            <td style={{ borderBottom: 0 }}>
+                              ₹ {seatCharges.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+
+                        {mealCharges > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{ borderBottom: 0 }}
+                            >
+                              Meal Charges
+                            </td>
+
+                            <td style={{ borderBottom: 0 }}>
+                              ₹ {mealCharges.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+
+                        {extraBaggageCharges > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{ borderBottom: 0 }}
+                            >
+                              Extra Baggage
+                            </td>
+
+                            <td style={{ borderBottom: 0 }}>
+                              ₹ {extraBaggageCharges.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+
+                        {extraAddOnCharges > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{ borderBottom: 0 }}
+                            >
+                              Extra Add-ons
+                            </td>
+
+                            <td style={{ borderBottom: 0 }}>
+                              ₹ {extraAddOnCharges.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+
+                        {otherCharges > 0 && (
+                          <tr>
+                            <td
+                              className="asdfsdfsdf"
+                              style={{ borderBottom: 0 }}
+                            >
+                              Other Charges
+                            </td>
+
+                            <td style={{ borderBottom: 0 }}>
+                              ₹ {otherCharges.toLocaleString("en-IN")}
+                            </td>
+                          </tr>
+                        )}
+   
                         {/* ============================= */}
                         {/* COUPON DISCOUNT */}
                         {/* ============================= */}
@@ -6289,6 +6373,25 @@ console.log(selectedSeats, 'selectedSeats');
                 </div>
               )}
 
+              {/* ============================= */}
+              {/* COUPON DISCOUNT */}
+              {/* ============================= */}
+
+              {selectedCoupon && couponDiscount > 0 && (
+                <div className="d-flex justify-content-between mb-2">
+                  <p className="mb-0 coupon-details">
+                    Coupon Discount 
+                    <span className="ms-1">
+                      ({selectedCoupon.code})
+                    </span>
+                  </p>
+
+                  <p className="mb-0 coupon-details">
+                    - {" "}{formatAmount(couponDiscount)}
+                  </p>
+                </div>
+              )}
+
 
             {/* Discount */}
 
@@ -6480,7 +6583,13 @@ console.log(selectedSeats, 'selectedSeats');
           <div className="booking-total d-flex justify-content-between align-items-center pt-2">
             <div>
               <span className="text-muted small d-block">Total Amount</span>
-              <h4 className="mb-0 fw-bold">{formatAmount(totallAmountt)}</h4>
+              <h4 className="mb-0 fw-bold">
+                 {(
+                    selectedCoupon
+                      ? formatAmount(finalAmount)
+                      : formatAmount(totallAmountt)
+                  )}
+              </h4>
             </div>
 
             {isBlockAllowed && (

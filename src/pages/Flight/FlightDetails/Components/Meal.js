@@ -47,6 +47,11 @@ export const Meal = ({
             PTSW: "./../images/paneer-sandwich.png",
             CJSW: "./../images/chicken-junglee-sandwich.png",
             CPML: "./../images/corporate-meal.png",
+
+            RDWI: "./../images/red-wine.jpg",
+            WHWI: "./../images/white-wine.jpg",
+            WHSK: "./../images/whiskey-image.jpg",
+            BEER: "./../images/beer-image.jpg",
         };
 
         if (exactImages[code]) {
@@ -122,6 +127,22 @@ export const Meal = ({
 
         if (text.includes("corporate")) {
             return "./../images/corporate-meal.png";
+        }
+
+        if (text.includes("Beer")) {
+            return "./../images/beer-image.jpg";
+        }
+
+        if (text.includes("Whiskey")) {
+            return "./../images/whiskey-image.jpg";
+        }
+
+        if (text.includes("White wine")) {
+            return "./../images/white-wine.jpg";
+        }
+
+        if (text.includes("Redwine")) {
+            return "./../images/red-wine.jpg";
         }
 
         return "./../images/default-meal.png";

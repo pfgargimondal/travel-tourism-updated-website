@@ -1593,6 +1593,12 @@ p.ijkihrtg{
   color: #000 !important;
 }
 
+.coupon-details {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #198754 !important;
+}
+
 .uidbjewh p{
   border-right: 1px solid var(--border);
   padding-inline: 0.5rem;

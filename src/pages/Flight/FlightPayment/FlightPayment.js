@@ -26,6 +26,7 @@ export const FlightPayment = () => {
     selectedSeatList = [],
     selectedMealList = [],
     selectedSSR = {},
+    selectedCoupon = {},
     baseFare = 0,
     taxAmount = 0,
     seatCharges = 0,
@@ -33,7 +34,10 @@ export const FlightPayment = () => {
     extraBaggageCharges = 0,
     extraAddOnCharges = 0,
     otherCharges = 0,
+    // eslint-disable-next-line
     totallAmountt = 0,
+    couponDiscount = 0,
+    finalAmount = 0,
     cabinClassName = "",
     adultFare = "",
   } = location.state || {};
@@ -683,7 +687,7 @@ export const FlightPayment = () => {
             flight,
             segment,
             repriceFlight,
-            totallAmountt,
+            finalAmount,
             bookingStatus: "payment_failed",
             bookingMessage: paymentErrorMessage,
           },
@@ -831,7 +835,7 @@ export const FlightPayment = () => {
 
             repriceFlight,
 
-            totallAmountt,
+            finalAmount,
 
             bookingStatus,
           },
@@ -865,7 +869,7 @@ export const FlightPayment = () => {
 
             repriceFlight,
 
-            totallAmountt,
+            finalAmount,
 
             bookingStatus,
 
@@ -899,7 +903,7 @@ export const FlightPayment = () => {
 
             repriceFlight,
 
-            totallAmountt,
+            finalAmount,
 
             bookingStatus,
 
@@ -937,7 +941,7 @@ export const FlightPayment = () => {
 
           repriceFlight,
 
-          totallAmountt,
+          finalAmount,
 
           bookingStatus,
 
@@ -961,7 +965,7 @@ export const FlightPayment = () => {
           flight,
           segment,
           repriceFlight,
-          totallAmountt,
+          finalAmount,
           bookingStatus: "error",
           bookingMessage:
             error?.response?.data?.message ||
@@ -1045,7 +1049,7 @@ export const FlightPayment = () => {
       );
 
       await startPayment({
-        amount: totallAmountt,
+        amount: finalAmount,
         bookingReference,
       });
 
@@ -1086,11 +1090,25 @@ export const FlightPayment = () => {
     <div className="sjkbcfksdndf flight-details-wrapper">
       <div className="flight-payment-page">
         {/* ================= HEADER ================= */}
-        <div className="payment-page-header px-0">
+        {/* <div className="payment-page-header px-0">
           <div className="container">
             <h4 className="mb-1 fw-bold">Review & Payment</h4>
 
             <p className="mb-0">Complete your booking securely</p>
+          </div>
+        </div> */}
+        <div className="payment-page-header px-0">
+          <div className="container">
+            <button type="button" className="payment-back-btn" onClick={() => navigate(-1)}>
+              <i className="fa-solid fa-arrow-left"></i>
+              <span>Back to Flight Details</span>
+            </button>
+            <h4 className="mb-1 fw-bold">
+              Review & Payment
+            </h4>
+            <p className="mb-0">
+              Complete your booking securely
+            </p>
           </div>
         </div>
 
@@ -1471,7 +1489,7 @@ export const FlightPayment = () => {
                         Click "Proceed to Pay". Temp booking will be created
                         first and then Razorpay checkout will open.
                       </p>
-                      <strong>Total: {formatAmount(totallAmountt)}</strong>
+                      <strong>Total: {formatAmount(finalAmount)}</strong>
                     </div>
                   )}
 
@@ -1484,7 +1502,7 @@ export const FlightPayment = () => {
                         payment gateway.
                       </p>
 
-                      <strong>Total: {formatAmount(totallAmountt)}</strong>
+                      <strong>Total: {formatAmount(finalAmount)}</strong>
                     </div>
                   )}
 
@@ -1496,7 +1514,7 @@ export const FlightPayment = () => {
                         Wallet payment will be handled by the payment gateway.
                       </p>
 
-                      <strong>Total: {formatAmount(totallAmountt)}</strong>
+                      <strong>Total: {formatAmount(finalAmount)}</strong>
                     </div>
                   )}
 
@@ -1508,7 +1526,7 @@ export const FlightPayment = () => {
                         Select Net Banking and continue to the payment gateway.
                       </p>
 
-                      <strong>Total: {formatAmount(totallAmountt)}</strong>
+                      <strong>Total: {formatAmount(finalAmount)}</strong>
                     </div>
                   )}
                 </div>
@@ -1580,10 +1598,18 @@ export const FlightPayment = () => {
                     </div>
                   )}
 
+                  {selectedCoupon && couponDiscount > 0 && (
+                    <div className="ksdrgnvjksdfbn">
+                      <span>Coupon Discount <span className="ms-1">({selectedCoupon.code})</span></span>
+
+                      <p className="mb-0">-{" "}{formatAmount(couponDiscount)}</p>
+                    </div>
+                  )}
+
                   <div className="grand-total">
                     <h5 className="mb-0">Grand Total</h5>
 
-                    <h5 className="mb-0">{formatAmount(totallAmountt)}</h5>
+                    <h5 className="mb-0">{formatAmount(finalAmount)}</h5>
                   </div>
                 </div>
 
