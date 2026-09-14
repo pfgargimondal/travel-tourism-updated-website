@@ -776,22 +776,31 @@ export const FlightDetails = () => {
     // Clear selected seats
     setSelectedSeats([]);
 
-    // Mark as completed so user can continue
+    // Mark seat selection as completed
     setIsSeatSelectionComplete(true);
 
     // Close seat recommendation popup
     setShowSeatRecommendationModal(false);
 
-    // Go to meals if available
+    // Go to Meals if available
     if (hasMeal) {
-        setShowSeatMealSection(true);
-        setActiveSeatMealTab("meals");
-        return;
+      setShowSeatMealSection(true);
+      setActiveSeatMealTab("meals");
+      return;
     }
 
-    // No meals → continue to booking
+    // No Meals → go to Extra Add-ons if available
+    if (hasExtraAddOn) {
+      setShowSeatMealSection(true);
+      setActiveSeatMealTab("extraAddOns");
+      return;
+    }
+
+    // No Meals + No Extra Add-ons → continue to booking
+    setShowSeatMealSection(false);
     handleSeatMealContinue();
   };
+
 
   const handleMealSkip = () => {
     console.log("User skipped meal selection");
@@ -799,10 +808,15 @@ export const FlightDetails = () => {
     // Clear selected meals
     setSelectedMeals({});
 
-    // Close seat/meal section
-    setShowSeatMealSection(false);
+    // Go to Extra Add-ons if available
+    if (hasExtraAddOn) {
+      setShowSeatMealSection(true);
+      setActiveSeatMealTab("extraAddOns");
+      return;
+    }
 
-    // Continue to booking
+    // No Extra Add-ons → continue to booking
+    setShowSeatMealSection(false);
     handleSeatMealContinue();
   };
 
@@ -2128,8 +2142,6 @@ export const FlightDetails = () => {
     setCouponError("");
   };
 
-
-
   const couponDiscount = selectedCoupon
     ? Math.min(
         totallAmountt,
@@ -2427,8 +2439,6 @@ export const FlightDetails = () => {
           payload
         );
 
-        console.log(response, 'response temp booking');
-
       const bookingReference =  response?.booking_reference ||
               response?.BookingId ||
               response?.booking_id ||
@@ -2460,6 +2470,10 @@ export const FlightDetails = () => {
           "/flight-ticketing",
           ticketingPayload,
         );
+
+        if(ticketResponse?.data?.success === false){
+          alert(ticketResponse?.data?.message);
+        }
   
         console.log(ticketResponse, 'ticketResponse');
         console.log(ticketResponse?.data, 'ticketResponsedata');
@@ -2474,10 +2488,64 @@ export const FlightDetails = () => {
         // After successful block:
         // navigate to Hold Ticket Success page
 
+      if (ticketResponse?.data?.success === true) {
+
+        const paymentData = {
+          search_key,
+          flight,
+          segment,
+          repriceFlight,
+          bookingPassengers,
+          selectedSeatList: Array.isArray(selectedSeatList)
+            ? selectedSeatList
+            : [],
+          selectedMealList: Array.isArray(selectedMealList)
+            ? selectedMealList
+            : [],
+          selectedSSR: Array.isArray(selectedSSR)
+            ? selectedSSR
+            : [],
+          baseFare,
+          taxAmount,
+          seatCharges,
+          mealCharges,
+          extraBaggageCharges,
+          extraAddOnCharges,
+          otherCharges,
+          totallAmountt,
+          finalAmount,
+          selectedCoupon,
+          couponDiscount,
+          cabinClassName,
+          adultFare,
+        };
+
+        sessionStorage.setItem(
+          `heldBookingReference`,
+          JSON.stringify(ticketResponse?.data?.data)
+        );
+
+        navigate(`/user-dashboard`, {
+          state: paymentData,
+        });
+
+        return;
+      }
+
+      throw new Error(
+        "Unexpected response received while holding ticket."
+      );
+
     } catch (error) {
-        console.error("Hold ticket failed:", error);
+      console.error("Hold ticket failed:", error);
+
+      alert(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong while holding the ticket."
+      );
     }
-};
+  };
 
 console.log(selectedSeats, 'selectedSeats');
 

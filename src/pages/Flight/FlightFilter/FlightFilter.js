@@ -16,6 +16,7 @@ import "./FlightFilter.css";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { useAuth } from "../../../context/AuthContext";
 
 
 
@@ -110,6 +111,7 @@ const isSameDayArrival = (flight) => {
 
 export const FlightFilter = () => {
   const [searchParams] = useSearchParams();
+  const { isLoggedIn, setLoginRegModal } = useAuth();
   const [flightList, setFlightsList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showFareModal, setShowFareModal] = useState(false);
@@ -1930,13 +1932,14 @@ export const FlightFilter = () => {
                   </div>
                 </div>
 
-                <div className="save-banner mb-4">
-                  <span>
-                    Save an average of 15% on thousands of flights when you're
-                    signed in
-                  </span>
-                  <button className="sign-btn">Sign In</button>
-                </div>
+                {!isLoggedIn && (
+                  <div className="save-banner mb-4">
+                    <span>
+                      Sign in now and get exclusive discounts on your flight booking
+                    </span>
+                    <button className="sign-btn" onClick={() => setLoginRegModal(true)}>Sign In</button>
+                  </div>
+                )}
 
                 <div className="dubyasyufsdf sgsdgsfzsdf position-relative mb-3">
                   <Swiper
