@@ -2433,7 +2433,11 @@ export const FlightDetails = () => {
     try {
         setFlightBookingModal(false);
 
-        const payload = createTempBookingPayload();
+        const payload = {
+            ...createTempBookingPayload(),
+            user_id: user?.id,
+            amount: finalAmount,
+        };
         const response = await http.post(
           "/flight-temp-booking",
           payload
@@ -2489,52 +2493,18 @@ export const FlightDetails = () => {
         // navigate to Hold Ticket Success page
 
       if (ticketResponse?.data?.success === true) {
-
-        const paymentData = {
-          search_key,
-          flight,
-          segment,
-          repriceFlight,
-          bookingPassengers,
-          selectedSeatList: Array.isArray(selectedSeatList)
-            ? selectedSeatList
-            : [],
-          selectedMealList: Array.isArray(selectedMealList)
-            ? selectedMealList
-            : [],
-          selectedSSR: Array.isArray(selectedSSR)
-            ? selectedSSR
-            : [],
-          baseFare,
-          taxAmount,
-          seatCharges,
-          mealCharges,
-          extraBaggageCharges,
-          extraAddOnCharges,
-          otherCharges,
-          totallAmountt,
-          finalAmount,
-          selectedCoupon,
-          couponDiscount,
-          cabinClassName,
-          adultFare,
-        };
+        // eslint-disable-next-line
+        const holdTicketResponse = ticketResponse?.data?.data;
 
         sessionStorage.setItem(
           `heldBookingReference`,
           JSON.stringify(ticketResponse?.data?.data)
         );
 
-        navigate(`/user-dashboard`, {
-          state: paymentData,
-        });
+        navigate(`/user-hold-ticket`);
 
         return;
       }
-
-      throw new Error(
-        "Unexpected response received while holding ticket."
-      );
 
     } catch (error) {
       console.error("Hold ticket failed:", error);

@@ -32,5 +32,6 @@ export {FlightTicket} from "./FlightTicket";
 export {UserProfile} from "./User/UserProfile";
 export {UserAccountSettings} from "./User/UserAccountSettings";
 export {UserBooking} from "./User/UserBooking";
+export {UserHoldTicket} from "./User/UserHoldTicket";
 export {UserWishlist} from "./User/UserWishlist";
 export {PasswordChange} from "./User/PasswordChange";

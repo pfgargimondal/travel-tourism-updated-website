@@ -1,0 +1,275 @@
+.held-tickets-page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.held-tickets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.held-tickets-header h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.held-tickets-header p {
+    margin: 6px 0 0;
+    color: #777;
+}
+
+.held-count {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.held-count span {
+    font-size: 13px;
+    font-weight: 500;
+    color: #777;
+}
+
+.held-ticket-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.held-ticket-card {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.held-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.airline-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.airline-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #f4f6f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.airline-name {
+    display: block;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.airline-info small {
+    color: #777;
+}
+
+.held-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #fff5df;
+    color: #b26a00;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.held-badge span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.held-booking-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    padding: 22px 0;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.booking-detail span {
+    display: block;
+    color: #777;
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.booking-detail strong {
+    font-size: 17px;
+    letter-spacing: 0.5px;
+}
+
+.hold-expiry {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 9px;
+    background: #f7f9fb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.expiry-label {
+    display: block;
+    color: #777;
+    font-size: 12px;
+}
+
+.expiry-left strong {
+    display: block;
+    margin-top: 4px;
+    font-size: 14px;
+}
+
+.expiry-time {
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.hold-expiry.expired {
+    background: #fff0f0;
+}
+
+.held-card-footer {
+    margin-top: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.flight-id {
+    color: #999;
+    font-size: 11px;
+}
+
+.continue-booking-btn {
+    border: none;
+    border-radius: 7px;
+    padding: 11px 18px;
+    background: #000;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.continue-booking-btn:hover {
+    opacity: 0.9;
+}
+
+.continue-booking-btn span {
+    font-size: 18px;
+}
+
+.expired-btn {
+    border: none;
+    border-radius: 7px;
+    padding: 11px 18px;
+    background: #eee;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.no-held-tickets {
+    text-align: center;
+    padding: 70px 20px;
+    border: 1px dashed #ddd;
+    border-radius: 14px;
+}
+
+.no-held-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+}
+
+.no-held-tickets h4 {
+    margin-bottom: 8px;
+}
+
+.no-held-tickets p {
+    color: #777;
+}
+
+.no-held-tickets button {
+    margin-top: 15px;
+    border: none;
+    background: #000;
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 7px;
+}
+
+.held-tickets-loading {
+    text-align: center;
+    padding: 60px;
+}
+
+@media (max-width: 600px) {
+
+    .held-tickets-page {
+        padding: 20px 12px;
+    }
+
+    .held-tickets-header {
+        align-items: flex-start;
+    }
+
+    .held-tickets-header h2 {
+        font-size: 21px;
+    }
+
+    .held-count {
+        font-size: 18px;
+    }
+
+    .held-booking-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .held-card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .continue-booking-btn,
+    .expired-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hold-expiry {
+        align-items: flex-start;
+        gap: 10px;
+        flex-direction: column;
+    }
+}

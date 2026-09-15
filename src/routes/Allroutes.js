@@ -22,6 +22,7 @@ import {
   UserAccountSettings,
   PasswordChange,
   UserBooking,
+  UserHoldTicket,
   UserWishlist,
   HotelBooking,
   HotelPayment,
@@ -71,6 +72,7 @@ function Allroutes() {
       <Route path="/user-profile" element={<UserProfile />} />
       <Route path="/account-information" element={<UserAccountSettings />} />
       <Route path="/user-booking" element={<UserBooking />} />
+      <Route path="/user-hold-ticket" element={<UserHoldTicket />} />
       <Route path="/wishlist" element={<UserWishlist />} />
       <Route path="/change-password" element={<PasswordChange />} />
 

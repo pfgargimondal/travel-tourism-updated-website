@@ -1,16 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-
-
 import { Footer, Header } from './component';
-
-
 import Allroutes from './routes/Allroutes';
 import AOS from "aos";
-
 import "aos/dist/aos.css";
-
-
 import './App.css';
 
 
@@ -25,7 +18,7 @@ function App() {
   const excludeNavs = pathName.includes("/flight-ticket");
 
   useEffect(() => {
-    const isHeaderNewIncluded = ["/thank-you", "/flight-booking-pending", "/user-profile", "/account-information", "/user-booking", "/change-password", "/wishlist"].some(path => pathName.includes(path));
+    const isHeaderNewIncluded = ["/thank-you", "/flight-booking-pending", "/user-profile", "/account-information", "/user-booking", "/user-hold-ticket", "/change-password", "/wishlist"].some(path => pathName.includes(path));
     const isHeaderBlackTextIncluded = ["/hotel-booking", "/hotel-payment", "/hotel-details", "/flight-details", "/flight-payment"].some(path => pathName.includes(path));
     const isHeaderStickyIncluded = ["/flight-filter", "/hotel-filter"].some(path => pathName.includes(path));
 

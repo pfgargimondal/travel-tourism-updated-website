@@ -610,9 +610,7 @@ export const FlightPayment = () => {
       BookingFlightDetails: [
         {
           Search_Key: search_key || "",
-
           Flight_Key: getFlightKey(),
-
           BookingSSRDetails: createBookingSSRDetails(),
         },
       ],
