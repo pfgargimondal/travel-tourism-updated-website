@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { FlightFilterProvider } from './context/FlightFilterContext';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider } from './context/AuthContext';
+import { HotelFilterProvider } from './context/HotelFilterContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -16,7 +17,9 @@ root.render(
       <GoogleOAuthProvider clientId="570435144670-kjeos1f1hn439m6qn1i6g61cgefh9ie8.apps.googleusercontent.com">
         <BrowserRouter>
           <FlightFilterProvider>
-            <App />
+            <HotelFilterProvider>
+              <App />
+            </HotelFilterProvider>
           </FlightFilterProvider>
         </BrowserRouter>
       </GoogleOAuthProvider>

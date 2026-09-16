@@ -416,17 +416,17 @@ export const HotelSearch = ({ cities = [], setHotelFilterOptionsToggle }) => {
                                     <button className="flight-search-btn" onClick={handleSearch}>SEARCH</button>
                                 </div>
                             )}
-                        </div>
-                    </div>
-                </section>
 
-                {window.innerWidth > 991 && (
-                    <div className="ghaadasd">
-                        <div className="text-center mt-4 ">
-                            <button className="flight-search-btn" onClick={handleSearch}>SEARCH</button>
+                            {window.innerWidth > 991 && (
+                                <div className="ghaadasd">
+                                    <div className="text-center mt-4 ">
+                                        <button className="flight-search-btn" onClick={handleSearch}>SEARCH</button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
+                </section>                
             </div>
         </div>
     )

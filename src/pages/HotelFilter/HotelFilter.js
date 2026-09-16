@@ -1,15 +1,19 @@
-import { Link, useLocation } from "react-router-dom";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+// eslint-disable-next-line
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
+import { Slider } from "@mui/material";
+
 import http from "../../http";
 import Loader from "../../component/Loader/Loader";
+import { useHotelFilters } from "../../context/HotelFilterContext";
 import { HotelSearch } from "../../component/HotelSearch/HotelSearch";
+
 import "./HotelFilter.css";
 
 
 
 export const HotelFilter = () => {
-
   const navigate = useNavigate();
   const location = useLocation();
   const [cities, setCities] = useState([]);
@@ -28,6 +32,36 @@ export const HotelFilter = () => {
     children: "",
     price: "",
   });
+  // eslint-disable-next-line
+  const [price, setPrice] = useState([0, 500000]);
+  const {
+    filters,
+    hasActiveFilters,
+    toggleSuggestedForYou,
+    togglePricePerNight,
+    setPriceRange,
+    // eslint-disable-next-line
+    togglePropertyType,
+    toggleTopLocation,
+    // eslint-disable-next-line
+    toggleGuestsLove,
+    // eslint-disable-next-line
+    toggleBookingPreference,
+    // eslint-disable-next-line
+    toggleHouseRule,
+    // eslint-disable-next-line
+    toggleDealsOffers,
+    resetFilters,
+  } = useHotelFilters();
+
+  // eslint-disable-next-line
+  const handleChange = (event, newValue) => {
+      setPrice(newValue);
+  };
+
+  const formatPrice = (value) => {
+      return `₹ ${value.toLocaleString("en-IN")}`;
+  };
   
 
   const fetchCities = async () => {
@@ -111,9 +145,130 @@ export const HotelFilter = () => {
 
   // console.log(hotels, 'hotels');
 
+  const PRICE_PER_NIGHT_RANGES = {
+    "999-1999": [999, 1999],
+    "1100-1999": [1100, 1999],
+    "1500-2999": [1500, 2999],
+    "2000-2999": [2000, 2999],
+    "2000-3500": [2000, 3500],
+    "3999-5999": [3999, 5999],
+    "10000-plus": [10000, Infinity],
+  };
+
   const availableHotels = hotels?.filter(
     (hotel) => hotel?.hotelFilter?.HotelResult?.length > 0
-  ); 
+  );
+
+  const filteredHotels = availableHotels?.filter((hotel) => {
+    const room = hotel?.hotelFilter?.HotelResult?.[0]?.Rooms?.[0];
+
+    // ---------------- PRICE ----------------
+    const totalBasePrice =
+      room?.DayRates?.reduce((sum, dayRate) => {
+        return sum + (dayRate?.[0]?.BasePrice || 0);
+      }, 0) || 0;
+
+    const matchesPrice =
+      totalBasePrice >= filters.priceRange[0] &&
+      totalBasePrice <= filters.priceRange[1];
+
+    
+    // ---------------- PRICE PER NIGHT (bucket checkboxes) ----------------
+    const matchesPricePerNight =
+      filters.pricePerNight.length === 0 ||
+      filters.pricePerNight.some((key) => {
+        const range = PRICE_PER_NIGHT_RANGES[key];
+        if (!range) return false;
+        const [min, max] = range;
+        return totalBasePrice >= min && totalBasePrice <= max;
+      });
+
+
+    // ---------------- STAR CATEGORY ----------------
+    const hotelRating = String(hotel?.hotel_rating || 0);
+
+    const matchesSuggestedForYou =
+      filters.suggestedForYou.length === 0 ||
+      filters.suggestedForYou.some((option) => {
+        if (option === 'LAST_MINUTE_DEALS') {
+          return hotelRating === "LAST_MINUTE_DEALS";
+        } else if (option === "5_STAR") {
+          return hotelRating === "5"
+        } else if (option === "4_STAR") {
+          return hotelRating === "4"
+        } else if (option === "BREAKFAST_INCLUDED") {
+          return hotelRating === "BREAKFAST_INCLUDED"
+        } else if (option === "3_STAR") {
+          return hotelRating === "3"
+        }
+
+        return true;
+      });
+
+
+    // ---------------- TOP LOCATIONS ----------------
+    const cityName = hotel?.city_name?.toLowerCase() || "";
+    const countryName = hotel?.country_name?.toLowerCase() || "";
+    const address = hotel?.address?.toLowerCase() || "";
+
+    const matchesTopLocation =
+      filters.topLocations.length === 0 ||
+      filters.topLocations.some((location) => {
+        const locationName = location
+          .replaceAll("_", " ")
+          .toLowerCase();
+
+        return (
+          cityName.includes(locationName) ||
+          countryName.includes(locationName) ||
+          address.includes(locationName)
+        );
+      });
+
+
+    return (
+      matchesPrice &&
+      matchesSuggestedForYou &&
+      matchesTopLocation &&
+      matchesPricePerNight
+    );
+  });
+
+  const getSuggestedCount = (option) => {
+    return (
+      availableHotels?.filter((hotel) => {
+        const hotelFilterValue = String(hotel?.hotel_rating || 0);
+
+        if (option === "LAST_MINUTE_DEALS") {
+          return hotelFilterValue === "LAST_MINUTE_DEALS";
+        }
+
+        if (option === "5_STAR") {
+          return hotelFilterValue === "5";
+        }
+
+        if (option === "4_STAR") {
+          return hotelFilterValue === "4";
+        }
+
+        if (option === "3_STAR") {
+          return hotelFilterValue === "3";
+        }
+
+        if (option === "BREAKFAST_INCLUDED") {
+          return hotelFilterValue === "BREAKFAST_INCLUDED";
+        }
+
+        return false;
+      }).length || 0
+    );
+  };
+
+  const handlePriceRangeChange = (_event, newValue) => {
+    setPriceRange(newValue);
+  };
+
+  console.log(filteredHotels);
 
 
 
@@ -168,7 +323,7 @@ export const HotelFilter = () => {
                   <div className="hotel-res-filter-btn mobile-filter-btn filter-header">
                     <h5 className="mb-0" onClick={() => setResHotelFilterToggle(prev => !prev)}>{window.innerWidth <= 991 && <i className="fa-solid me-1 fa-sliders"></i>} Filters</h5>
                     
-                    <span className="reset-btn disabled d-flex align-items-center"><i className="fa-solid fa-arrow-rotate-left"></i> <b>Reset</b></span>
+                    <span onClick={resetFilters} className="reset-btn d-flex align-items-center"><i className="fa-solid fa-arrow-rotate-left"></i> <b>Reset</b></span>
                   </div>
                 )}
 
@@ -176,19 +331,32 @@ export const HotelFilter = () => {
                   <div className="filter-box">
                     <div className="filter-header">
                       <h5 className="mb-0">Filter</h5>
-                      <span className="reset-btn disabled d-flex align-items-center"><i className="bi me-1 bi-arrow-clockwise"></i> Reset</span>
+                      <span
+                        className={`reset-btn d-flex align-items-center ${hasActiveFilters ? '' : 'disabled'}`}
+                        onClick={hasActiveFilters ? resetFilters : undefined}
+                      >
+                        <i className="bi me-1 bi-arrow-clockwise"></i> Reset
+                      </span>
                     </div>
 
                     <div className="filter-section suggested-section">
-                      <h6 className="mb-3">Suggested For You</h6>
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Suggested For You</span>
+                        </div>
 
-                      <div className="fijkfokweer">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="fijkfokweer mt-3">
                         <div className="suggested-item">
                           <div className="checkbox-wrapper-33">
                             <label className="checkbox">
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.suggestedForYou.includes('LAST_MINUTE_DEALS')}
+                                onChange={() => toggleSuggestedForYou('LAST_MINUTE_DEALS')}
                               />
 
                               <span className="checkbox__symbol">
@@ -209,7 +377,7 @@ export const HotelFilter = () => {
                             </label>
                           </div>
 
-                          <span className="item-count">(217)</span>
+                          <span className="item-count">({getSuggestedCount("LAST_MINUTE_DEALS")})</span>
                         </div>
 
                         <div className="suggested-item">
@@ -218,6 +386,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.suggestedForYou.includes('5_STAR')}
+                                onChange={() => toggleSuggestedForYou('5_STAR')}
                               />
 
                               <span className="checkbox__symbol">
@@ -238,7 +408,7 @@ export const HotelFilter = () => {
                             </label>
                           </div>
 
-                          <span className="item-count">(217)</span>
+                          <span className="item-count">({getSuggestedCount("5_STAR")})</span>
                         </div>
 
                         <div className="suggested-item">
@@ -247,6 +417,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.suggestedForYou.includes('4_STAR')}
+                                onChange={() => toggleSuggestedForYou('4_STAR')}
                               />
 
                               <span className="checkbox__symbol">
@@ -267,7 +439,7 @@ export const HotelFilter = () => {
                             </label>
                           </div>
 
-                          <span className="item-count">(397)</span>
+                          <span className="item-count">({getSuggestedCount("4_STAR")})</span>
                         </div>
 
                         <div className="suggested-item">
@@ -276,6 +448,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.suggestedForYou.includes('BREAKFAST_INCLUDED')}
+                                onChange={() => toggleSuggestedForYou('BREAKFAST_INCLUDED')}
                               />
 
                               <span className="checkbox__symbol">
@@ -296,7 +470,7 @@ export const HotelFilter = () => {
                             </label>
                           </div>
 
-                          <span className="item-count">(1190)</span>
+                          <span className="item-count">({getSuggestedCount("BREAKFAST_INCLUDED")})</span>
                         </div>
 
                         <div className="suggested-item">
@@ -305,6 +479,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.suggestedForYou.includes('3_STAR')}
+                                onChange={() => toggleSuggestedForYou('3_STAR')}
                               />
 
                               <span className="checkbox__symbol">
@@ -325,21 +501,29 @@ export const HotelFilter = () => {
                             </label>
                           </div>
 
-                          <span className="item-count">(781)</span>
+                          <span className="item-count">({getSuggestedCount("3_STAR")})</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="filter-section">
-                      <h6 className="mb-3">Price Per Night</h6>
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Price Per Night</span>
+                        </div>
 
-                      <div className="fijkfokweer">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="fijkfokweer mt-3">
                         <div className="suggested-item">
                           <div className="checkbox-wrapper-33">
                             <label className="checkbox">
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('999-1999')}
+                                onChange={() => togglePricePerNight('999-1999')}
                               />
 
                               <span className="checkbox__symbol">
@@ -359,8 +543,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹999 - ₹1999</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(218)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -369,6 +551,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('1100-1999')}
+                                onChange={() => togglePricePerNight('1100-1999')}
                               />
 
                               <span className="checkbox__symbol">
@@ -388,8 +572,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹1100 - ₹1999</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(342)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -398,6 +580,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('1500-2999')}
+                                onChange={() => togglePricePerNight('1500-2999')}
                               />
 
                               <span className="checkbox__symbol">
@@ -417,8 +601,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹1500 - ₹2999</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(187)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -427,6 +609,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('2000-2999')}
+                                onChange={() => togglePricePerNight('2000-2999')}
                               />
 
                               <span className="checkbox__symbol">
@@ -446,8 +630,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹2000 - ₹2999</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(264)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -456,6 +638,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('2000-3500')}
+                                onChange={() => togglePricePerNight('2000-3500')}
                               />
 
                               <span className="checkbox__symbol">
@@ -475,8 +659,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹2000 - ₹3500</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(95)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -485,6 +667,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('3999-5999')}
+                                onChange={() => togglePricePerNight('3999-5999')}
                               />
 
                               <span className="checkbox__symbol">
@@ -504,8 +688,6 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">₹3999 - ₹5999</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(72)</span>
                         </div>
 
                         <div className="suggested-item">
@@ -514,6 +696,8 @@ export const HotelFilter = () => {
                               <input
                                 className="checkbox__trigger visuallyhidden"
                                 type="checkbox"
+                                checked={filters.pricePerNight.includes('10000-plus')}
+                                onChange={() => togglePricePerNight('10000-plus')}
                               />
 
                               <span className="checkbox__symbol">
@@ -533,45 +717,69 @@ export const HotelFilter = () => {
                               <p className="checkbox__textwrapper">10000+</p>
                             </label>
                           </div>
-
-                          <span className="item-count">(21)</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="budget-filter">
-                      <label className="budget-label">Your Budget</label>
-
-                      <div className="budget-row d-flex align-items-center justify-content-between gap-2">
-                        <div className="d-flex align-items-center gap-2">
-                          <input
-                            type="number"
-                            className="budget-input"
-                            placeholder="Min"
-                          />
-
-                          <span className="budget-sep">to</span>
-
-                          <input
-                            type="number"
-                            className="budget-input"
-                            placeholder="Max"
-                          />
+                    <div className="filter-section border-top-0">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Your Budget</span>
                         </div>
 
-                        <button className="budget-btn">
-                          <img
-                            src="https://cdn-icons-png.flaticon.com/512/117/117472.png"
-                            alt="Go"
-                            className="arrow-img"
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="flight-filter-content">
+                        <div className="price-filter">
+                          <Slider
+                            value={filters.priceRange}
+                            onChange={handlePriceRangeChange}
+                            min={0}
+                            max={500000}
+                            step={1000}
+                            disableSwap
+                            sx={{
+                              color: 'var(--blue-primary-color) !important',
+                              height: 4,
+                              '& .MuiSlider-thumb': {
+                                width: 22,
+                                height: 22,
+                                backgroundColor: 'var(--blue-primary-color) !important',
+                              },
+                              '& .MuiSlider-track': {
+                                border: 'none',
+                              },
+                              '& .MuiSlider-rail': {
+                                backgroundColor: '#d9d9d9',
+                              },
+                            }}
                           />
-                        </button>
+
+                          <div className="flight-results-section mb-0">
+                            <div className="price-values">
+                              <span className="price-box">
+                                {formatPrice(filters.priceRange[0])}
+                              </span>
+
+                              <span className="price-box">
+                                {formatPrice(filters.priceRange[1])}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="filter-section suggested-section">
-                      <h6>Star Category</h6>
-
+                    {/* <div className="filter-section suggested-section">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Star Category</span>
+                        </div>
+              
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+              
                       <div className="suggested-item">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
@@ -579,7 +787,7 @@ export const HotelFilter = () => {
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
                             />
-
+              
                             <span className="checkbox__symbol">
                               <svg
                                 aria-hidden="true"
@@ -593,14 +801,14 @@ export const HotelFilter = () => {
                                 <path d="M4 14l8 7L24 7"></path>
                               </svg>
                             </span>
-
+              
                             <p className="checkbox__textwrapper">3 Star</p>
                           </label>
                         </div>
-
+              
                         <span className="item-count">(781)</span>
                       </div>
-
+              
                       <div className="suggested-item">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
@@ -608,7 +816,7 @@ export const HotelFilter = () => {
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
                             />
-
+              
                             <span className="checkbox__symbol">
                               <svg
                                 aria-hidden="true"
@@ -622,14 +830,14 @@ export const HotelFilter = () => {
                                 <path d="M4 14l8 7L24 7"></path>
                               </svg>
                             </span>
-
+              
                             <p className="checkbox__textwrapper">4 Star</p>
                           </label>
                         </div>
-
+              
                         <span className="item-count">(397)</span>
                       </div>
-
+              
                       <div className="suggested-item">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
@@ -637,7 +845,7 @@ export const HotelFilter = () => {
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
                             />
-
+              
                             <span className="checkbox__symbol">
                               <svg
                                 aria-hidden="true"
@@ -651,24 +859,32 @@ export const HotelFilter = () => {
                                 <path d="M4 14l8 7L24 7"></path>
                               </svg>
                             </span>
-
+              
                             <p className="checkbox__textwrapper">5 Star</p>
                           </label>
                         </div>
-
+              
                         <span className="item-count">(217)</span>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="filter-section suggested-section">
-                      <h6>Property Type</h6>
+                    {/* <div className="filter-section suggested-section">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Property Type</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.propertyType.includes('APARTMENT')}
+                              onChange={() => togglePropertyType('APARTMENT')}
                             />
 
                             <span className="checkbox__symbol">
@@ -698,6 +914,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.propertyType.includes('VILLA')}
+                              onChange={() => togglePropertyType('VILLA')}
                             />
 
                             <span className="checkbox__symbol">
@@ -727,6 +945,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.propertyType.includes('HOTEL')}
+                              onChange={() => togglePropertyType('HOTEL')}
                             />
 
                             <span className="checkbox__symbol">
@@ -756,6 +976,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.propertyType.includes('RESORT')}
+                              onChange={() => togglePropertyType('RESORT')}
                             />
 
                             <span className="checkbox__symbol">
@@ -785,6 +1007,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.propertyType.includes('HOMESTAY')}
+                              onChange={() => togglePropertyType('HOMESTAY')}
                             />
 
                             <span className="checkbox__symbol">
@@ -807,17 +1031,25 @@ export const HotelFilter = () => {
 
                         <span className="item-count">(75)</span>
                       </div>
-                    </div>
+                    </div> */}
 
                     <div className="filter-section suggested-section">
-                      <h6>Top locations</h6>
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Top locations</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('NORTH_GOA')}
+                              onChange={() => toggleTopLocation('NORTH_GOA')}
                             />
 
                             <span className="checkbox__symbol">
@@ -845,6 +1077,37 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('HURGHADA')}
+                              onChange={() => toggleTopLocation('HURGHADA')}
+                            />
+
+                            <span className="checkbox__symbol">
+                              <svg
+                                aria-hidden="true"
+                                className="icon-checkbox"
+                                width="28px"
+                                height="28px"
+                                viewBox="0 0 28 28"
+                                version="1.1"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path d="M4 14l8 7L24 7"></path>
+                              </svg>
+                            </span>
+
+                            <p className="checkbox__textwrapper">Hurghada</p>
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="suggested-item">
+                        <div className="checkbox-wrapper-33">
+                          <label className="checkbox">
+                            <input
+                              className="checkbox__trigger visuallyhidden"
+                              type="checkbox"
+                              checked={filters.topLocations.includes('SOUTH_GOA')}
+                              onChange={() => toggleTopLocation('SOUTH_GOA')}
                             />
 
                             <span className="checkbox__symbol">
@@ -872,6 +1135,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('BAGA_BEACH')}
+                              onChange={() => toggleTopLocation('BAGA_BEACH')}
                             />
 
                             <span className="checkbox__symbol">
@@ -899,6 +1164,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('PANJIM')}
+                              onChange={() => toggleTopLocation('PANJIM')}
                             />
 
                             <span className="checkbox__symbol">
@@ -926,6 +1193,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('CALANGUTE_BEACH')}
+                              onChange={() => toggleTopLocation('CALANGUTE_BEACH')}
                             />
 
                             <span className="checkbox__symbol">
@@ -953,6 +1222,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('CANDOLIM_BEACH')}
+                              onChange={() => toggleTopLocation('CANDOLIM_BEACH')}
                             />
 
                             <span className="checkbox__symbol">
@@ -980,6 +1251,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('VAGATOR')}
+                              onChange={() => toggleTopLocation('VAGATOR')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1007,6 +1280,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('ANJUNA_BEACH')}
+                              onChange={() => toggleTopLocation('ANJUNA_BEACH')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1034,6 +1309,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('PALOLEM_BEACH')}
+                              onChange={() => toggleTopLocation('PALOLEM_BEACH')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1061,6 +1338,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.topLocations.includes('CANDOLIM')}
+                              onChange={() => toggleTopLocation('CANDOLIM')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1083,15 +1362,23 @@ export const HotelFilter = () => {
                       </div>
                     </div>
 
-                    <div className="filter-section suggested-section">
-                      <h6>Guests Love</h6>
+                    {/* <div className="filter-section suggested-section">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Guests Love</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.guestsLove.includes('WIFI')}
+                              onChange={() => toggleGuestsLove('WIFI')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1121,6 +1408,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.guestsLove.includes('SPA')}
+                              onChange={() => toggleGuestsLove('SPA')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1150,6 +1439,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.guestsLove.includes('SWIMMING_POOL')}
+                              onChange={() => toggleGuestsLove('SWIMMING_POOL')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1178,17 +1469,25 @@ export const HotelFilter = () => {
                           Show 13 more
                         </Link>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="filter-section suggested-section mt-4">
-                      <h6>Booking Preference</h6>
+                    {/* <div className="filter-section suggested-section mt-4">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Booking Preference</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.bookingPreference.includes('ENTIRE_VILLAS_APARTMENTS')}
+                              onChange={() => toggleBookingPreference('ENTIRE_VILLAS_APARTMENTS')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1218,6 +1517,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.bookingPreference.includes('CARETAKER')}
+                              onChange={() => toggleBookingPreference('CARETAKER')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1247,6 +1548,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.bookingPreference.includes('INSTANT_BOOK')}
+                              onChange={() => toggleBookingPreference('INSTANT_BOOK')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1276,6 +1579,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.bookingPreference.includes('HOMESTAYS')}
+                              onChange={() => toggleBookingPreference('HOMESTAYS')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1298,17 +1603,25 @@ export const HotelFilter = () => {
 
                         <span className="item-count">(829)</span>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="filter-section suggested-section mt-4">
-                      <h6>House Rules</h6>
+                    {/* <div className="filter-section suggested-section mt-4">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">House Rules</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('SELF_CHECK_IN')}
+                              onChange={() => toggleHouseRule('SELF_CHECK_IN')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1338,6 +1651,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('SMOKING_ALLOWED')}
+                              onChange={() => toggleHouseRule('SMOKING_ALLOWED')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1367,6 +1682,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('ALL_MALE_GROUPS_ALLOWED')}
+                              onChange={() => toggleHouseRule('ALL_MALE_GROUPS_ALLOWED')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1396,6 +1713,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('UNMARRIED_COUPLES_ALLOWED')}
+                              onChange={() => toggleHouseRule('UNMARRIED_COUPLES_ALLOWED')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1425,6 +1744,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('ALCOHOL_ALLOWED')}
+                              onChange={() => toggleHouseRule('ALCOHOL_ALLOWED')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1454,6 +1775,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.houseRules.includes('PETS_ALLOWED')}
+                              onChange={() => toggleHouseRule('PETS_ALLOWED')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1476,17 +1799,25 @@ export const HotelFilter = () => {
 
                         <span className="item-count">(117)</span>
                       </div>
-                    </div>
+                    </div> */}
 
-                    <div className="filter-section suggested-section mt-4">
-                      <h6>Deals & Offers</h6>
+                    {/* <div className="filter-section suggested-section mt-4">
+                      <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                        <div className="flight-filter-left">
+                          <span className="flight-filter-title">Deals & Offers</span>
+                        </div>
 
-                      <div className="suggested-item">
+                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                      </div>
+
+                      <div className="suggested-item mt-3">
                         <div className="checkbox-wrapper-33">
                           <label className="checkbox">
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.dealsOffers.includes('TRAVEL_KA_MUHURAT_SALE')}
+                              onChange={() => toggleDealsOffers('TRAVEL_KA_MUHURAT_SALE')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1516,6 +1847,8 @@ export const HotelFilter = () => {
                             <input
                               className="checkbox__trigger visuallyhidden"
                               type="checkbox"
+                              checked={filters.dealsOffers.includes('LIGHTNING_DROPS')}
+                              onChange={() => toggleDealsOffers('LIGHTNING_DROPS')}
                             />
 
                             <span className="checkbox__symbol">
@@ -1538,7 +1871,7 @@ export const HotelFilter = () => {
 
                         <span className="item-count">(529)</span>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -1547,7 +1880,7 @@ export const HotelFilter = () => {
 
               <div className="col-lg-9">
                 <div className="ajhfbmuihehee mb-4">
-                  <h5 className="fw-semibold mb-0">{availableHotels?.length} Hotels Found on Your Search</h5>
+                  <h5 className="fw-semibold mb-0">{filteredHotels?.length} Hotels Found on Your Search</h5>
 
                   {/* <div className="sort-area">
                     <p className="mb-0">Sort By :</p>
@@ -1561,8 +1894,8 @@ export const HotelFilter = () => {
                 
                 <div className="sebfghsfsdf">
 
-                  {availableHotels?.length > 0 ? (
-                    availableHotels.map((hotel, index) => {
+                  {filteredHotels?.length > 0 ? (
+                    filteredHotels.map((hotel, index) => {
 
                       // Clean Description
                       const cleanDescription = hotel.description
@@ -1638,7 +1971,7 @@ export const HotelFilter = () => {
                                           )}
 
                                           {/* Location */}
-                                          <p className="sgfsvdfgf mt-1 mb-0">
+                                          <p className="sgfsvdfgf mt-1 mb-3">
                                             {headline
                                               ? shortDescription?.split(" ")?.slice(0, 18)?.join(" ")
                                               : shortDescription?.split(" ")?.slice(0, 25)?.join(" ")
@@ -1665,8 +1998,8 @@ export const HotelFilter = () => {
                                           </p>
                                         </div>
 
-                                        <div>
-                                            <p>| {displayName}</p>
+                                        <div className="ubjbsdknfusdf">
+                                            <p className="mb-1">| {displayName}</p>
                                         </div>
 
                                         <div className="diehfsdf d-flex align-items-center gap-1 mt-2 mb-1">
@@ -1771,8 +2104,6 @@ export const HotelFilter = () => {
                   ) : (
                     <h5>No Hotels Found</h5>
                   )}
-
-
 
                   {/* <div className="gfetyy89">
                     <div className="sdhdss8899">
