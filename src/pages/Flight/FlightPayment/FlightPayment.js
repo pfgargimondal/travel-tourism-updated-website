@@ -676,7 +676,7 @@ export const FlightPayment = () => {
           JSON.stringify(confirmationData)
         );
 
-        navigate("/flight-booking-pending", {
+        navigate(`/flight-booking-pending/${bookingReference}`, {
           state: {
             bookingReference,
             paymentResponse,
@@ -955,7 +955,7 @@ export const FlightPayment = () => {
     } catch (error) {
       console.error("Ticketing Error:", error);
 
-      navigate("/flight-booking-pending", {
+      navigate(`/flight-booking-pending/${bookingReference}`, {
         state: {
           bookingReference,
           paymentResponse,

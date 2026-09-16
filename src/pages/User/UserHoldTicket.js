@@ -34,7 +34,6 @@ export const UserHoldTicket = () => {
                 );
                 setHeldTickets(activeTickets);
             }
-
         } catch (error) {
             console.error(
                 "Failed to fetch held tickets:",
@@ -62,7 +61,6 @@ export const UserHoldTicket = () => {
                 );
                 return;
             }
-
             const response = await http.post(
                 "/user/held-ticket",
                 {

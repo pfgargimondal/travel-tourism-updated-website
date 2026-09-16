@@ -1619,6 +1619,7 @@ export const FlightDetails = () => {
   );
 
   // Total
+  // eslint-disable-next-line
   const totalAmount = allfareDetails.reduce(
     (total, item) => total + Number(item.Total_Amount || 0),
     0,
@@ -2436,7 +2437,15 @@ export const FlightDetails = () => {
         const payload = {
             ...createTempBookingPayload(),
             user_id: user?.id,
-            amount: finalAmount,
+            amount: Number(finalAmount || 0),
+            base_fare: Number(baseFareTotal || 0),
+            tax_amount: Number(taxAmount || 0),
+            seat_charges: Number(seatCharges || 0),
+            meal_charges: Number(mealCharges || 0),
+            extra_baggage_charges: Number(extraBaggageCharges || 0),
+            extra_addon_charges: Number(extraAddOnCharges || 0),
+            other_charges: Number(otherCharges || 0),
+            coupon_discount: Number(couponDiscount || 0),
         };
         const response = await http.post(
           "/flight-temp-booking",
@@ -2483,19 +2492,19 @@ export const FlightDetails = () => {
         console.log(ticketResponse?.data, 'ticketResponsedata');
         console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
 
-        // Call your Laravel API
-        // Laravel:
-        // Air_TempBooking
-        //      ↓
-        // Air_Ticketing (Ticketing_Type = 0)
+      //   // Call your Laravel API
+      //   // Laravel:
+      //   // Air_TempBooking
+      //   //      ↓
+      //   // Air_Ticketing (Ticketing_Type = 0)
 
-        // After successful block:
-        // navigate to Hold Ticket Success page
+      //   // After successful block:
+      //   // navigate to Hold Ticket Success page
 
       if (ticketResponse?.data?.success === true) {
         // eslint-disable-next-line
         const holdTicketResponse = ticketResponse?.data?.data;
-
+ 
         sessionStorage.setItem(
           `heldBookingReference`,
           JSON.stringify(ticketResponse?.data?.data)
@@ -4839,10 +4848,14 @@ console.log(selectedSeats, 'selectedSeats');
 
                           <td style={{ fontWeight: 600 }}>
                             ₹ {(
+                                finalAmount
+                              ).toLocaleString("en-IN")}
+
+                              {/* ₹ {(
                                 selectedCoupon
                                   ? finalAmount
                                   : totalAmount
-                              ).toLocaleString("en-IN")}
+                              ).toLocaleString("en-IN")} */}
                           </td>
                         </tr>
                       </table>

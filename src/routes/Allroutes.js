@@ -56,7 +56,7 @@ function Allroutes() {
       <Route path="/flight-filter" element={<FlightFilter />} />
       <Route path="/flight-details/:flightId" element={<FlightDetails />} />
       <Route path="/flight-payment/:fareId" element={<FlightPayment />}/>
-      <Route path="/flight-booking-pending" element={<FlightBookingPending />}/>
+      <Route path="/flight-booking-pending/:bookingReference" element={<FlightBookingPending />}/>
 
       <Route path="/bus-filter" element={<BusFilter />} />
 
