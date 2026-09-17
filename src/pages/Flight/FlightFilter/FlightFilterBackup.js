@@ -138,20 +138,10 @@ export const FlightFilter = () => {
 
   const { filters, toggleStop, toggleFarePolicy, setPriceRange, toggleDepartureTime, toggleArrivalTime, toggleAirline, toggleOtherFilter, setSelectedDate, resetFilters } = useFlightFilters();
 
-  // const allFlights = useMemo(() => {
-  //   return (
-  //     flightList?.TripDetails?.flatMap(
-  //       (trip) => trip?.Flights || []
-  //     ) || []
-  //   );
-  // }, [flightList]);
   const allFlights = useMemo(() => {
     return (
-      flightList?.TripDetails?.flatMap((trip) =>
-        (trip?.Flights || []).map((flight) => ({
-          ...flight,
-          tripId: trip.Trip_Id,
-        }))
+      flightList?.TripDetails?.flatMap(
+        (trip) => trip?.Flights || []
       ) || []
     );
   }, [flightList]);

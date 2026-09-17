@@ -950,7 +950,7 @@ export const FlightPayment = () => {
           errorInnerException,
 
           statusId,
-        },
+        }, 
       });
     } catch (error) {
       console.error("Ticketing Error:", error);
