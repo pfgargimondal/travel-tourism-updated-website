@@ -310,9 +310,7 @@ export const FlightDetails = () => {
   };
 
   const adultRule = paxRules.find((x) => Number(x?.Pax_type) === 0);
-
   const childRule = paxRules.find((x) => Number(x?.Pax_type) === 1);
-
   const infantRule = paxRules.find((x) => Number(x?.Pax_type) === 2);
 
   const emptyPassenger = {
@@ -2355,6 +2353,13 @@ export const FlightDetails = () => {
     const firstPassenger =
       bookingPassengers?.[0] || {};
 
+    const paxDetails = createPAXDetails();
+
+    // if (paxDetails.length === 0) {
+    //   throw new Error("PAX_Details is empty");
+    // }
+
+
     const payload = {
       Customer_Mobile:
         firstPassenger?.mobile || "",
@@ -2368,8 +2373,7 @@ export const FlightDetails = () => {
       Passenger_Email:
         firstPassenger?.email || "",
 
-      PAX_Details:
-        createPAXDetails(),
+      PAX_Details: paxDetails,
 
       GST:
         false,
@@ -2432,23 +2436,29 @@ export const FlightDetails = () => {
 
   const handleHoldTicket = async () => {
     try {
+
+        if (!Array.isArray(bookingPassengers) || bookingPassengers.length === 0) {
+          alert("Passenger details are missing. Please enter passenger details.");
+          return;
+        }
         setFlightBookingModal(false);
 
         const payload = {
             ...createTempBookingPayload(),
+            repriceFlight,
             user_id: user?.id,
-            amount: Number(finalAmount || 0),
+            // amount: Number(finalAmount || 0),
             base_fare: Number(baseFareTotal || 0),
             tax_amount: Number(taxAmount || 0),
-            seat_charges: Number(seatCharges || 0),
-            meal_charges: Number(mealCharges || 0),
-            extra_baggage_charges: Number(extraBaggageCharges || 0),
-            extra_addon_charges: Number(extraAddOnCharges || 0),
-            other_charges: Number(otherCharges || 0),
-            coupon_discount: Number(couponDiscount || 0),
+            // seat_charges: Number(seatCharges || 0),
+            // meal_charges: Number(mealCharges || 0),
+            // extra_baggage_charges: Number(extraBaggageCharges || 0),
+            // extra_addon_charges: Number(extraAddOnCharges || 0),
+            // other_charges: Number(otherCharges || 0),
+            // coupon_discount: Number(couponDiscount || 0),
         };
         const response = await http.post(
-          "/flight-temp-booking",
+          "/flight-temp-booking-lock-ticket",
           payload
         );
 
@@ -2480,40 +2490,27 @@ export const FlightDetails = () => {
 
 
         const ticketResponse = await http.post(
-          "/flight-ticketing",
+          "/flight-ticketing-lock-price",
           ticketingPayload,
         );
 
         if(ticketResponse?.data?.success === false){
           alert(ticketResponse?.data?.message);
         }
-  
-        console.log(ticketResponse, 'ticketResponse');
-        console.log(ticketResponse?.data, 'ticketResponsedata');
-        console.log(ticketResponse?.data?.data, 'ticketResponsedatadata');
 
-      //   // Call your Laravel API
-      //   // Laravel:
-      //   // Air_TempBooking
-      //   //      ↓
-      //   // Air_Ticketing (Ticketing_Type = 0)
-
-      //   // After successful block:
-      //   // navigate to Hold Ticket Success page
-
-      if (ticketResponse?.data?.success === true) {
-        // eslint-disable-next-line
-        const holdTicketResponse = ticketResponse?.data?.data;
+      // if (ticketResponse?.data?.success === true) {
+      //   // eslint-disable-next-line
+      //   const holdTicketResponse = ticketResponse?.data?.data;
  
-        sessionStorage.setItem(
-          `heldBookingReference`,
-          JSON.stringify(ticketResponse?.data?.data)
-        );
+      //   sessionStorage.setItem(
+      //     `heldBookingReference`,
+      //     JSON.stringify(ticketResponse?.data?.data)
+      //   );
 
-        navigate(`/user-hold-ticket`);
+      //   navigate(`/flight-locked-thankYou`);
 
-        return;
-      }
+      //   return;
+      // }
 
     } catch (error) {
       console.error("Hold ticket failed:", error);
@@ -3968,6 +3965,40 @@ console.log(selectedSeats, 'selectedSeats');
                     <div className="text-danger mt-2">{billingError}</div>
                   )}
                 </div>
+
+                {isBlockAllowed && (
+                  <div className="fndyff987er">
+                    <div className="trip-card d-flex justify-content-between align-items-center">
+                      {/* Left Content */}
+                      <div className="d-flex gap-3 align-items-start">
+                        {/* Logo */}
+                        <div className="sdfsdfdsf">
+                          <img src="/images/fl_small_blue_plain_lock.png" alt="" />
+                        </div>
+
+                        <div className="mt-3">
+                          {/* Title */}
+                          <div className="fw-bold" style={{ fontSize: "18px" }}>
+                            Still unsure about this trip? Lock this price!
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Button */}
+                      <button className="btn btn-outline-primary rounded-pill px-4" 
+                        onClick={() => { 
+                          if (!isLoggedIn) { 
+                            setLoginRegModal(true);
+                            return; 
+                          } 
+                          handleHoldTicket(); 
+                        }}
+                      >
+                        Lock Now
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="sdejvfhsikdjl mt-3">
                   <button
@@ -6642,17 +6673,17 @@ console.log(selectedSeats, 'selectedSeats');
                   )}
               </h4>
             </div>
-
+{/* 
             {isBlockAllowed && (
                 <button
                     type="button"
                     className="btn btn-outline-primary px-4"
                     onClick={handleHoldTicket}
-                >
+                >   
                     <i className="fa-solid fa-clock me-2"></i>
                     Hold Ticket
                 </button>
-            )}
+            )} */}
 
             <button
               type="button"

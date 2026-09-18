@@ -29,7 +29,8 @@ import {
   HotelPayment,
   BusFilter,
   Visa,
-  FlightTicket
+  FlightTicket,
+  FlightPaymentConfirmation
 } from "../pages";
 
 // function PageRenderer() {
@@ -57,8 +58,9 @@ function Allroutes() {
       <Route path="/flight-filter" element={<FlightFilter />} />
       <Route path="/flight-details/:flightId" element={<FlightDetails />} />
       <Route path="/flight-payment/:fareId" element={<FlightPayment />}/>
-      <Route path="/flight-locked" element={<FlightLocked />}/>
+      <Route path="/flight-locked-thankYou" element={<FlightLocked />}/>
       <Route path="/flight-booking-pending/:bookingReference" element={<FlightBookingPending />}/>
+      <Route path="/flight-payment-confirmation" element={<FlightPaymentConfirmation />}/>
 
       <Route path="/bus-filter" element={<BusFilter />} />
 
