@@ -2437,6 +2437,8 @@ export const FlightDetails = () => {
   const handleHoldTicket = async () => {
     try {
 
+      setLoading(true);
+
         if (!Array.isArray(bookingPassengers) || bookingPassengers.length === 0) {
           alert("Passenger details are missing. Please enter passenger details.");
           return;
@@ -2498,28 +2500,27 @@ export const FlightDetails = () => {
           alert(ticketResponse?.data?.message);
         }
 
-      // if (ticketResponse?.data?.success === true) {
-      //   // eslint-disable-next-line
-      //   const holdTicketResponse = ticketResponse?.data?.data;
- 
-      //   sessionStorage.setItem(
-      //     `heldBookingReference`,
-      //     JSON.stringify(ticketResponse?.data?.data)
-      //   );
+        if (ticketResponse?.data?.success === true) {
+          // const holdTicketResponse = ticketResponse?.data?.data;
 
-      //   navigate(`/flight-locked-thankYou`);
+          sessionStorage.setItem(
+            `heldBookingReference`,
+            JSON.stringify(ticketResponse?.data?.data)
+          );
 
-      //   return;
-      // }
+          navigate(`/flight-locked-thankYou/${bookingReference}`);
+          return;
+        }
 
     } catch (error) {
       console.error("Hold ticket failed:", error);
-
       alert(
         error?.response?.data?.message ||
         error?.message ||
         "Something went wrong while holding the ticket."
       );
+    } finally {
+      setLoading(false);
     }
   };
 

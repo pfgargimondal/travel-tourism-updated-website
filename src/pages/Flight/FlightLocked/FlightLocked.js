@@ -1,31 +1,145 @@
-const FLIGHT = {
-    originCity: "Kolkata",
-    destinationCity: "Mumbai",
-    formattedDate: "Thu, Oct 15",
-    stops: 0,
-    totalDuration: "2h 10m",
-    refundable: true,
-};
+import { useEffect, useState } from "react";
+import http from "../../../http";
+import Loader from "../../../component/Loader/Loader";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
-const SEGMENTS = [
-    {
-        airlineName: "IndiGo",
-        airlineCode: "6E",
-        flightNumber: "6203",
-        aircraftType: "Airbus A320",
-        departureTime: "09:15",
-        arrivalTime: "11:25",
-        originCity: "Kolkata (CCU)",
-        destinationCity: "Mumbai (BOM)",
-        originTerminal: "2",
-        destinationTerminal: "1",
-        duration: "2h 10m",
-    },
-];
+// const FLIGHT = {
+//     originCity: "Kolkata",
+//     destinationCity: "Mumbai",
+//     formattedDate: "Thu, Oct 15",
+//     stops: 0,
+//     totalDuration: "2h 10m",
+//     refundable: true,
+// };
+
+// const SEGMENTS = [
+//     {
+//         airlineName: "IndiGo",
+//         airlineCode: "6E",
+//         flightNumber: "6203",
+//         aircraftType: "Airbus A320",
+//         departureTime: "09:15",
+//         arrivalTime: "11:25",
+//         originCity: "Kolkata (CCU)",
+//         destinationCity: "Mumbai (BOM)",
+//         originTerminal: "2",
+//         destinationTerminal: "1",
+//         duration: "2h 10m",
+//     },
+// ];
 
 
 
 export const FlightLocked = () => {
+
+    const [loading, setLoading] = useState(false);
+    const [lockTicketDetails, setLockTicketDetails] = useState([]);
+    const { bookingReference } = useParams();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        const fetchLockTicket = async () => {
+            try {
+                setLoading(true);
+                const response = await http.post("/user/held-tickets", 
+                    {
+                        user_id: user?.id,
+                        bookingReference: bookingReference
+                    });
+                setLockTicketDetails(response.data.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLockTicket();
+    }, [bookingReference, user?.id]);
+
+    const tempBookingDetails = lockTicketDetails?.temp_booking || null;
+    let allFlightDetails = tempBookingDetails?.allFlightDetails || null;
+
+    console.log("allFlightDetails type:", typeof allFlightDetails);
+
+    if (typeof allFlightDetails === "string") {
+        try {
+            allFlightDetails = JSON.parse(allFlightDetails);
+        } catch (error) {
+            console.error("Failed to parse allFlightDetails:", error);
+            allFlightDetails = null;
+        }
+    }
+
+    const segments = allFlightDetails?.Segments || [];
+    const fares = allFlightDetails?.Fares || [];
+
+    // First fare detail
+    const fareDetails = fares?.[0]?.FareDetails?.[0] || null;
+
+    // Price
+    const totalAmount = fareDetails?.Total_Amount || 0;
+
+    // Duration
+    const totalDuration = segments.reduce((total, segment) => {
+        const [hours, minutes] = (segment.Duration || "00:00")
+            .split(":")
+            .map(Number);
+
+        return total + (hours * 60) + minutes;
+    }, 0);
+
+    const durationHours = Math.floor(totalDuration / 60);
+    const durationMinutes = totalDuration % 60;
+
+    const formattedDuration = `${durationHours}h ${durationMinutes}m`;
+
+    // Stops
+    const stops = Math.max(segments.length - 1, 0);
+
+    const displaySegments = segments.map((segment) => {
+        const departure = new Date(segment.Departure_DateTime);
+        const arrival = new Date(segment.Arrival_DateTime);
+
+        return {
+            airlineCode: segment.Airline_Code,
+            airlineName: segment.Airline_Name,
+            flightNumber: segment.Flight_Number,
+
+            origin: segment.Origin,
+            destination: segment.Destination,
+
+            originCity: segment.Origin_City,
+            destinationCity: segment.Destination_City,
+
+            departureTime: departure.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+
+            arrivalTime: arrival.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+
+            departureDate: departure.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }),
+
+            originTerminal: segment.Origin_Terminal,
+            destinationTerminal: segment.Destination_Terminal,
+
+            duration: segment.Duration,
+        };
+    });
+
+
+    if (loading) return <Loader />;
     return (
         <>
             <style>
@@ -67,7 +181,7 @@ export const FlightLocked = () => {
                         <div className="pb-3">
                             <p style={{ fontSize: "18px", fontWeight: "600" }} className="mb-1">Price Locked <i className="fa-solid ms-1 text-success fa-circle-check"></i></p>
 
-                            <h6 style={{ fontSize: "14px" }} className="mb-0">Confirmation mail sent to <span style={{ fontWeight: "600" }}>support@gmail.com</span></h6>
+                            <h6 style={{ fontSize: "14px" }} className="mb-0">Confirmation mail sent to <span style={{ fontWeight: "600" }}>{user?.email}</span></h6>
                         </div>
                     </div>
 
@@ -83,24 +197,25 @@ export const FlightLocked = () => {
                                                 <p className="mb-0" style={{ fontSize: "12px", fontWeight: "600" }}>SELECTED FLIGHT</p>
 
                                                 <div className="diwehidmsad d-flex flex-column text-end gap-1">
-                                                    <p style={{ fontSize: "12px" }} className="mb-0">LOCKING ID: &nbsp; <b>IJDNJSWBHFNSDHFSJBDJFN</b></p>
+                                                    <p style={{ fontSize: "12px" }} className="mb-0">LOCKING ID: &nbsp; <b>{lockTicketDetails?.booking_reference || "-"}</b></p>
                                                 </div>
                                             </div>
 
                                             <div className="ciuajmcokzxc d-flex justify-content-between gap-2">
                                                 <div className="d-flex">
-                                                    {SEGMENTS.map((segment, index) => (
+                                                    {displaySegments.map((segment, index) => (
                                                         <div key={index}>
                                                             <div className="flight-card px-2 py-0 mb-0">
                                                                 <div className="gfjh55">
                                                                     <img
                                                                         src="/images/indigo.png"
                                                                         width={45}
-                                                                        alt=""
+                                                                        alt={segment.airlineName || "Airline"}
                                                                     />
                                                                     <div className="dihuewoirwerwer">
                                                                         <p className="odmlksjfmdf mb-0">
-                                                                            {segment.airlineCode} {segment.flightNumber}
+                                                                             {segment.airlineCode}{" "}
+                                                                             {segment.flightNumber}
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -110,10 +225,10 @@ export const FlightLocked = () => {
 
                                                     <div>
                                                         <h5 className="fw-bold mb-1 d-flex align-items-center gap-2">
-                                                            {SEGMENTS.map((segment) => (
+                                                             {displaySegments.map((segment, index) => (
                                                                 <div>
                                                                     <span className="d-flex align-items-center">
-                                                                        {FLIGHT.originCity}&nbsp;
+                                                                        {segment.originCity}&nbsp;
 
                                                                         <div>
                                                                             <span className="mb-1">({segment.departureTime})</span>
@@ -141,10 +256,10 @@ export const FlightLocked = () => {
                                                                 alt=""
                                                             />
 
-                                                            {SEGMENTS.map((segment) => (
+                                                            {displaySegments.map((segment, index) => (
                                                                 <div>
                                                                     <span className="d-flex align-items-center">
-                                                                        {FLIGHT.destinationCity}&nbsp;
+                                                                        {segment.destinationCity}&nbsp;
 
                                                                         <div>
                                                                             <span className="mb-1">({segment.arrivalTime})</span>
@@ -153,7 +268,7 @@ export const FlightLocked = () => {
 
 
                                                                     <div className="soidfnsdfn">
-                                                                        {segment.originTerminal && (
+                                                                        {segment.destinationTerminal && (
                                                                             <small
                                                                                 style={{
                                                                                     fontWeight: 500,
@@ -172,16 +287,17 @@ export const FlightLocked = () => {
 
                                                 <p className="uineiokee mb-0">
                                                     <i className="bi me-2 bi-calendar3"></i>
-                                                    <span>{FLIGHT.formattedDate} ·</span>
+                                                    <span> {displaySegments?.[0]?.departureDate || "-"} ·</span>
                                                     <span>
                                                         <span style={{ color: "var(--blue-primary-color)" }}>
                                                             {" "}
-                                                            {FLIGHT.stops === 0
+                                                            {stops === 0
                                                                 ? "Non Stop"
-                                                                : `${FLIGHT.stops} Stop`}{" "}
+                                                                : `${stops} Stop`
+                                                            }
                                                             ·{" "}
                                                         </span>
-                                                        {FLIGHT.totalDuration}
+                                                         {formattedDuration}
                                                     </span>
                                                 </p>
                                             </div>
@@ -203,20 +319,28 @@ export const FlightLocked = () => {
 
                                                     <div className="dfsdfsdf">
                                                         <p className="mb-0">
-                                                            To complete the booking, plese pay the balance amount of <b>8,829 by 2026-09-17 19:39</b> <br/>
+                                                            To complete the booking, plese pay the balance amount of <b>{Number(totalAmount).toLocaleString("en-IN")} by {lockTicketDetails?.hold_validity && (
+                                                                <>
+                                                                    {" "}by{" "}
+
+                                                                    <b>
+                                                                        {lockTicketDetails.hold_validity}
+                                                                    </b>
+                                                                </>
+                                                            )}</b> <br/>
                                                                 To check your payment details <span style={{ color: "var(--blue-primary-color)" }}><b>Go to My Dashboard</b></span>
                                                         </p>
                                                     </div>
                                                 </div>
 
-                                                <div className="col-lg-2">
+                                                {/* <div className="col-lg-2">
                                                     <div className="fsdfsdfsd fghdzgsd text-center">
                                                         <img src="/images/hfggdf.png" alt="" />
                                                         <div className="dfgbdfgdf">
                                                             <h4 className="mb-0">₹ 398</h4>
                                                         </div>
                                                     </div>
-                                                </div>
+                                                </div> */}
                                             </div>
                                         </div>
                                     </div>
