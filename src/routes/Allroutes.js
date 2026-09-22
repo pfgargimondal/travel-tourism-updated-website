@@ -60,10 +60,9 @@ function Allroutes() {
       <Route path="/flight-payment/:fareId" element={<FlightPayment />}/>
       <Route path="/flight-booking-pending/:bookingReference" element={<FlightBookingPending />}/>
       <Route path="/flight-locked-thankYou/:bookingReference" element={<FlightLocked />}/>
-      <Route path="/flight-payment-confirmation" element={<FlightPaymentConfirmation />}/>
+      <Route path="/flight/personal/booking-hold/:bookingReference" element={<FlightPaymentConfirmation />}/>
 
       <Route path="/bus-filter" element={<BusFilter />} />
-
       <Route path="/visa" element={<Visa />} />
 
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />

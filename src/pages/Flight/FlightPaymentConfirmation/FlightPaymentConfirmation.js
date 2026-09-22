@@ -1,3 +1,9 @@
+import { useEffect, useState } from "react";
+import http from "../../../http";
+import { useLocation, useParams } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import Loader from "../../../component/Loader/Loader";
+
 const FLIGHT = {
   originCity: "Kolkata",
   destinationCity: "Mumbai",
@@ -67,6 +73,142 @@ const TRAVELLERS = {
 
 
 export const FlightPaymentConfirmation = () => {
+
+    const location = useLocation();
+    const state = location.state || null;
+    const [loading, setLoading] = useState(false);
+    const [lockTicketDetails, setLockTicketDetails] = useState([]);
+    const { bookingReference } = useParams();
+    const { user} = useAuth();
+    // eslint-disable-next-line
+    const fareDetailsData = state?.fareDetailsData;
+
+    useEffect(() => {
+        const fetchLockTicket = async () => {
+            try {
+                setLoading(true);
+                const response = await http.post("/user/held-tickets", 
+                    {
+                        user_id: user?.id,
+                        bookingReference: bookingReference
+                    });
+                setLockTicketDetails(response.data.data);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLockTicket();
+    }, [bookingReference, user?.id]);
+
+    const createdAt = lockTicketDetails?.created_at;
+
+    const formattedBookingDate = createdAt
+    ? new Date(createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        })
+    : "-";
+
+    const formatHoldValidity = (dateTime) => {
+        if (!dateTime) return "-";
+
+        const date = new Date(dateTime.replace(" ", "T"));
+
+        return date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
+    const tempBookingDetails = lockTicketDetails?.temp_booking || null;
+    let allFlightDetails = tempBookingDetails?.allFlightDetails || null;
+
+
+    if (typeof allFlightDetails === "string") {
+        try {
+            allFlightDetails = JSON.parse(allFlightDetails);
+        } catch (error) {
+            console.error("Failed to parse allFlightDetails:", error);
+            allFlightDetails = null;
+        }
+    }
+
+    const segments = allFlightDetails?.Segments || [];
+    const fares = allFlightDetails?.Fares || [];
+
+    // First fare detail
+    const fareDetails = fares?.[0]?.FareDetails?.[0] || null;
+
+    // Price
+    const totalAmount = fareDetails?.Total_Amount || 0;
+
+    // Duration
+    const totalDuration = segments.reduce((total, segment) => {
+        const [hours, minutes] = (segment.Duration || "00:00")
+            .split(":")
+            .map(Number);
+
+        return total + (hours * 60) + minutes;
+    }, 0);
+
+    const durationHours = Math.floor(totalDuration / 60);
+    const durationMinutes = totalDuration % 60;
+    // eslint-disable-next-line
+    const formattedDuration = `${durationHours}h ${durationMinutes}m`;
+
+    // Stops
+    // eslint-disable-next-line
+    const stops = Math.max(segments.length - 1, 0);
+    // eslint-disable-next-line
+    const displaySegments = segments.map((segment) => {
+    const departure = new Date(segment.Departure_DateTime);
+    const arrival = new Date(segment.Arrival_DateTime);
+
+        return {
+            airlineCode: segment.Airline_Code,
+            airlineName: segment.Airline_Name,
+            flightNumber: segment.Flight_Number,
+
+            origin: segment.Origin,
+            destination: segment.Destination,
+
+            originCity: segment.Origin_City,
+            destinationCity: segment.Destination_City,
+
+            departureTime: departure.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+
+            arrivalTime: arrival.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false,
+            }),
+
+            departureDate: departure.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }),
+
+            originTerminal: segment.Origin_Terminal,
+            destinationTerminal: segment.Destination_Terminal,
+
+            duration: segment.Duration,
+        };
+    });
+
+    if (loading) return <Loader />;
     return (
         <>
             <style>
@@ -101,7 +243,7 @@ export const FlightPaymentConfirmation = () => {
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul{
-                        position: relative;
+                        // position: relative;
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li{
@@ -159,11 +301,11 @@ export const FlightPaymentConfirmation = () => {
                             <div className="idnmfser col-lg-9">
                                 <p style={{ fontSize: "18px", fontWeight: "600", color: "var(--blue-secondary-color) !important" }} className="mb-1">Ticket is on Hold, Pay to Confirm</p>
 
-                                <h6 style={{ fontSize: "14px" }} className="mb-0">Booking ID IUNKJDUIEJOJERREGJF</h6>                            
+                                <h6 style={{ fontSize: "14px" }} className="mb-0">Booking ID {lockTicketDetails?.booking_reference || "-"}</h6>                            
                             </div>
 
                             <div className="col-lg-3">
-                                <h6 style={{ fontSize: "14px", fontWeight: 600 }} className="mb-0">Booked on 17 Sep 2026</h6>
+                                <h6 style={{ fontSize: "14px", fontWeight: 600 }} className="mb-0">Booked on {formattedBookingDate}</h6>
                             </div>
                         </div>
                     </div>
@@ -171,7 +313,7 @@ export const FlightPaymentConfirmation = () => {
                     <div className="fgerfer88 flight-wrppr">
                         <div className="row">
                             {/* Main Content - Left Column */}
-                            <div className="col-lg-9">
+                            <div className="col-lg-12">
                                 <div className="sdfhgfrfrftr">
                                     <div className="hotel-card">
                                         <div className="card-box">
@@ -180,7 +322,7 @@ export const FlightPaymentConfirmation = () => {
                                                 <p className="mb-0" style={{ fontSize: "16px", fontWeight: "600" }}>COMPLETE YOUR BOOKING</p>
 
                                                 <div className="diwehidmsad">
-                                                    <p style={{ fontSize: "12px" }} className="mb-0">Pay the remaining amount of 8,829 to complete the booking</p>
+                                                    <p style={{ fontSize: "12px" }} className="mb-0">Pay the remaining amount of ₹{totalAmount} to complete the booking</p>
                                                 </div>
                                             </div>
 
@@ -189,7 +331,7 @@ export const FlightPaymentConfirmation = () => {
                                                     <div className="col-lg-8">
                                                         <div className="ihsmdcsdcfdf">
                                                             <div className="px-3 py-2 rounded-2">
-                                                                <p className="mb-0" style={{ fontSize: "14px" }}><i className="fa-solid me-1 fa-lock"></i> <b>Price locked at 8,829</b></p>
+                                                                <p className="mb-0" style={{ fontSize: "14px" }}><i className="fa-solid me-1 fa-lock"></i> <b>Price locked at ₹{totalAmount}</b></p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -198,7 +340,7 @@ export const FlightPaymentConfirmation = () => {
                                                         <div className="ihsmdcsdcfdf">
                                                             <button className="btn-tour mb-1" style={{ fontSize: "14px" }}>PAY & CONFIRM BOOKING</button>
 
-                                                            <p style={{ fontSize: "11px" }} className="mb-0">Vouchers will be available after full payment</p>
+                                                            {/* <p style={{ fontSize: "11px" }} className="mb-0">Vouchers will be available after full payment</p> */}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -207,16 +349,15 @@ export const FlightPaymentConfirmation = () => {
                                             <div className="ciuajmcokzxc d-flex gap-2">
                                                 <div className="col-lg-6">
                                                     <ul className="mb-0 ps-0 ms-4">
-                                                        <li>
+                                                        {/* <li>
                                                             <p className="mb-0">Fare Lock Charges</p>
 
                                                             <p className="mb-0">398</p>
-                                                        </li>
+                                                        </li> */}
 
                                                         <li>
-                                                            <p className="mb-0">Pay by 17 Sep, 07:39PM</p>
-
-                                                            <p className="mb-0">8,829</p>
+                                                            <p className="mb-0">Pay by {formatHoldValidity(lockTicketDetails?.hold_validity)}</p>
+                                                            <p className="mb-0">{totalAmount}</p>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -395,9 +536,8 @@ export const FlightPaymentConfirmation = () => {
                             </div>
 
                             {/* Sidebar - Right Column */}
-                            <div className="col-lg-3">
+                            {/* <div className="col-lg-3">
                                 <div className="sticky-top">
-                                    {/* SUMMARY */}
                                     <div className="fgdfgdf mb-3">
                                         <div className="summary overflow-hidden p-0">
                                             <h6 className="mb-0 px-3 py-2">
@@ -424,7 +564,6 @@ export const FlightPaymentConfirmation = () => {
                                         </div>
                                     </div>
 
-                                    {/* COUPON */}
                                     <div className="dfdff5585">
                                         <div className="coupon-box">
                                             <div className="hjhjk">
@@ -454,7 +593,7 @@ export const FlightPaymentConfirmation = () => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

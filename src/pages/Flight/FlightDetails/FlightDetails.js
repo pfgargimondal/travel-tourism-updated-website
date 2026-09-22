@@ -2508,7 +2508,11 @@ export const FlightDetails = () => {
             JSON.stringify(ticketResponse?.data?.data)
           );
 
-          navigate(`/flight-locked-thankYou/${bookingReference}`);
+          navigate(`/flight-locked-thankYou/${bookingReference}`, {
+            state: {
+              fareDetailsData,
+            },
+          });
           return;
         }
 
