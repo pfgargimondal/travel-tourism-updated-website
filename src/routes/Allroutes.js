@@ -14,6 +14,7 @@ import {
   FlightPayment,
   FlightBookingPending,
   FlightLocked,
+  FlightReviewDetails,
   PrivacyPolicy,
   TermsCondition,
   CustomerService,
@@ -61,6 +62,7 @@ function Allroutes() {
       <Route path="/flight-booking-pending/:bookingReference" element={<FlightBookingPending />}/>
       <Route path="/flight-locked-thankYou/:bookingReference" element={<FlightLocked />}/>
       <Route path="/flight/personal/booking-hold/:bookingReference" element={<FlightPaymentConfirmation />}/>
+      <Route path="/flight/reviewDetails/:bookingReference/:flightId/:fareId" element={<FlightReviewDetails />}/>
 
       <Route path="/bus-filter" element={<BusFilter />} />
       <Route path="/visa" element={<Visa />} />
