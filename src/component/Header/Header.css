@@ -30,6 +30,11 @@ header{
     color: initial !important;
 }
 
+.header-sticky-show .loggedin-user-profile span.dinniihfrtet span,
+.header-sticky-show .loggedin-user-profile span.dinniihfrtet i{
+    color: #000;
+}
+
 .black-text-header{
     border-bottom: 1px solid var(--border);
 }

@@ -2437,6 +2437,15 @@ export const FlightDetails = () => {
   const handleHoldTicket = async () => {
     try {
 
+      if (
+        couponDiscount !== null &&
+        couponDiscount !== undefined &&
+        Number(couponDiscount) > 0
+      ) {
+        alert("Coupon code cannot be applied for Lock Price. Please remove the coupon code and try again.");
+        return;
+      }
+
       setLoading(true);
 
         if (!Array.isArray(bookingPassengers) || bookingPassengers.length === 0) {

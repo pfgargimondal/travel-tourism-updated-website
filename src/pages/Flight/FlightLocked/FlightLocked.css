@@ -1,0 +1,165 @@
+.jksbncknzxkcfji{
+    width: 6rem;
+}
+
+.jksbncknzxkcfji:before{
+    position: absolute;
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--blue-primary-color);
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff;
+    z-index: 999;
+}
+
+.jksbncknzxkcfji:after{
+    position: absolute;
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--blue-primary-color);
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--blue-primary-color);
+}
+
+.jksbncknzxkcfji span{
+    border: 1px dashed var(--blue-primary-color);
+}
+
+.uineiokee{
+    border-top: 1px solid var(--border);
+}
+
+.uineiokee span{
+    border-right: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue-secondary-color);
+}
+
+.uineiokee span:last-child{
+    border-right: 0;
+}
+
+.asfdgsqwe > div > p span{
+    background: rgba(var(--bs-success-rgb));
+    padding: 8px 14px;
+    border-radius: 10px;
+    color: #fff;
+}
+
+.fgdfgdf h6 span span{
+    font-size: 12px;
+    text-transform: unset !important;
+    font-weight: 500;
+}
+
+.fgdfgdf h6 i{
+    background: transparent;
+    color: var(--blue-secondary-color);
+    font-size: 20px;
+}
+
+.uindjksnuihfsdf li{
+    display: flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+}
+
+.uindjksnuihfsdf li,
+.uindjksnuihfsdf li i{
+    color: var(--blue-secondary-color) !important;
+}
+
+.uindjksnuihfsdf li:after{
+    content: "\f054";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    font-size: 12px;
+    position: absolute;
+    right: 0;
+}
+
+
+
+
+
+@media only screen and (max-width: 600px){
+    .jksbncknzxkcfji.mx-4{
+        margin-inline: 10px !important;
+    }
+
+    .dsubhsnvdihg h5{
+        font-size: 14px !important;
+    }
+
+    .flight-locked-wrapper .flight-wrppr .ciuajmcokzxc p{
+        font-size: 10px;
+    }
+
+    .flight-details-wrapper .dfbsdfgsdf{
+        border: 0;
+        padding: 0;
+    }
+}
+
+
+
+@media only screen and (max-width: 495px){
+    .uineiokee span{
+        font-size: 12px;
+    }
+}
+
+
+
+@media only screen and (max-width: 449px){
+    .uineiokee{
+        justify-content: center;
+    }
+
+    .uineiokee span.px-3{
+        padding-inline: 10px !important;
+    }
+
+    .flight-locked-wrapper .sdbfsdhfsd,
+    .flight-locked-wrapper .fgdfgdfg,
+    .flight-locked-wrapper .card-box{
+        padding: 10px !important;
+    }
+
+    .asfdgsqwe > div > p span {
+        font-size: 14px;
+    }
+}
+
+
+
+@media only screen and (max-width: 393px) {
+    .gfjh55 img{
+        width: 2rem;
+    }
+    .dsubhsnvdihg h5 {
+        font-size: 12px !important;
+    }
+
+    .flight-locked-wrapper .flight-wrppr .ciuajmcokzxc p{
+        font-size: 8px;
+    }
+
+    .uineiokee span.px-3 {
+        padding-inline: 8px !important;
+    }
+
+    .uineiokee span {
+        font-size: 12px;
+    }    
+}

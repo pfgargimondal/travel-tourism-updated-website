@@ -4,6 +4,8 @@ import Loader from "../../../component/Loader/Loader";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 
+import "./FlightLocked.css";
+
 // const FLIGHT = {
 //     originCity: "Kolkata",
 //     destinationCity: "Mumbai",
@@ -142,6 +144,22 @@ export const FlightLocked = () => {
         };
     });
 
+    const getOneHourBefore = (dateTime) => {
+        if (!dateTime) return "";
+
+        const date = new Date(dateTime.replace(" ", "T"));
+        date.setHours(date.getHours() - 1);
+
+        return date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
     const handleProfileClick = () => {
         if (isLoggedIn) {
             navigate("/user-profile");
@@ -206,9 +224,9 @@ export const FlightLocked = () => {
                 <div className="container">
                     <div className="asfdgsqwe">
                         <div className="pb-3">
-                            <p style={{ fontSize: "18px", fontWeight: "600" }} className="mb-1">Price Locked <i className="fa-solid ms-1 text-success fa-circle-check"></i></p>
+                            <p style={{ fontSize: "18px", fontWeight: "600" }} className="mb-1"><span><i className="fa-solid me-1 fa-lock"></i> Price Locked</span> <i className="fa-solid ms-1 text-success fa-circle-check"></i></p>
 
-                            <h6 style={{ fontSize: "14px" }} className="mb-0">Confirmation mail sent to <span style={{ fontWeight: "600" }}>{user?.email}</span></h6>
+                            <h6 style={{ fontSize: "14px" }} className="mb-0 mt-3">Confirmation mail sent to <span style={{ fontWeight: "600" }}>{user?.email}</span></h6>
                         </div>
                     </div>
 
@@ -232,78 +250,64 @@ export const FlightLocked = () => {
                                                     {displaySegments.map((segment, index) => (
                                                         <div
                                                             key={index}
-                                                            className="d-flex align-items-center mb-2"
+                                                            className="d-flex align-items-center mb-4"
                                                             style={{ width: "100%" }}
                                                         >
+                                                            <div className="d-flex align-items-center">
+                                                                {/* Airline */}
+                                                                <div className="d-flex align-items-center">
+                                                                    <div className="flight-card px-2 py-0 mb-0">
+                                                                        <div className="gfjh55">
+                                                                            <img
+                                                                                src={`https://images.kiwi.com/airlines/64/${segment.airlineCode}.png`}
+                                                                                width={45}
+                                                                                alt={segment.airlineName || "Airline"}
+                                                                            />
 
-                                                            {/* Airline */}
-                                                            <div
-                                                                className="d-flex align-items-center"
-                                                                style={{
-                                                                    width: "130px",
-                                                                    minWidth: "130px",
-                                                                }}
-                                                            >
-                                                                <div className="flight-card px-2 py-0 mb-0">
-                                                                    <div className="gfjh55">
-                                                                        <img
-                                                                            src={`https://images.kiwi.com/airlines/64/${segment.airlineCode}.png`}
-                                                                            width={45}
-                                                                            alt={segment.airlineName || "Airline"}
-                                                                        />
-
-                                                                        <div className="dihuewoirwerwer">
-                                                                            <p className="odmlksjfmdf mb-0">
-                                                                                {segment.airlineCode}{" "}
-                                                                                {segment.flightNumber}
-                                                                            </p>
+                                                                            <div className="dihuewoirwerwer">
+                                                                                <p className="odmlksjfmdf mb-0">
+                                                                                    {segment.airlineCode}{" "}
+                                                                                    {segment.flightNumber}
+                                                                                </p>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
+                                                                </div>
+
+
+                                                                {/* Departure */}
+                                                                <div className="text-start">
+                                                                    <h5 className="fw-bold mb-0" style={{ fontSize: 16 }}>
+                                                                        {segment.originCity}{" "}
+                                                                        <span className="fw-bold">
+                                                                            ({segment.departureTime})
+                                                                        </span>
+                                                                    </h5>
+
+                                                                    {segment.originTerminal && (
+                                                                        <small
+                                                                            style={{
+                                                                                fontWeight: 500,
+                                                                                color: "var(--light-highlighted-text-color)",
+                                                                            }}
+                                                                        >
+                                                                            Terminal {segment.originTerminal}
+                                                                        </small>
+                                                                    )}
                                                                 </div>
                                                             </div>
 
 
-                                                            {/* Departure */}
-                                                            <div
-                                                                className="text-start"
-                                                                style={{
-                                                                    minWidth: "180px",
-                                                                    flex: 1,
-                                                                }}
-                                                            >
-                                                                <h5 className="fw-bold mb-0">
-                                                                    {segment.originCity}{" "}
-                                                                    <span className="fw-bold">
-                                                                        ({segment.departureTime})
-                                                                    </span>
-                                                                </h5>
-
-                                                                {segment.originTerminal && (
-                                                                    <small
-                                                                        style={{
-                                                                            fontWeight: 500,
-                                                                            color: "var(--light-highlighted-text-color)",
-                                                                        }}
-                                                                    >
-                                                                        Terminal {segment.originTerminal}
-                                                                    </small>
-                                                                )}
-                                                            </div>
-
-
                                                             {/* Plane */}
-                                                            <div
-                                                                className="d-flex justify-content-center align-items-center"
-                                                                style={{
-                                                                    width: "60px",
-                                                                    minWidth: "60px",
-                                                                }}
-                                                            >
+                                                            <div className="jksbncknzxkcfji mx-4 position-relative d-flex justify-content-center">
                                                                 <img
                                                                     src="/images/planesmallicon.png"
                                                                     width={25}
+                                                                    style={{ height: "1rem", marginBottom: "1.2rem" }}
                                                                     alt="Flight"
                                                                 />
+
+                                                                <span className="d-block position-absolute w-100 top-50 start-50 translate-middle"></span>
                                                             </div>
 
 
@@ -315,7 +319,7 @@ export const FlightLocked = () => {
                                                                     flex: 1,
                                                                 }}
                                                             >
-                                                                <h5 className="fw-bold mb-0">
+                                                                <h5 className="fw-bold mb-0" style={{ fontSize: 16 }}>
                                                                     {segment.destinationCity}{" "}
                                                                     <span className="fw-bold">
                                                                         ({segment.arrivalTime})
@@ -337,12 +341,12 @@ export const FlightLocked = () => {
                                                         </div>
                                                     ))}
                                                     {/* Date / Stops / Duration */}
-                                                    <div className="uineiokee mt-2 mb-0">
-                                                        <i className="bi me-2 bi-calendar3"></i>
-                                                        <span>
-                                                            {displaySegments?.[0]?.departureDate || "-"} ·
+                                                    <div className="uineiokee d-flex align-items-center mt-2 mb-0">                                                        
+                                                        <span className="d-block px-3 py-2">
+                                                            <i className="bi me-2 bi-calendar3"></i> {displaySegments?.[0]?.departureDate || "-"} ·
                                                         </span>
-                                                        <span>
+
+                                                        <span className="d-block px-3 py-2">
                                                             <span
                                                                 style={{
                                                                     color: "var(--blue-primary-color)",
@@ -356,7 +360,8 @@ export const FlightLocked = () => {
                                                             </span>
                                                             {formattedDuration} {" "} · {" "}
                                                         </span>
-                                                        <span>PNR : {lockTicketDetails?.airline_pnr}</span>
+
+                                                        <span className="d-block px-3 py-2">PNR : {lockTicketDetails?.airline_pnr}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -380,9 +385,8 @@ export const FlightLocked = () => {
                                                         <p className="mb-0">
                                                             To complete the booking, plese pay the balance amount of <b>{Number(totalAmount).toLocaleString("en-IN")} by {lockTicketDetails?.hold_validity && (
                                                                 <>
-                                                                    {" "}by{" "}
                                                                     <b>
-                                                                        {lockTicketDetails.hold_validity}
+                                                                        {getOneHourBefore(lockTicketDetails?.hold_validity)}
                                                                     </b>
                                                                 </>
                                                             )}</b> <br/>
@@ -455,14 +459,20 @@ export const FlightLocked = () => {
                                     {/* SUMMARY */}
                                     <div className="fgdfgdf mb-3">
                                         <div className="summary overflow-hidden p-0">
-                                            <h6 className="mb-0 px-3 py-2">
-                                                Manage Your Trip & Get All The Help
+                                             <h6 className="d-flex gap-3 mb-0 px-3 py-2">
+                                                <i className="fa-solid fa-suitcase-rolling"></i>
+                                                
+                                                <span className="d-block">
+                                                    Manage Your Trip
+
+                                                    <span className="d-block mt-1">Quick actions to help you</span>
+                                                </span>
                                             </h6>
 
                                             <ul className="uindjksnuihfsdf px-3 mb-2">
                                                 {/* <li><i className="fa-solid me-2 fa-ticket"></i> Download Voucher</li> */}
                                                 
-                                                <li onClick={handleCompleteTicket}><i className="fa-solid me-2 fa-chair"></i> Add Seat or Meal</li>
+                                                <li onClick={handleCompleteTicket}><i className="fa-solid me-2 fa-chair"></i> Add Seat or Meal </li>
                                                 
                                                 <li><i className="fa-regular me-2 fa-calendar"></i> Modify Dates</li>
                                                 
@@ -470,7 +480,7 @@ export const FlightLocked = () => {
                                             </ul>
 
                                             <div className="text-center mb-3">
-                                                <button className="btn-tour" onClick={handleProfileClick}>GO TO MY DASHBOARD</button>
+                                                <button className="btn-tour" style={{ fontSize: "14px" }} onClick={handleProfileClick}><i className="fa-solid me-2 fa-grip-vertical"></i> GO TO MY DASHBOARD</button>
                                             </div>
                                         </div>
                                     </div>

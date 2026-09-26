@@ -7,7 +7,7 @@ export const Footer = () => {
       <div>
         <footer class="main-footer pt-5">
             <div class="container">
-                <div class="row">
+                <div class="row justify-content-between">
                     <div class="col-lg-4 col-md-6 col-sm-6 col-12 mb-4">
                         <h3 class="footer-logo">Ticket Booking</h3>
                         <p>
@@ -34,27 +34,15 @@ export const Footer = () => {
                         </div>
                     </div>
 
-                    <div class="col-lg-2 col-md-6 col-sm-6 col-12 mb-4">
+                    <div class="col-lg-3 col-md-6 col-sm-6 col-12 mb-4">
                         <h5>Quick Link</h5>
                         <ul class="footer-links list-unstyled">
                             <li><Link to="/about-us">About Us</Link></li>
-                            <li><a href="/">Delivery Information</a></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
                             <li><Link to="/terms-&-conditions">Terms & Conditions</Link></li>
+                            <li><Link to="/customer-service">Cancellation Policy</Link></li>
                             <li><Link to="/customer-service">Customer Service</Link></li>
                             <li><Link to="/return-policy">Return Policy</Link></li>
-                        </ul>
-                    </div>
-
-                    <div class="col-lg-2 col-md-6 col-sm-6 col-12 mb-4">
-                        <h5>Categories</h5>
-                        <ul class="footer-links list-unstyled">
-                            <li><a href="/">Travel</a></li>
-                            <li><a href="/">Technology</a></li>
-                            <li><a href="/">Lifestyle</a></li>
-                            <li><a href="/">Destinations</a></li>
-                            <li><a href="/">Entertainment</a></li>
-                            <li><a href="/">Business</a></li>
                         </ul>
                     </div>
 

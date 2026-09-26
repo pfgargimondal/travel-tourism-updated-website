@@ -31,7 +31,8 @@ import {
   BusFilter,
   Visa,
   FlightTicket,
-  FlightPaymentConfirmation
+  FlightPaymentConfirmation,
+  CancellationPolicy
 } from "../pages";
 
 // function PageRenderer() {
@@ -70,6 +71,7 @@ function Allroutes() {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-&-conditions" element={<TermsCondition />} />
       <Route path="/customer-service" element={<CustomerService />} />
+      <Route path="/cancellation-policy" element={<CancellationPolicy />} />
       <Route path="/return-policy" element={<ReturnPolicy />} />
 
       <Route path="/thank-you" element={<ThankYou />} />

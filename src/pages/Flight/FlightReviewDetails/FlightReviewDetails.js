@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import "../FlightDetails/FlightDetails.css";
+import "../FlightReviewDetails/FlightReviewDetails.css";
 import http from "../../../http";
 import Loader from "../../../component/Loader/Loader";
 import { FlightSeats } from "../FlightDetails/Components/FlightSeats";
@@ -10,49 +11,358 @@ import { InfantsFields } from "../FlightDetails/Components/InfantsFields";
 import { Meal } from "../FlightDetails/Components/Meal";
 import { useAuth } from "../../../context/AuthContext";
 
+
+  const emptyPassenger = {
+    // Basic details
+    title: "Mr",
+    firstName: "",
+    lastName: "",
+    gender: "",
+
+    // Contact
+    countryCode: "+91",
+    mobile: "",
+    email: "",
+
+    // Date / age
+    dob: "",
+    age: "",
+
+    // Nationality
+    nationality: "",
+
+    // Passport
+    passportNumber: "",
+    passportCountry: "",
+    passportExpiry: "",
+
+    // PAN
+    panCardNo: "",
+
+    // ID proof
+    idProofNumber: "",
+
+    // Student
+    studentId: "",
+
+    // Defence
+    defenceServiceId: "",
+    defenceIssueDate: "",
+    defenceExpiryDate: "",
+
+    // SSR
+    mandatorySSR: "",
+
+    // Frequent flyer
+    airline: "",
+    ffNumber: "",
+    showFF: false,
+  }; 
+
 export const FlightReviewDetails = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isLoggedIn, setLoginRegModal } = useAuth();
   const [loading, setLoading] = useState(false);
   const [imprtntInfoModal, setImprtntInfoModal] = useState(false);
   const [allCouponModal, setAllCouponModal] = useState(false);
-  const [flightRePrice, setflightRePrice] = useState(null);
+  // eslint-disable-next-line
   const [ssrData, setSsrData] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [selectedSSR, setSelectedSSR] = useState({});
   const [selectedPassenger, setSelectedPassenger] = useState(null);
   const [flightBookingModal, setFlightBookingModal] = useState(false);
   const [flightDetailsShowMoreToggle, setFlightDetailsShowMoreToggle] = useState(false);
-  const { flightId } = useParams();
-  const location = useLocation();
+  const [showLockTicketModal, setShowLockTicketModal] = useState(true);
 
-  const storedData = sessionStorage.getItem(`flightDetails_${flightId}`);
+  const state = location.state || null;
+  const [lockTicketDetails, setLockTicketDetails] = useState([]);
+  const { bookingReference } = useParams();
+  const fareDetailsData = state?.fareDetailsData;
 
-  const state = location.state || (storedData ? JSON.parse(storedData) : null);
+  useEffect(() => {
+      const fetchLockTicket = async () => {
+          try {
+              setLoading(true);
+              const response = await http.post("/user/held-tickets", 
+                  {
+                      user_id: user?.id,
+                      bookingReference: bookingReference
+                  });
+              setLockTicketDetails(response.data.data);
+          } catch (err) {
+              console.error(err);
+          } finally {
+              setLoading(false);
+          }
+      };
 
-  const search_key = state?.search_key;
-  const flight = state?.flight;
-  const fareId = state?.fareId;
+      fetchLockTicket();
+  }, [bookingReference, user?.id]);
 
-  const adults = state?.adults;
-  const children = state?.children;
-  const infants = state?.infants;
-  const cabinClass = state?.cabinClass;
-  const fareDetailsData = state?.apiFareDetails;
+  const createdAt = lockTicketDetails?.created_at;
+  // eslint-disable-next-line
+  const formattedBookingDate = createdAt
+  ? new Date(createdAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      })
+  : "-";
 
+  // eslint-disable-next-line
+  const formatHoldValidity = (dateTime) => {
+      if (!dateTime) return "-";
 
-  const cabinClassMap = {
-    0: "Economy",
-    3: "Premium Economy",
-    1: "Business",
-    2: "First Class",
+      const date = new Date(dateTime.replace(" ", "T"));
+
+      return date.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+      });
   };
+  const tempBookingDetails = lockTicketDetails?.temp_booking || null;
+  let allFlightDetails = tempBookingDetails?.allFlightDetails || null;
 
-  const cabinClassName = cabinClassMap[cabinClass] || "Economy";
+  const bookingDetails = tempBookingDetails?.booking_details || null;
+  const repriceFlight = bookingDetails?.repriceFlight || null;
+  
 
-  const adultCount = adults || 1;
-  const childCount = children || 0;
-  const infantCount = infants || 0;
+  console.log(allFlightDetails, 'allFlightDetails');
+
+  if (typeof allFlightDetails === "string") {
+      try {
+          allFlightDetails = JSON.parse(allFlightDetails);
+      } catch (error) {
+          console.error("Failed to parse allFlightDetails:", error);
+          allFlightDetails = null;
+      }
+  }
+    const segments = allFlightDetails?.Segments || [];
+    const fares = allFlightDetails?.Fares || [];
+    // eslint-disable-next-line
+    const firstSegment = allFlightDetails?.Segments?.[0];
+    const lastSegment = segments[segments.length - 1];
+    const segment = allFlightDetails?.Segments?.[0];
+
+    const fareId = fares?.Fare_Id;
+
+    const travelDate = allFlightDetails?.TravelDate
+        ? new Date(allFlightDetails.TravelDate)
+        : null;
+
+    // First fare detail
+    const fareDetails = fares?.[0]?.FareDetails?.[0] || null;
+    const fareclasses = fareDetails?.FareClasses?.[0] || null;
+    const fare = allFlightDetails?.Fares?.[0];
+    const allfareDetails = fare?.FareDetails || [];
+    const fareDetail = fare?.FareDetails?.[0];
+    const search_key = tempBookingDetails?.search_key;
+
+    // Departure & Arrival
+    const departureDateTime = firstSegment?.Departure_DateTime || "";
+    const arrivalDateTime = lastSegment?.Arrival_DateTime || "";
+
+    // Format time
+    const formatTimefbdfzb = (dateTime) => {
+      if (!dateTime) return "";
+
+      const date = new Date(dateTime);
+
+      return date.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+    };
+
+    // Format date
+    // eslint-disable-next-line
+    const formatFlightDate = (dateTime) => {
+      if (!dateTime) return "";
+
+      const date = new Date(dateTime);
+
+      return date.toLocaleDateString("en-IN", {
+        weekday: "short",
+        day: "2-digit",
+        month: "short",
+      });
+    };
+
+    // Calculate total journey duration
+    const getJourneyDuration = () => {
+      if (!departureDateTime || !arrivalDateTime) return "";
+
+      const departure = new Date(departureDateTime);
+      const arrival = new Date(arrivalDateTime);
+
+      const diffMinutes = Math.round(
+        (arrival - departure) / (1000 * 60)
+      );
+
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+
+      return `${hours}h ${minutes}m`;
+    };
+
+    // Stops
+    const stopCount = Math.max(segments.length - 1, 0);
+
+    const stopText =
+      stopCount === 0
+        ? "Non Stop"
+        : `${stopCount} Stop${stopCount > 1 ? "s" : ""}`;
+
+    // Cabin class
+    const cabinClass =
+      fares?.[0]?.FareDetails?.[0]?.FareClasses?.[0]?.CabinClass ||
+      "";
+
+    // Fare class
+    const fareClass =
+      fares?.[0]?.FareDetails?.[0]?.FareClasses?.[0]?.Class_Desc ||
+      "";
+
+    // Price 
+    const totalAmount = fareDetails?.Total_Amount || 0;
+    // Duration
+    const totalDuration = segments.reduce((total, segment) => {
+        const [hours, minutes] = (segment.Duration || "00:00")
+            .split(":")
+            .map(Number);
+
+        return total + (hours * 60) + minutes;
+    }, 0);
+    const durationHours = Math.floor(totalDuration / 60);
+    // eslint-disable-next-line
+    const durationMinutes = totalDuration % 60;
+    // eslint-disable-next-line
+    const formattedDuration = `${durationHours}h ${durationMinutes}m`;
+
+    const parseDate = (dateStr) => {
+        if (!dateStr) return null;
+
+        const [datePart, timePart] = dateStr.split(" ");
+        const [month, day, year] = datePart.split("/");
+
+        return new Date(`${year}-${month}-${day}T${timePart}`);
+    };
+    // Stops
+    const stops = Math.max(segments.length - 1, 0);
+
+    const cabinClassMap = {
+      0: "Economy",
+      3: "Premium Economy",
+      1: "Business",
+      2: "First Class",
+    };
+
+  const cabinClassName = cabinClassMap[fareclasses?.CabinClass] || "Economy";
+
+  // const isBlockAllowed = repriceFlight?.Block_Ticket_Allowed;
+
+
+  const passengers = useMemo(
+    () => tempBookingDetails?.passengers || [],
+    [tempBookingDetails?.passengers]
+  );
+  const mapPassengerDetails = useCallback((passenger) => {
+    const details = passenger?.passenger_details || {};
+    return {
+        ...emptyPassenger,
+
+        // Basic details
+        title: passenger?.title || details?.Title || "",
+        firstName:
+            passenger?.first_name ||
+            details?.First_Name ||
+            "",
+        lastName:
+            passenger?.last_name ||
+            details?.Last_Name ||
+            "",
+
+        gender:
+            passenger?.gender ??
+            details?.Gender ??
+            "",
+
+        // Age / DOB
+        age:
+            passenger?.age ??
+            details?.Age ??
+            "",
+
+        dob:
+            passenger?.dob ||
+            details?.DOB ||
+            "",
+
+        // Nationality
+        nationality:
+            passenger?.nationality ||
+            details?.Nationality ||
+            "",
+
+        // Passport
+        passportNumber:
+            passenger?.passport_number ||
+            details?.Passport_Number ||
+            "",
+
+        passportCountry:
+            passenger?.passport_issuing_country ||
+            details?.Passport_Issuing_Country ||
+            "",
+
+        passportExpiry:
+            passenger?.passport_expiry ||
+            details?.Passport_Expiry ||
+            "",
+
+        // Frequent Flyer
+        airline:
+            passenger?.frequent_flyer_airline_code ||
+            "",
+        
+        ffNumber:
+            passenger?.frequent_flyer_number ||
+            "",
+
+        // Passenger ID
+        paxId:
+            passenger?.pax_id ||
+            details?.Pax_Id ||
+            "",
+
+        paxType:
+            passenger?.pax_type ??
+            details?.Pax_type ??
+            "",
+    };
+  }, []);
+
+  const adultCount = passengers.filter(
+    (pax) => pax.pax_type === 0
+  ).length;
+
+  const childCount = passengers.filter(
+    (pax) => pax.pax_type === 1
+  ).length;
+
+  const infantCount = passengers.filter(
+    (pax) => pax.pax_type === 2
+  ).length;
+
+  // const adultCount = adults || 1;
+  // const childCount = children || 0;
+  // const infantCount = infants || 0;
 
   
 
@@ -65,6 +375,10 @@ export const FlightReviewDetails = () => {
   const [couponInput, setCouponInput] = useState("");
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
+
+  const [adultRule, setAdultRule] = useState(null);
+  const [childRule, setChildRule] = useState(null);
+  const [infantRule, setInfantRule] = useState(null);
 
   const [showGST, setShowGST] = useState(false);
   const [gstNumber, setGstNumber] = useState("");
@@ -90,6 +404,10 @@ export const FlightReviewDetails = () => {
   const [selectedExtraAddOns, setSelectedExtraAddOns] = useState([]);
   // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
   // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
+
+  const [adultForms, setAdultForms] = useState([]);
+  const [childForms, setChildForms] = useState([]);
+  const [infantForms, setInfantForms] = useState([]);
  
 
   useEffect(() => {
@@ -173,52 +491,6 @@ export const FlightReviewDetails = () => {
 
 
   useEffect(() => {
-    const fetchFlightDetails = async () => {
-      // console.log("fetchFlightDetails called");
-      try {
-        setLoading(true);
-        const [repriceRes, ssrRes] = await Promise.all([
-          http.post("/flight-reprice-details", {
-            fare_id: fareId,
-            search_key,
-            Flight_Key: flight.Flight_Key,
-          }),
-          http.post("/flight-get-ssr", {
-            search_key,
-            Flight_Key: flight.Flight_Key,
-          }),
-        ]);
-
-        // console.log(repriceRes.data);
-        // console.log(ssrRes.data);
-
-        setflightRePrice(repriceRes.data.rePriceDetails);
-        setSsrData(ssrRes.data.ssrDetails.SSRFlightDetails);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (fareId && search_key && flight?.Flight_Key) {
-      fetchFlightDetails();
-    } else {
-      console.log("Missing values");
-    }
-  }, [fareId, search_key, flight?.Flight_Key]);
-
-
-  const parseDate = (dateStr) => {
-    if (!dateStr) return null;
-
-    const [datePart, timePart] = dateStr.split(" ");
-    const [month, day, year] = datePart.split("/");
-
-    return new Date(`${year}-${month}-${day}T${timePart}`);
-  };
-
-  useEffect(() => {
     const html = document.querySelector("html");
 
     imprtntInfoModal
@@ -250,21 +522,6 @@ export const FlightReviewDetails = () => {
     setAllCouponModal((prev) => !prev);
   };
 
-  const repriceFlight = flightRePrice?.AirRepriceResponses?.[0]?.Flight;
-
-  const isBlockAllowed = repriceFlight?.Block_Ticket_Allowed;
-
-  const fare = repriceFlight?.Fares?.[0];
-
-  const allfareDetails = fare?.FareDetails || [];
-
-  const fareDetail = fare?.FareDetails?.[0];
-
-  const segment = repriceFlight?.Segments?.[0];
-  // const cancellationCharges = fareDetail?.CancellationCharges || [];
-
-  const paxRules =
-    flightRePrice?.AirRepriceResponses?.[0]?.Required_PAX_Details || [];
 
   const cancellationCharges = (() => {
     const grouped = {};
@@ -309,66 +566,51 @@ export const FlightReviewDetails = () => {
     return `₹${Number(item.totalValue || 0).toLocaleString("en-IN")}`;
   };
 
-  const adultRule = paxRules.find((x) => Number(x?.Pax_type) === 0);
-  const childRule = paxRules.find((x) => Number(x?.Pax_type) === 1);
-  const infantRule = paxRules.find((x) => Number(x?.Pax_type) === 2);
 
-  const emptyPassenger = {
-    // Basic details
-    title: "Mr",
-    firstName: "",
-    lastName: "",
-    gender: "",
 
-    // Contact
-    countryCode: "+91",
-    mobile: "",
-    email: "",
+  useEffect(() => {
+    if (!passengers.length) {
+        return;
+    }
 
-    // Date / age
-    dob: "",
-    age: "",
+    const adults = passengers
+        .filter((passenger) => Number(passenger?.pax_type) === 0)
+        .map(mapPassengerDetails);
 
-    // Nationality
-    nationality: "",
+    const children = passengers
+        .filter((passenger) => Number(passenger?.pax_type) === 1)
+        .map(mapPassengerDetails);
 
-    // Passport
-    passportNumber: "",
-    passportCountry: "",
-    passportExpiry: "",
+    const infants = passengers
+        .filter((passenger) => Number(passenger?.pax_type) === 2)
+        .map(mapPassengerDetails);
 
-    // PAN
-    panCardNo: "",
+    setAdultForms(adults);
+    setChildForms(children);
+    setInfantForms(infants);
 
-    // ID proof
-    idProofNumber: "",
+    setAdultRule(adults);
+    setChildRule(children);
+    setInfantRule(infants);
 
-    // Student
-    studentId: "",
+    console.log("Fetched passengers:", passengers);
+    console.log("Adults:", adults);
+    console.log("Children:", children);
+    console.log("Infants:", infants);
+  }, [lockTicketDetails, mapPassengerDetails, passengers]); 
 
-    // Defence
-    defenceServiceId: "",
-    defenceIssueDate: "",
-    defenceExpiryDate: "",
+  // const adultRule = paxRules.find((x) => Number(x?.Pax_type) === 0);
+  // const childRule = paxRules.find((x) => Number(x?.Pax_type) === 1);
+  // const infantRule = paxRules.find((x) => Number(x?.Pax_type) === 2);
 
-    // SSR
-    mandatorySSR: "",
 
-    // Frequent flyer
-    airline: "",
-    ffNumber: "",
-    showFF: false,
-  };
 
-  const [adultForms, setAdultForms] = useState([]);
-  const [childForms, setChildForms] = useState([]);
-  const [infantForms, setInfantForms] = useState([]);
+
 
   const handleAddAdult = () => {
     if (adultForms.length >= adultCount) {
       return;
     }
-
     setAdultForms((prev) => [
       ...prev,
       {
@@ -489,152 +731,146 @@ export const FlightReviewDetails = () => {
   const [saveBilling, setSaveBilling] = useState(false);
   const [billingError, setBillingError] = useState("");
 
-  const validatePassengerDetails = () => {
-    // =========================
-    // ADULT
-    // =========================
-    for (let i = 0; i < adultForms.length; i++) {
-      const passenger = adultForms[i];
+  // const validatePassengerDetails = () => {
+  //   // =========================
+  //   // ADULT
+  //   // =========================
+  //   for (let i = 0; i < adultForms.length; i++) {
+  //     const passenger = adultForms[i];
 
-      if (adultRule) {
-        if (adultRule.Title && !passenger.title?.trim()) {
-          return false;
-        }
+  //     if (adultRule) {
+  //       if (adultRule.Title && !passenger.title?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.First_Name && !passenger.firstName?.trim()) {
-          return false;
-        }
+  //       if (adultRule.First_Name && !passenger.firstName?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.Last_Name && !passenger.lastName?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Last_Name && !passenger.lastName?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.Gender && !passenger.gender?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Gender && !passenger.gender?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.DOB && !passenger.dob) {
-          return false;
-        }
+  //       if (adultRule.DOB && !passenger.dob) {
+  //         return false;
+  //       }
 
-        if (adultRule.Age && !passenger.Age?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Age && !passenger.Age?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.Nationality && !passenger.Nationality?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Nationality && !passenger.Nationality?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.Passport_Number && !passenger.Passport_Number?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Passport_Number && !passenger.Passport_Number?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.passportExpiry && !passenger.passportExpiry?.trim()) {
-          return false;
-        }
+  //       if (adultRule.passportExpiry && !passenger.passportExpiry?.trim()) {
+  //         return false;
+  //       }
 
-        if (
-          adultRule.Passport_Issuing_Country &&
-          !passenger.Passport_Issuing_Country?.trim()
-        ) {
-          return false;
-        }
+  //       if (
+  //         adultRule.Passport_Issuing_Country &&
+  //         !passenger.Passport_Issuing_Country?.trim()
+  //       ) {
+  //         return false;
+  //       }
 
-        if (adultRule.PanCard_No && !passenger.PanCard_No?.trim()) {
-          return false;
-        }
+  //       if (adultRule.PanCard_No && !passenger.PanCard_No?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.IdProof_Number && !passenger.IdProof_Number?.trim()) {
-          return false;
-        }
+  //       if (adultRule.IdProof_Number && !passenger.IdProof_Number?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.Student_Id && !passenger.Student_Id?.trim()) {
-          return false;
-        }
+  //       if (adultRule.Student_Id && !passenger.Student_Id?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.DefenceServiceId && !passenger.DefenceServiceId?.trim()) {
-          return false;
-        }
+  //       if (adultRule.DefenceServiceId && !passenger.DefenceServiceId?.trim()) {
+  //         return false;
+  //       }
 
-        if (adultRule.DefenceIssueDate && !passenger.DefenceIssueDate?.trim()) {
-          return false;
-        }
+  //       if (adultRule.DefenceIssueDate && !passenger.DefenceIssueDate?.trim()) {
+  //         return false;
+  //       }
 
-        if (
-          adultRule.DefenceExpiryDate &&
-          !passenger.DefenceExpiryDate?.trim()
-        ) {
-          return false;
-        }
+  //       if (
+  //         adultRule.DefenceExpiryDate &&
+  //         !passenger.DefenceExpiryDate?.trim()
+  //       ) {
+  //         return false;
+  //       }
 
-        if (adultRule.Mandatory_SSRs && !passenger.Mandatory_SSRs?.trim()) {
-          // return false;
-        }
-      }
-    }
+  //       if (adultRule.Mandatory_SSRs && !passenger.Mandatory_SSRs?.trim()) {
+  //         // return false;
+  //       }
+  //     }
+  //   }
 
-    // =========================
-    // CHILD
-    // =========================
-    for (let i = 0; i < childForms.length; i++) {
-      const passenger = childForms[i];
+  //   // =========================
+  //   // CHILD
+  //   // =========================
+  //   for (let i = 0; i < childForms.length; i++) {
+  //     const passenger = childForms[i];
 
-      if (childRule) {
-        if (childRule.Title && !passenger.title?.trim()) {
-          return false;
-        }
+  //     if (childRule) {
+  //       if (childRule.Title && !passenger.title?.trim()) {
+  //         return false;
+  //       }
 
-        if (childRule.First_Name && !passenger.firstName?.trim()) {
-          return false;
-        }
+  //       if (childRule.First_Name && !passenger.firstName?.trim()) {
+  //         return false;
+  //       }
 
-        if (childRule.Last_Name && !passenger.lastName?.trim()) {
-          return false;
-        }
+  //       if (childRule.Last_Name && !passenger.lastName?.trim()) {
+  //         return false;
+  //       }
 
-        if (childRule.DOB && !passenger.dob) {
-          return false;
-        }
-      }
-    }
+  //       if (childRule.DOB && !passenger.dob) {
+  //         return false;
+  //       }
+  //     }
+  //   }
 
-    // =========================
-    // INFANT
-    // =========================
-    for (let i = 0; i < infantForms.length; i++) {
-      const passenger = infantForms[i];
+  //   // =========================
+  //   // INFANT
+  //   // =========================
+  //   for (let i = 0; i < infantForms.length; i++) {
+  //     const passenger = infantForms[i];
 
-      if (infantRule) {
-        if (infantRule.Title && !passenger.title?.trim()) {
-          return false;
-        }
+  //     if (infantRule) {
+  //       if (infantRule.Title && !passenger.title?.trim()) {
+  //         return false;
+  //       }
 
-        if (infantRule.First_Name && !passenger.firstName?.trim()) {
-          return false;
-        }
+  //       if (infantRule.First_Name && !passenger.firstName?.trim()) {
+  //         return false;
+  //       }
 
-        if (infantRule.Last_Name && !passenger.lastName?.trim()) {
-          return false;
-        }
+  //       if (infantRule.Last_Name && !passenger.lastName?.trim()) {
+  //         return false;
+  //       }
 
-        if (infantRule.DOB && !passenger.dob) {
-          return false;
-        }
-      }
-    }
+  //       if (infantRule.DOB && !passenger.dob) {
+  //         return false;
+  //       }
+  //     }
+  //   }
 
-    return true;
-  };
+  //   return true;
+  // };
 
   const handleContinue = () => {
     // Clear previous billing error
     setBillingError("");
-    const isPassengerValid = validatePassengerDetails();
-
-    if (!isPassengerValid) {
-      setBillingError("Please fill in all required passenger details correctly.");
-      return;
-    }
 
     if (!billingDetails.billingCountryCode) {
       setBillingError("Please select billing country code.");
@@ -701,8 +937,8 @@ export const FlightReviewDetails = () => {
         infants: infantForms,
         gst_number: showGST ? gstNumber : "",
         company_name: showGST ? companyName : "",
-        flight_key: repriceFlight?.Flight_Key || "",
-        search_key: search_key || "",
+        flight_key: tempBookingDetails?.flight_key || "",
+        search_key: tempBookingDetails?.search_key || "",
       };
 
       const response = await http.post("/get-seatMap-details", requestData, {
@@ -712,7 +948,6 @@ export const FlightReviewDetails = () => {
       });
 
       const responseData = response.data.data;
-
       // setSeatMap(responseData.AirSeatMaps);
       const airSeatMaps = responseData?.AirSeatMaps;
 
@@ -734,10 +969,8 @@ export const FlightReviewDetails = () => {
       if (!seatAvailable && !mealAvailable) {
         // NO SEAT + NO MEAL
         setShowSeatMealSection(false);
-
         // Open booking modal directly
         setFlightBookingModal(true);
-
         return;
       }
 
@@ -1421,9 +1654,6 @@ export const FlightReviewDetails = () => {
     }
   }, [hasSeatMap]);
 
-  const travelDate = repriceFlight?.TravelDate
-    ? new Date(repriceFlight.TravelDate)
-    : null;
 
   const formattedDate =
     travelDate?.toLocaleDateString("en-US", {
@@ -1431,9 +1661,6 @@ export const FlightReviewDetails = () => {
       month: "short",
       day: "numeric",
     }) || "";
-
-  const segments = repriceFlight?.Segments || [];
-  const lastSegment = segments[segments.length - 1];
 
 
   const formatPenalty = (item) => {
@@ -1478,14 +1705,11 @@ export const FlightReviewDetails = () => {
   //   const firstSegment = segments[0];
 
 
-  const stops = Math.max(0, segments.length - 1);
-  const departureDate = parseDate(segment?.Departure_DateTime);
-  const arrivalDate = parseDate(segment?.Arrival_DateTime);
-  const totalMinutes = Math.floor((arrivalDate - departureDate) / (1000 * 60));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  const totalDuration = `${hours}h ${minutes}m`;
+  // const departureDate = parseDate(segment?.Departure_DateTime);
+  // const arrivalDate = parseDate(segment?.Arrival_DateTime);
+  // const totalMinutes = Math.floor((arrivalDate - departureDate) / (1000 * 60));
+  // const hours = Math.floor(totalMinutes / 60);
+  // const minutes = totalMinutes % 60;
 
   const baggageTypes = ["ADDITIONALBAGGAGE", "BAGGAGE"];
 
@@ -1616,12 +1840,6 @@ export const FlightReviewDetails = () => {
     0,
   );
 
-  // Total
-  // eslint-disable-next-line
-  const totalAmount = allfareDetails.reduce(
-    (total, item) => total + Number(item.Total_Amount || 0),
-    0,
-  );
 
   const handleMealRemove = (passengerIndex) => {
     setSelectedMeals((prev) => {
@@ -2064,7 +2282,6 @@ export const FlightReviewDetails = () => {
     fetchCouponCode();
   }, []);
 
-  console.log(couponCode, 'couponCode');
   const handleSelectedModal = (code) => {
     setCouponError("");
 
@@ -2163,7 +2380,7 @@ export const FlightReviewDetails = () => {
 
     const paymentData = {
       search_key,
-      flight,
+      allFlightDetails,
       segment,
       repriceFlight,
       bookingPassengers,
@@ -2433,7 +2650,7 @@ export const FlightReviewDetails = () => {
 
     return payload;
   };
-
+  // eslint-disable-next-line
   const handleHoldTicket = async () => {
     try {
 
@@ -2543,7 +2760,7 @@ console.log(selectedSeats, 'selectedSeats');
               <i className="bi bi-arrow-right"></i>
             </li>
 
-            <li>Flight Details</li>
+            <li>Review Flight Details</li>
           </ul>
         </div>
 
@@ -3034,7 +3251,7 @@ console.log(selectedSeats, 'selectedSeats');
                       </div>
 
                       <div className="mb-3 fw-semibold">
-                        {flight?.Origin}-{flight?.Destination}
+                        {repriceFlight?.Origin}-{repriceFlight?.Destination}
                       </div>
 
                       {/* Penalty */}
@@ -3971,39 +4188,6 @@ console.log(selectedSeats, 'selectedSeats');
                   )}
                 </div>
 
-                {isBlockAllowed && (
-                  <div className="fndyff987er">
-                    <div className="trip-card d-flex justify-content-between align-items-center">
-                      {/* Left Content */}
-                      <div className="d-flex gap-3 align-items-start">
-                        {/* Logo */}
-                        <div className="sdfsdfdsf">
-                          <img src="/images/fl_small_blue_plain_lock.png" alt="" />
-                        </div>
-
-                        <div className="mt-3">
-                          {/* Title */}
-                          <div className="fw-bold" style={{ fontSize: "18px" }}>
-                            Still unsure about this trip? Lock this price!
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Button */}
-                      <button className="btn btn-outline-primary rounded-pill px-4" 
-                        onClick={() => { 
-                          if (!isLoggedIn) { 
-                            setLoginRegModal(true);
-                            return; 
-                          } 
-                          handleHoldTicket(); 
-                        }}
-                      >
-                        Lock Now
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 <div className="sdejvfhsikdjl mt-3">
                   <button
@@ -6701,6 +6885,94 @@ console.log(selectedSeats, 'selectedSeats');
           </div>
         </div>
       </div>
+
+
+      {showLockTicketModal && (
+        <div className="price-lock-modal-overlay">
+          <div className="price-lock-modal">
+
+            {/* Close Button */}
+            <button
+              type="button"
+              className="price-lock-close"
+              onClick={() => setShowLockTicketModal(false)}
+            >
+              ×
+            </button>
+
+            {/* Icon */}
+            <div className="price-lock-icon">
+              <i className="fa-solid fa-lock"></i>
+            </div>
+
+            {/* Heading */}
+            <h3 className="price-lock-title">
+              Complete your price lock booking
+            </h3>
+
+            {/* Description */}
+            <p className="price-lock-description">
+              You made a smart choice and can now complete this booking at your
+              locked price of <strong>₹ {totalAmount}</strong>
+            </p>
+
+            {/* Flight Details */}
+            <div className="price-lock-flight">
+
+              <div className="price-lock-route">
+                <span>{repriceFlight?.Origin}</span>
+                <div className="route-line">
+                  <i className="fa-solid fa-plane"></i>
+                </div>
+                <span>{repriceFlight?.Destination}</span>
+              </div>
+
+              <div className="price-lock-date">
+                {formattedDate}
+              </div>
+
+              <div className="price-lock-time">
+                 {formatTimefbdfzb(departureDateTime)} - {formatTimefbdfzb(arrivalDateTime)}
+              </div>
+
+              <div className="price-lock-duration">
+                {getJourneyDuration()}
+                <span className="separator">|</span>
+                {stopText}
+              </div>
+
+              <div className="price-lock-class">
+                {cabinClass
+                  ? cabinClass.charAt(0) + cabinClass.slice(1).toLowerCase()
+                  : ""}
+                
+                {fareClass && (
+                  <>
+                    <span>›</span>
+                    {fareClass}
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Locked Price */}
+            <div className="price-lock-price">
+              <span>Locked Price</span>
+              <strong>₹ {totalAmount}</strong>
+            </div>
+
+            {/* Button */}
+            <button
+              type="button"
+              className="price-lock-button"
+              onClick={() => setShowLockTicketModal(false)}
+            >
+              OKAY, GOT IT!
+            </button>
+
+          </div>
+        </div>
+      )}
 
       {/* flight booking modal end */}
     </div>

@@ -46,20 +46,6 @@ export const FlightPaymentConfirmation = () => {
         })
     : "-";
 
-    const formatHoldValidity = (dateTime) => {
-        if (!dateTime) return "-";
-
-        const date = new Date(dateTime.replace(" ", "T"));
-
-        return date.toLocaleString("en-IN", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-        });
-    };
     const tempBookingDetails = lockTicketDetails?.temp_booking || null;
     let allFlightDetails = tempBookingDetails?.allFlightDetails || null;
 
@@ -79,7 +65,7 @@ export const FlightPaymentConfirmation = () => {
     const lastSegment = segments[segments.length - 1];
 
     const flightId = lockTicketDetails?.flight_id;
-    const fareId = fares?.Fare_Id;
+    const fareId = fares?.[0]?.Fare_Id;
 
     const travelDate = allFlightDetails?.TravelDate
         ? new Date(allFlightDetails.TravelDate)
@@ -118,6 +104,22 @@ export const FlightPaymentConfirmation = () => {
     // Stops
     const stops = Math.max(segments.length - 1, 0);
 
+    const getOneHourBefore = (dateTime) => {
+        if (!dateTime) return "";
+
+        const date = new Date(dateTime.replace(" ", "T"));
+        date.setHours(date.getHours() - 1);
+
+        return date.toLocaleString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
     const handelPayConfirm = () => {
         navigate(`/flight/reviewDetails/${bookingReference}/${flightId}/${fareId}`, {
             state: {
@@ -150,14 +152,6 @@ export const FlightPaymentConfirmation = () => {
                     .uindjksnuihfsdf li:hover{
                         background: var(--light-blue-highlighted-background-color);
                         transition: 0.2s ease-in-out;
-                    }                    
-
-                    .flight-payment-confirmation-wrapper .diwehidmsad p{
-                        color: var(--main-red-color) !important;
-                    }
-
-                    .flight-payment-confirmation-wrapper .ihsmdcsdcfdf > div{
-                        background: #ebebeb;
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul{
@@ -176,28 +170,17 @@ export const FlightPaymentConfirmation = () => {
                         position: relative;         
                     }
 
-                    .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:before{
-                        border: 2px solid var(--blue-primary-color);
-                        position: absolute;
-                        content: "";
-                        width: 0.8rem;
-                        height: 0.8rem;
-                        border-radius: 50%;
-                        left: -5%;
-                        background: #fff;
-                    }
-
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li p{
                         font-weight: 600;
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child{
                         background: var(--light-green-highlighted-background-color);
-                        border-radius: 5px;
+                        border-radius: 25px;
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child p{
-                        color: var(--blue-primary-color) !important;
+                        color: var(--blue-secondary-color) !important;
                     }
 
                     .flight-payment-confirmation-wrapper .ciuajmcokzxc ul:before{
@@ -223,12 +206,84 @@ export const FlightPaymentConfirmation = () => {
                         font-weight: 600;
                         cursor: pointer;
                     }
+
+                    .flight-payment-confirmation-wrapper .hotel-card:first-child{
+                        border-left: 5px solid var(--blue-primary-color);
+                    }
+
+                    .ihsmdcsdcfdf p span{
+                        font-size: 30px;
+                        color: var(--blue-secondary-color);
+                    }
+
+                    .ihsmdcsdcfdf p{
+                        font-weight: 600;
+                    }
+
+                    .ihsmdcsdcfdf p i{
+                        color: var(--main-green-color);
+                    }
+                        
+                    
+
+                    @media only screen and (max-width: 991px){
+                        .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child{
+                            gap: 5rem;
+                        }
+                    }
+
+
+                    @media only screen and (max-width: 600px){
+                        .ihsmdcsdcfdf.text-end{
+                            text-align: center !important;
+                        }
+
+                        .ihsmdcsdcfdf .btn-tour.mb-1{
+                            margin-bottom: 1.2rem !important;
+                        }
+
+                        .flight-payment-confirmation-wrapper .hotel-card:first-child{
+                            text-align: center;
+                        }
+
+                        .flight-payment-confirmation-wrapper .hotel-card:first-child .ciuajmcokzxc{
+                            justify-content: center;
+                        }
+                    }
+
+                    @media only screen and (max-width: 393px){
+                        .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child {
+                            gap: 2rem;
+                        }
+                    }
+
+                    @media only screen and (max-width: 379px){
+                        .flight-payment-confirmation-wrapper .flight-card {
+                            width: 334px;
+                        }
+
+                        .flight-segments > div{
+                            overflow-x: auto;
+                        }
+                    }     
+                        
+                    @media only screen and (max-width: 346px){
+                        .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child p {
+                            font-size: 12px;
+                        }
+                    }
+
+                    @media only screen and (max-width: 332px){
+                        .flight-payment-confirmation-wrapper .ciuajmcokzxc ul li:last-child {
+                            gap: 1rem;
+                        }
+                    }
                 `}
             </style>
 
             <div className="sdfsdf655 flight-details-wrapper flight-payment-confirmation-wrapper">
                 <div className="container">
-                    <div className="asfdgsqwe col-lg-9">
+                    <div className="asfdgsqwe col-lg-12">
                         <div className="pb-3 row align-items-end">
                             <div className="idnmfser col-lg-9">
                                 <p style={{ fontSize: "18px", fontWeight: "600", color: "var(--blue-secondary-color) !important" }} className="mb-1">Ticket is on Hold, Pay to Confirm</p>
@@ -236,7 +291,7 @@ export const FlightPaymentConfirmation = () => {
                                 <h6 style={{ fontSize: "14px" }} className="mb-0">Booking ID {lockTicketDetails?.booking_reference || "-"}</h6>                            
                             </div>
 
-                            <div className="col-lg-3">
+                            <div className="col-lg-3 text-end">
                                 <h6 style={{ fontSize: "14px", fontWeight: 600 }} className="mb-0">Booked on {formattedBookingDate}</h6>
                             </div>
                         </div>
@@ -254,7 +309,7 @@ export const FlightPaymentConfirmation = () => {
                                                 <p className="mb-0" style={{ fontSize: "16px", fontWeight: "600" }}>COMPLETE YOUR BOOKING</p>
 
                                                 <div className="diwehidmsad">
-                                                    <p style={{ fontSize: "12px" }} className="mb-0">Pay the remaining amount of ₹{totalAmount} to complete the booking</p>
+                                                    <p style={{ fontSize: "14px" }} className="mb-0">Your fare is locked. Pay ₹{totalAmount} to confirm this booking before it expires.</p>
                                                 </div>
                                             </div>
 
@@ -262,14 +317,16 @@ export const FlightPaymentConfirmation = () => {
                                                 <div className="row">
                                                     <div className="col-lg-8">
                                                         <div className="ihsmdcsdcfdf">
-                                                            <div className="px-3 py-2 rounded-2">
-                                                                <p className="mb-0" style={{ fontSize: "14px" }}><i className="fa-solid me-1 fa-lock"></i> <b>Price locked at ₹{totalAmount}</b></p>
+                                                            <div className="py-2 rounded-2">
+                                                                <h6 className="mb-1" style={{ fontSize: "14px" }}>AMOUNT DUE</h6>
+
+                                                                <p className="mb-0" style={{ fontSize: "14px" }}><i className="fa-solid me-1 fa-lock"></i> Price locked at <span>₹{totalAmount}</span></p>
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     <div className="col-lg-4">
-                                                        <div className="ihsmdcsdcfdf">
+                                                        <div className="ihsmdcsdcfdf text-end">
                                                             <button className="btn-tour mb-1" onClick={handelPayConfirm} style={{ fontSize: "14px" }}>PAY & CONFIRM BOOKING</button>
 
                                                             {/* <p style={{ fontSize: "11px" }} className="mb-0">Vouchers will be available after full payment</p> */}
@@ -288,7 +345,7 @@ export const FlightPaymentConfirmation = () => {
                                                         </li> */}
 
                                                         <li>
-                                                            <p className="mb-0">Pay by {formatHoldValidity(lockTicketDetails?.hold_validity)}</p>
+                                                            <p className="mb-0">Pay by {getOneHourBefore(lockTicketDetails?.hold_validity)}</p>
                                                             <p className="mb-0">{totalAmount}</p>
                                                         </li>
                                                     </ul>
@@ -514,7 +571,7 @@ export const FlightPaymentConfirmation = () => {
 
                                         <div className="bdfsdf855e">
                                             <div className="dfgf555 bg-white py-3">
-                                                <div className="dfxgbdczdcd position-relative px-3">
+                                                <div className="dfxgbdczdcd position-relative">
                                                     <h6 className="mb-2">
                                                         This is your primary contact, you can not change it. You can however send the ticket to other emails.
                                                     </h6>

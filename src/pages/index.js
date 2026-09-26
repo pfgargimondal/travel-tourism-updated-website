@@ -20,6 +20,7 @@ export {FlightLocked} from "./Flight/FlightLocked/FlightLocked";
 export {PrivacyPolicy} from "./PrivacyPolicy/PrivacyPolicy";
 export {TermsCondition} from "./TermsCondition/TermsCondition";
 export {CustomerService} from "./CustomerService/CustomerService";
+export {CancellationPolicy} from "./CancellationPolicy/CancellationPolicy";
 export {ReturnPolicy} from "./ReturnPolicy/ReturnPolicy";
 export {Login} from "./Login/Login";
 export {Register} from "./Register/Register";
