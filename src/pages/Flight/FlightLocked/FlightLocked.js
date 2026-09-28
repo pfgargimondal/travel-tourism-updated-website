@@ -162,7 +162,12 @@ export const FlightLocked = () => {
 
     const handleProfileClick = () => {
         if (isLoggedIn) {
-            navigate("/user-profile");
+            // navigate("/user-profile");
+            navigate(`/flight/personal/booking-hold/${bookingReference}`, {
+                state: {
+                    fareDetailsData,
+                },
+            });
         } else {
             setLoginRegModal(true);
         }
@@ -480,7 +485,8 @@ export const FlightLocked = () => {
                                             </ul>
 
                                             <div className="text-center mb-3">
-                                                <button className="btn-tour" style={{ fontSize: "14px" }} onClick={handleProfileClick}><i className="fa-solid me-2 fa-grip-vertical"></i> GO TO MY DASHBOARD</button>
+                                                <button className="btn-tour" style={{ fontSize: "14px" }} onClick={handleProfileClick}>
+                                                    <i className="fa-solid me-2 fa-grip-vertical"></i> GO TO MY DASHBOARD</button>
                                             </div>
                                         </div>
                                     </div>

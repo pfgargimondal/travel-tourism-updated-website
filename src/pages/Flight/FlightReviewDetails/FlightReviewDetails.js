@@ -5,11 +5,11 @@ import "../FlightReviewDetails/FlightReviewDetails.css";
 import http from "../../../http";
 import Loader from "../../../component/Loader/Loader";
 import { FlightSeats } from "../FlightDetails/Components/FlightSeats";
-import { AdultFields } from "../FlightDetails/Components/AdultFields";
-import { ChildFields } from "../FlightDetails/Components/ChildFields";
-import { InfantsFields } from "../FlightDetails/Components/InfantsFields";
 import { Meal } from "../FlightDetails/Components/Meal";
 import { useAuth } from "../../../context/AuthContext";
+import { AdultFieldsReviewBooking } from "./Components/AdultFieldsReviewBooking";
+import { ChildFieldsReviewBooking } from "./Components/ChildFieldsReviewBooking";
+import { InfantsFieldsReviewBooking } from "./Components/InfantsFieldsReviewBooking";
 
 
   const emptyPassenger = {
@@ -74,6 +74,14 @@ export const FlightReviewDetails = () => {
   const [flightBookingModal, setFlightBookingModal] = useState(false);
   const [flightDetailsShowMoreToggle, setFlightDetailsShowMoreToggle] = useState(false);
   const [showLockTicketModal, setShowLockTicketModal] = useState(true);
+
+  const [adultForms, setAdultForms] = useState([]);
+  const [childForms, setChildForms] = useState([]);
+  const [infantForms, setInfantForms] = useState([]);
+
+  const [adultRule, setAdultRule] = useState(null);
+  const [childRule, setChildRule] = useState(null);
+  const [infantRule, setInfantRule] = useState(null);
 
   const state = location.state || null;
   const [lockTicketDetails, setLockTicketDetails] = useState([]);
@@ -272,58 +280,64 @@ export const FlightReviewDetails = () => {
     () => tempBookingDetails?.passengers || [],
     [tempBookingDetails?.passengers]
   );
-  const mapPassengerDetails = useCallback((passenger) => {
-    const details = passenger?.passenger_details || {};
-    return {
-        ...emptyPassenger,
 
-        // Basic details
-        title: passenger?.title || details?.Title || "",
+
+  useEffect(() => {
+  const fetchSavedPassengers = async () => {
+    try {
+      if (!user?.id) {
+        return;
+      }
+
+      const savedPassengers = passengers || [];
+
+      const mapSavedPassenger = (passenger) => ({
+        title: passenger?.title || passenger?.Title || "",
         firstName:
             passenger?.first_name ||
-            details?.First_Name ||
+            passenger?.First_Name ||
             "",
         lastName:
             passenger?.last_name ||
-            details?.Last_Name ||
+            passenger?.Last_Name ||
             "",
 
         gender:
             passenger?.gender ??
-            details?.Gender ??
+            passenger?.Gender ??
             "",
 
         // Age / DOB
         age:
             passenger?.age ??
-            details?.Age ??
+            passenger?.Age ??
             "",
 
         dob:
             passenger?.dob ||
-            details?.DOB ||
+            passenger?.DOB ||
             "",
 
         // Nationality
         nationality:
             passenger?.nationality ||
-            details?.Nationality ||
+            passenger?.Nationality ||
             "",
 
         // Passport
         passportNumber:
             passenger?.passport_number ||
-            details?.Passport_Number ||
+            passenger?.Passport_Number ||
             "",
 
         passportCountry:
             passenger?.passport_issuing_country ||
-            details?.Passport_Issuing_Country ||
+            passenger?.Passport_Issuing_Country ||
             "",
 
         passportExpiry:
             passenger?.passport_expiry ||
-            details?.Passport_Expiry ||
+            passenger?.Passport_Expiry ||
             "",
 
         // Frequent Flyer
@@ -338,27 +352,101 @@ export const FlightReviewDetails = () => {
         // Passenger ID
         paxId:
             passenger?.pax_id ||
-            details?.Pax_Id ||
+            passenger?.Pax_Id ||
             "",
 
         paxType:
             passenger?.pax_type ??
-            details?.Pax_type ??
-            "",
-    };
-  }, []);
+            passenger?.Pax_type ??
+            "", 
 
-  const adultCount = passengers.filter(
-    (pax) => pax.pax_type === 0
-  ).length;
 
-  const childCount = passengers.filter(
-    (pax) => pax.pax_type === 1
-  ).length;
+        panCardNo:
+          passenger?.panCardNo ||
+          passenger?.Pancard_Number ||
+          "",
 
-  const infantCount = passengers.filter(
-    (pax) => pax.pax_type === 2
-  ).length;
+        countryCode:
+          passenger?.countryCode ||
+          passenger?.CountryCode ||
+          "+91",
+
+        mobile:
+          passenger?.mobile ||
+          passenger?.Mobile ||
+          "",
+
+        email:
+          passenger?.email ||
+          passenger?.Email ||
+          "",
+
+        showFF: false,
+
+        // Important
+        isSavedPassenger: true,
+      });
+
+      const adults = savedPassengers
+        .filter(
+          (passenger) =>
+            Number(
+              passenger?.Pax_type ??
+              passenger?.pax_type
+            ) === 0
+        )
+        .map(mapSavedPassenger);
+
+      const children = savedPassengers
+        .filter(
+          (passenger) =>
+            Number(
+              passenger?.Pax_type ??
+              passenger?.pax_type
+            ) === 1
+        )
+        .map(mapSavedPassenger);
+
+      const infants = savedPassengers
+        .filter(
+          (passenger) =>
+            Number(
+              passenger?.Pax_type ??
+              passenger?.pax_type
+            ) === 2
+        )
+        .map(mapSavedPassenger);
+
+      setAdultForms(adults);
+      setChildForms(children);
+      setInfantForms(infants);
+
+      setAdultRule(adults);
+      setChildRule(children);
+      setInfantRule(infants);
+
+    } catch (error) {
+      console.error(
+        "Error fetching saved passengers:",
+        error
+      );
+    }
+  };
+
+  fetchSavedPassengers();
+}, [user?.id, passengers]);
+
+const adultCount = passengers.filter(
+  (pax) => pax.pax_type === 0
+).length;
+
+const childCount = passengers.filter(
+  (pax) => pax.pax_type === 1
+).length;
+
+const infantCount = passengers.filter(
+  (pax) => pax.pax_type === 2
+).length;
 
   // const adultCount = adults || 1;
   // const childCount = children || 0;
@@ -375,10 +463,6 @@ export const FlightReviewDetails = () => {
   const [couponInput, setCouponInput] = useState("");
   const [selectedCoupon, setSelectedCoupon] = useState(null);
   const [couponError, setCouponError] = useState("");
-
-  const [adultRule, setAdultRule] = useState(null);
-  const [childRule, setChildRule] = useState(null);
-  const [infantRule, setInfantRule] = useState(null);
 
   const [showGST, setShowGST] = useState(false);
   const [gstNumber, setGstNumber] = useState("");
@@ -402,12 +486,7 @@ export const FlightReviewDetails = () => {
   const [seatRecommendationError, setSeatRecommendationError] = useState("");
 
   const [selectedExtraAddOns, setSelectedExtraAddOns] = useState([]);
-  // const [seatSelectionSkipped, setSeatSelectionSkipped] = useState(false);
-  // const [mealSelectionSkipped, setMealSelectionSkipped] = useState(false);
 
-  const [adultForms, setAdultForms] = useState([]);
-  const [childForms, setChildForms] = useState([]);
-  const [infantForms, setInfantForms] = useState([]);
  
 
   useEffect(() => {
@@ -567,46 +646,7 @@ export const FlightReviewDetails = () => {
   };
 
 
-
-  useEffect(() => {
-    if (!passengers.length) {
-        return;
-    }
-
-    const adults = passengers
-        .filter((passenger) => Number(passenger?.pax_type) === 0)
-        .map(mapPassengerDetails);
-
-    const children = passengers
-        .filter((passenger) => Number(passenger?.pax_type) === 1)
-        .map(mapPassengerDetails);
-
-    const infants = passengers
-        .filter((passenger) => Number(passenger?.pax_type) === 2)
-        .map(mapPassengerDetails);
-
-    setAdultForms(adults);
-    setChildForms(children);
-    setInfantForms(infants);
-
-    setAdultRule(adults);
-    setChildRule(children);
-    setInfantRule(infants);
-
-    console.log("Fetched passengers:", passengers);
-    console.log("Adults:", adults);
-    console.log("Children:", children);
-    console.log("Infants:", infants);
-  }, [lockTicketDetails, mapPassengerDetails, passengers]); 
-
-  // const adultRule = paxRules.find((x) => Number(x?.Pax_type) === 0);
-  // const childRule = paxRules.find((x) => Number(x?.Pax_type) === 1);
-  // const infantRule = paxRules.find((x) => Number(x?.Pax_type) === 2);
-
-
-
-
-
+// eslint-disable-next-line
   const handleAddAdult = () => {
     if (adultForms.length >= adultCount) {
       return;
@@ -618,10 +658,10 @@ export const FlightReviewDetails = () => {
       },
     ]);
   };
-
+// eslint-disable-next-line
   const handleRemoveAdult = (index) => {
     setAdultForms((prev) => prev.filter((_, i) => i !== index));
-  };
+  }; 
 
   const handleAdultChange = (index, field, value) => {
     setAdultForms((prev) =>
@@ -636,6 +676,7 @@ export const FlightReviewDetails = () => {
     );
   };
 
+  // eslint-disable-next-line
   const handleAddChild = () => {
     if (childForms.length >= childCount) {
       return;
@@ -648,7 +689,7 @@ export const FlightReviewDetails = () => {
       },
     ]);
   };
-
+  // eslint-disable-next-line
   const handleRemoveChild = (index) => {
     setChildForms((prev) => prev.filter((_, i) => i !== index));
   };
@@ -666,6 +707,7 @@ export const FlightReviewDetails = () => {
     );
   };
 
+  // eslint-disable-next-line
   const handleAddInfant = () => {
     if (infantForms.length >= infantCount) {
       return;
@@ -678,7 +720,8 @@ export const FlightReviewDetails = () => {
       },
     ]);
   };
-
+  
+  // eslint-disable-next-line 
   const handleRemoveInfant = (index) => {
     setInfantForms((prev) => prev.filter((_, i) => i !== index));
   };
@@ -2435,7 +2478,6 @@ export const FlightReviewDetails = () => {
     ) {
       return 1;
     }
-
     return 0;
   };
 
@@ -2744,6 +2786,8 @@ export const FlightReviewDetails = () => {
       setLoading(false);
     }
   };
+
+
 
 console.log(selectedSeats, 'selectedSeats');
 
@@ -3781,18 +3825,18 @@ console.log(selectedSeats, 'selectedSeats');
 
                               <strong>ADULT {index + 1}</strong>
                             </div>
-
+{/* 
                             <button
                               className="btn btn-sm btn-link text-danger text-decoration-none"
                               onClick={() => handleRemoveAdult(index)}
                             >
                               ×
-                            </button>
+                            </button> */}
                           </div>
 
                           <div className="p-3">
                             {/* <div className="row g-3"> */}
-                            <AdultFields
+                            <AdultFieldsReviewBooking
                               adult={adult}
                               index={index}
                               countryCode={countryCode}
@@ -3803,19 +3847,22 @@ console.log(selectedSeats, 'selectedSeats');
 
                             {/* Frequent Flyer */}
 
-                            <div className="mt-3">
-                              <button
-                                type="button"
-                                className="btn btn-link p-0 text-decoration-none"
-                                onClick={() => toggleFF("adult", index)}
-                              >
-                                <strong>Frequent Flyer Number</strong>
+                            {adult.showFF && (
+                              <div className="mt-3">
+                                <button
+                                  type="button"
+                                  className="btn btn-link p-0 text-decoration-none"
+                                  onClick={() => toggleFF("adult", index)}
+                                  disabled={adult?.isSavedPassenger === true}
+                                >
+                                  <strong>Frequent Flyer Number</strong>
 
-                                <small className="ms-1">
-                                  (Avail extra benefits & earn points)
-                                </small>
-                              </button>
-                            </div>
+                                  <small className="ms-1">
+                                    (Avail extra benefits & earn points)
+                                  </small>
+                                </button>
+                              </div>
+                            )}
 
                             {adult.showFF && (
                               <div className="row mt-2">
@@ -3825,6 +3872,7 @@ console.log(selectedSeats, 'selectedSeats');
                                   <select
                                     className="form-select"
                                     value={adult.airline}
+                                    disabled={adult?.isSavedPassenger === true}
                                     onChange={(e) =>
                                       handleAdultChange(
                                         index,
@@ -3849,6 +3897,7 @@ console.log(selectedSeats, 'selectedSeats');
                                   <input
                                     className="form-control"
                                     value={adult.ffNumber}
+                                    disabled={adult?.isSavedPassenger === true}
                                     onChange={(e) =>
                                       handleAdultChange(
                                         index,
@@ -3866,12 +3915,11 @@ console.log(selectedSeats, 'selectedSeats');
 
                       {/* Empty Message */}
 
-                      {adultForms.length === 0 && (
+                      {/* {adultForms.length === 0 && (
                         <div className="add-box mb-3">
                           <p>You have not added any adults to the list</p>
                         </div>
                       )}
-                      {/* Add Adult */}
                       {adultForms.length < adultCount ? (
                         <button
                           className="btn btn-link p-0"
@@ -3885,7 +3933,7 @@ console.log(selectedSeats, 'selectedSeats');
                           <strong>{adultCount}</strong> ADULT(s). Remove one
                           before adding a new one.
                         </div>
-                      )}
+                      )} */}
                     </div>
                     {/* =========================
                             CHILD SECTION
@@ -3908,16 +3956,9 @@ console.log(selectedSeats, 'selectedSeats');
                           <div className="border rounded mb-3" key={index}>
                             <div className="d-flex justify-content-between align-items-center p-3 bg-light">
                               <strong>CHILD {index + 1}</strong>
-                              <button
-                                type="button"
-                                className="btn btn-link text-danger text-decoration-none"
-                                onClick={() => handleRemoveChild(index)}
-                              >
-                                ×
-                              </button>
                             </div>
                             <div className="p-3">
-                              <ChildFields
+                              <ChildFieldsReviewBooking
                                 child={child}
                                 index={index}
                                 childRule={childRule}
@@ -3926,7 +3967,7 @@ console.log(selectedSeats, 'selectedSeats');
                             </div>
                           </div>
                         ))}
-                        {childForms.length === 0 && (
+                        {/* {childForms.length === 0 && (
                           <div className="add-box mb-3">
                             <p>You have not added any child to the list</p>
                           </div>
@@ -3944,7 +3985,7 @@ console.log(selectedSeats, 'selectedSeats');
                             <strong>{childCount}</strong> CHILD. Remove one
                             before adding a new one.
                           </div>
-                        )}
+                        )} */}
                       </div>
                     )}
                     {/* =========================
@@ -3971,17 +4012,17 @@ console.log(selectedSeats, 'selectedSeats');
                             <div className="d-flex justify-content-between align-items-center p-3 bg-light">
                               <strong>INFANT {index + 1}</strong>
 
-                              <button
+                              {/* <button
                                 type="button"
                                 className="btn btn-link text-danger text-decoration-none"
                                 onClick={() => handleRemoveInfant(index)}
                               >
                                 ×
-                              </button>
+                              </button> */}
                             </div>
 
                             <div className="p-3">
-                              <InfantsFields
+                              <InfantsFieldsReviewBooking
                                 infant={infant}
                                 index={index}
                                 infantRule={infantRule}
@@ -3991,7 +4032,7 @@ console.log(selectedSeats, 'selectedSeats');
                           </div>
                         ))}
 
-                        {infantForms.length === 0 && (
+                        {/* {infantForms.length === 0 && (
                           <div className="add-box mb-3">
                             <p>You have not added any infant to the list</p>
                           </div>
@@ -4010,7 +4051,7 @@ console.log(selectedSeats, 'selectedSeats');
                             <strong>{infantCount}</strong> INFANT. Remove one
                             before adding a new one.
                           </div>
-                        )}
+                        )} */}
                       </div>
                     )}
 

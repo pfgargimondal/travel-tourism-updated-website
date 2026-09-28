@@ -1944,9 +1944,6 @@ export const FlightDetails = () => {
     }
   };
 
-  console.log(selectedMeals, 'selectedMeals'); 
-
-  console.log(selectedMealList, 'selectedMealList');
 
   const extraAddOnTypes = ["ADDITIONALBAGGAGE", "BAGGAGE", "SEAT", "COMPLIMENTORY_MEALS", "MEALS"];
 
@@ -2219,7 +2216,7 @@ export const FlightDetails = () => {
       return 1;
     }
 
-    return 0;
+    return null;
   };
 
   const getPaxType = (passengerType) => {
