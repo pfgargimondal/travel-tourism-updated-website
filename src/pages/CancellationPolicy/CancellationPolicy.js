@@ -7,14 +7,14 @@ import { PolicyComponent } from "../PolicyComponent/PolicyComponent";
 
 export const CancellationPolicy = () => {
   const [loading, setLoading] = useState(false);
-  const [customerServiceDetails, setCustomerServiceDetails] = useState({});
+  const [cancellationPolicyDetails, setcancellationPolicyDetails] = useState({});
 
   useEffect(() => {
     const fetchCustomerServiceData = async () => {
       setLoading(true);
       try {
-        const getresponse = await http.get("/get-customer-service-content");
-        setCustomerServiceDetails(getresponse.data);
+        const getresponse = await http.get("/get-cancellation-policy-content");
+        setcancellationPolicyDetails(getresponse.data);
       } catch (error) {
         console.error("Error fetching users:", error);
       } finally {
@@ -32,7 +32,7 @@ export const CancellationPolicy = () => {
       {loading && <Loader />}
 
       <div className="legal-pages-wrapper">
-        <PolicyComponent PolicyDetails={customerServiceDetails} />
+        <PolicyComponent PolicyDetails={cancellationPolicyDetails} />
       </div>
     </>
   )

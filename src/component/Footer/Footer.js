@@ -40,7 +40,7 @@ export const Footer = () => {
                             <li><Link to="/about-us">About Us</Link></li>
                             <li><Link to="/privacy-policy">Privacy Policy</Link></li>
                             <li><Link to="/terms-&-conditions">Terms & Conditions</Link></li>
-                            <li><Link to="/customer-service">Cancellation Policy</Link></li>
+                            <li><Link to="/cancellation-policy">Cancellation Policy</Link></li>
                             <li><Link to="/customer-service">Customer Service</Link></li>
                             <li><Link to="/return-policy">Return Policy</Link></li>
                         </ul>
