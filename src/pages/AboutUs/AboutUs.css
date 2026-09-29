@@ -417,6 +417,10 @@
 
 }
 
+.hero-description p{
+    color: #fff !important;
+}
+
 .client {
     display: flex;
     align-items: center;

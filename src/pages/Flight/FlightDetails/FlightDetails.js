@@ -2216,7 +2216,7 @@ export const FlightDetails = () => {
       return 1;
     }
 
-    return null;
+    return 0;
   };
 
   const getPaxType = (passengerType) => {
