@@ -1096,16 +1096,15 @@ const infantCount = passengers.filter(
 
   const handleChooseSeat = () => {
     console.log("User wants to choose seat manually");
-
     // Close recommendation popup
     setShowSeatRecommendationModal(false);
-
     // Open seat/meal section
     setShowSeatMealSection(true);
-
     // Open seat tab
     setActiveSeatMealTab("seats");
   };
+
+  console.log(activeSeatMealTab, 'activeSeatMealTab');
 
   const handleAcceptRecommendedSeat = (recommendedSeats) => {
     console.log("Recommended seats:", recommendedSeats);
@@ -2088,6 +2087,7 @@ const infantCount = passengers.filter(
     setFlightBookingModal(true);
   };
 
+
   const formatDepartureDateTime = (dateTime) => {
     if (!dateTime) return "";
 
@@ -2220,7 +2220,7 @@ const infantCount = passengers.filter(
 
   const hasSeatOrMeal = hasSeat || hasMeal || hasExtraAddOn;
 
-  console.log(extraAddOnList, 'extraAddOnList'); 
+  console.log(hasSeatOrMeal, 'hasSeatOrMeal'); 
 
   const extraBaggageCharges = Object.values(selectedSSR || {}).reduce(
     (total, passengerSSR) => {
@@ -2691,7 +2691,7 @@ const infantCount = passengers.filter(
     };
 
     return payload;
-  };
+  }; 
   // eslint-disable-next-line
   const handleHoldTicket = async () => {
     try {
@@ -2787,9 +2787,6 @@ const infantCount = passengers.filter(
     }
   };
 
-
-
-console.log(selectedSeats, 'selectedSeats');
 
   if (loading) return <Loader />;
 

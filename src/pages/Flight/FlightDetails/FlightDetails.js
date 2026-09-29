@@ -315,7 +315,7 @@ export const FlightDetails = () => {
 
   const emptyPassenger = {
     // Basic details
-    title: "Mr",
+    title: "",
     firstName: "",
     lastName: "",
     gender: "",
@@ -488,6 +488,8 @@ export const FlightDetails = () => {
 
   const [saveBilling, setSaveBilling] = useState(false);
   const [billingError, setBillingError] = useState("");
+
+  
 
   const validatePassengerDetails = () => {
     // =========================
@@ -767,6 +769,11 @@ export const FlightDetails = () => {
       setLoading(false);
     }
   };
+
+  console.log(adultForms, 'adultFormsadultFormsadultForms');
+  console.log(childForms, 'childFormschildFormschildForms');
+  console.log(infantForms, 'infantFormsinfantFormsinfantForms');
+
 
   const handleSeatSkip = () => {
     console.log("User skipped seat selection");
@@ -2297,6 +2304,8 @@ export const FlightDetails = () => {
           : null,
     }));
   };
+
+  console.log(createPAXDetails, 'createPAXDetailscreatePAXDetailscreatePAXDetailscreatePAXDetails');
 
   const createBookingSSRDetails = () => {
     const ssrDetails = [];

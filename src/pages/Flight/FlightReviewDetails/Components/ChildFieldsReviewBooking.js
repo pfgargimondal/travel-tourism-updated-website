@@ -13,7 +13,7 @@ export const ChildFieldsReviewBooking = ({ child, index, childRule, handleChildC
             onChange={(e) => handleChildChange(index, "title", e.target.value)}
           >
             <option value="MSTR">MSTR</option>
-            <option value="Miss">Miss</option>
+            <option value="MISS">Miss</option>
           </select>
         </div>
       )}

@@ -29,9 +29,9 @@ export const AdultFields = ({
                         }
                     >
                         <option value="">Select</option>
-                        <option value="Mr">Mr</option>
-                        <option value="Mrs">Mrs</option>
-                        <option value="Miss">Miss</option>
+                        <option value="MR">Mr</option>
+                        <option value="MRS">Mrs</option>
+                        <option value="MS">Miss</option>
                     </select>
 
                 </div>
