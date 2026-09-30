@@ -42,16 +42,16 @@ export const Meal = ({
         `.toLowerCase();
 
         const exactImages = {
-            FRCK: "./../images/fruit-cake.png",
-            VBIR: "./../images/veg-biryani.png",
-            PTSW: "./../images/paneer-sandwich.png",
-            CJSW: "./../images/chicken-junglee-sandwich.png",
-            CPML: "./../images/corporate-meal.png",
+            FRCK: "/images/fruit-cake.png",
+            VBIR: "/images/veg-biryani.png",
+            PTSW: "/images/paneer-sandwich.png",
+            CJSW: "/images/chicken-junglee-sandwich.png",
+            CPML: "/images/corporate-meal.png",
 
-            RDWI: "./../images/red-wine.jpg",
-            WHWI: "./../images/white-wine.jpg",
-            WHSK: "./../images/whiskey-image.jpg",
-            BEER: "./../images/beer-image.jpg",
+            RDWI: "/images/red-wine.jpg",
+            WHWI: "/images/white-wine.jpg",
+            WHSK: "/images/whiskey-image.jpg",
+            BEER: "/images/beer-image.jpg",
         };
 
         if (exactImages[code]) {
@@ -63,28 +63,28 @@ export const Meal = ({
             text.includes("dessert") ||
             text.includes("pastry")
         ) {
-            return "./../images/dessert-cake.png";
+            return "/images/dessert-cake.png";
         }
 
         if (
             text.includes("biryani") ||
             text.includes("biriyani")
         ) {
-            return "./../images/biryani.png";
+            return "/images/biryani.png";
         }
 
         if (
             text.includes("paneer") &&
             text.includes("sandwich")
         ) {
-            return "./../images/paneer-sandwich.png";
+            return "/images/paneer-sandwich.png";
         }
 
         if (
             text.includes("chicken") &&
             text.includes("sandwich")
         ) {
-            return "./../images/chicken-sandwich.png";
+            return "/images/chicken-sandwich.png";
         }
 
         if (
@@ -92,18 +92,18 @@ export const Meal = ({
             text.includes("burger") ||
             text.includes("wrap")
         ) {
-            return "./../images/sandwich.png";
+            return "/images/sandwich.png";
         }
 
         if (text.includes("jain")) {
-            return "./../images/jain-meal.png";
+            return "/images/jain-meal.png";
         }
 
         if (
             text.includes("diabetic") ||
             text.includes("diabetes")
         ) {
-            return "./../images/diabetic-meal.png";
+            return "/images/diabetic-meal.png";
         }
 
         if (
@@ -115,37 +115,37 @@ export const Meal = ({
             text.includes("fish") ||
             text.includes("egg")
         ) {
-            return "./../images/nonveg-meal.png";
+            return "/images/nonveg-meal.png";
         }
 
         if (
             text.includes("veg") ||
             text.includes("vegetarian")
         ) {
-            return "./../images/veg-meal.png";
+            return "/images/veg-meal.png";
         }
 
         if (text.includes("corporate")) {
-            return "./../images/corporate-meal.png";
+            return "/images/corporate-meal.png";
         }
 
         if (text.includes("Beer")) {
-            return "./../images/beer-image.jpg";
+            return "/images/beer-image.jpg";
         }
 
         if (text.includes("Whiskey")) {
-            return "./../images/whiskey-image.jpg";
+            return "/images/whiskey-image.jpg";
         }
 
         if (text.includes("White wine")) {
-            return "./../images/white-wine.jpg";
+            return "/images/white-wine.jpg";
         }
 
         if (text.includes("Redwine")) {
-            return "./../images/red-wine.jpg";
+            return "/images/red-wine.jpg";
         }
 
-        return "./../images/default-meal.png";
+        return "/images/default-meal.png";
     };
 
     const mealType = getMealType();
@@ -175,7 +175,7 @@ export const Meal = ({
                     className="img-fluid w-100 object-fit-cover h-100"
                     onError={(e) => {
                         e.currentTarget.src =
-                            "./../images/default-meal.png";
+                            "/images/default-meal.png";
                     }}
                 />
 

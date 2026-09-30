@@ -54,7 +54,6 @@ export const FlightDetails = () => {
   const childCount = children || 0;
   const infantCount = infants || 0;
 
-  
 
   const [fareRuleModal, setFareRuleModal] = useState(false);
   const [activeTab, setActiveTab] = useState("cancel");

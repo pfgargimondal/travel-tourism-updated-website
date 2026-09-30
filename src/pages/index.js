@@ -16,6 +16,7 @@ export {FlightPayment} from "./Flight/FlightPayment/FlightPayment";
 export {FlightBookingPending} from "./Flight/FlightBookingPending/FlightBookingPending";
 export {FlightPaymentConfirmation} from "./Flight/FlightPaymentConfirmation/FlightPaymentConfirmation";
 export {FlightReviewDetails} from "./Flight/FlightReviewDetails/FlightReviewDetails";
+export {FlightPaymentReview} from "./Flight/FlightPaymentReview/FlightPaymentReview";
 export {FlightLocked} from "./Flight/FlightLocked/FlightLocked";
 export {PrivacyPolicy} from "./PrivacyPolicy/PrivacyPolicy";
 export {TermsCondition} from "./TermsCondition/TermsCondition";

@@ -4,7 +4,7 @@ export const ChildFields = ({ child, index, childRule, handleChildChange }) => {
     <div className="row g-3">
       {childRule?.Title && (
         <div className="col-md-2">
-          <label>Title</label>
+          <label>Title <span className="text-danger">*</span></label>
           <select
             className="form-select"
             value={child.title}
@@ -19,7 +19,7 @@ export const ChildFields = ({ child, index, childRule, handleChildChange }) => {
 
       {childRule?.First_Name && (
         <div className="col-md-5">
-          <label>First Name</label>
+          <label>First Name <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control"
@@ -34,7 +34,7 @@ export const ChildFields = ({ child, index, childRule, handleChildChange }) => {
 
       {childRule?.Last_Name && (
         <div className="col-md-5">
-          <label>Last Name</label>
+          <label>Last Name <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control"
@@ -48,7 +48,7 @@ export const ChildFields = ({ child, index, childRule, handleChildChange }) => {
       )}
       {childRule?.DOB && (
         <div className="col-md-4">
-          <label>Date of Birth</label>
+          <label>Date of Birth <span className="text-danger">*</span></label>
 
           <input
             type="date"

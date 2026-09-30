@@ -9,7 +9,6 @@ export const AdultFields = ({
 }) => {
 
     return (
-
         <div className="row g-3">
 
             {/* Title */}

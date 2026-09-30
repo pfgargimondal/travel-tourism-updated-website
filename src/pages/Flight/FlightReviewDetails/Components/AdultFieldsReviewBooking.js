@@ -8,6 +8,9 @@ export const AdultFieldsReviewBooking = ({
     handleAdultChange,
 }) => {
 
+    console.log(adult, 'adult');
+
+
     return (
 
         <div className="row g-3">

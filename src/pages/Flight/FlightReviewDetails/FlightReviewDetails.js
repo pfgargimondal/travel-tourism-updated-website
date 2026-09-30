@@ -108,15 +108,8 @@ export const FlightReviewDetails = () => {
       fetchLockTicket();
   }, [bookingReference, user?.id]);
 
-  const createdAt = lockTicketDetails?.created_at;
   // eslint-disable-next-line
-  const formattedBookingDate = createdAt
-  ? new Date(createdAt).toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-      })
-  : "-";
+  const createdAt = lockTicketDetails?.created_at;
 
   // eslint-disable-next-line
   const formatHoldValidity = (dateTime) => {
@@ -140,8 +133,6 @@ export const FlightReviewDetails = () => {
   const repriceFlight = bookingDetails?.repriceFlight || null;
   
 
-  console.log(allFlightDetails, 'allFlightDetails');
-
   if (typeof allFlightDetails === "string") {
       try {
           allFlightDetails = JSON.parse(allFlightDetails);
@@ -157,8 +148,6 @@ export const FlightReviewDetails = () => {
     const lastSegment = segments[segments.length - 1];
     const segment = allFlightDetails?.Segments?.[0];
 
-    const fareId = fares?.Fare_Id;
-
     const travelDate = allFlightDetails?.TravelDate
         ? new Date(allFlightDetails.TravelDate)
         : null;
@@ -170,10 +159,41 @@ export const FlightReviewDetails = () => {
     const allfareDetails = fare?.FareDetails || [];
     const fareDetail = fare?.FareDetails?.[0];
     const search_key = tempBookingDetails?.search_key;
+    const flight_key = tempBookingDetails?.flight_key;
+    const fareId = fare?.Fare_Id;
 
     // Departure & Arrival
     const departureDateTime = firstSegment?.Departure_DateTime || "";
     const arrivalDateTime = lastSegment?.Arrival_DateTime || "";
+
+
+
+    useEffect(() => {
+      const fetchFlightDetails = async () => {
+          try {
+              setLoading(true);
+
+              const [ssrRes] = await Promise.all([
+                  http.post("/flight-get-ssr", {
+                      search_key,
+                      Flight_Key: flight_key,
+                  }),
+              ]);
+
+              setSsrData(
+                  ssrRes.data.ssrDetails.SSRFlightDetails
+              );
+          } catch (err) {
+              console.error(err);
+          } finally {
+              setLoading(false);
+          }
+      };
+
+      if (fareId && search_key && flight_key) {
+          fetchFlightDetails();
+      }
+    }, [fareId, search_key, flight_key]);
 
     // Format time
     const formatTimefbdfzb = (dateTime) => {
@@ -288,7 +308,6 @@ export const FlightReviewDetails = () => {
       if (!user?.id) {
         return;
       }
-
       const savedPassengers = passengers || [];
 
       const mapSavedPassenger = (passenger) => ({
@@ -301,89 +320,72 @@ export const FlightReviewDetails = () => {
             passenger?.last_name ||
             passenger?.Last_Name ||
             "",
-
         gender:
             passenger?.gender ??
             passenger?.Gender ??
             "",
-
         // Age / DOB
         age:
             passenger?.age ??
             passenger?.Age ??
             "",
-
         dob:
             passenger?.dob ||
             passenger?.DOB ||
             "",
-
         // Nationality
         nationality:
             passenger?.nationality ||
             passenger?.Nationality ||
             "",
-
         // Passport
         passportNumber:
             passenger?.passport_number ||
             passenger?.Passport_Number ||
             "",
-
         passportCountry:
             passenger?.passport_issuing_country ||
             passenger?.Passport_Issuing_Country ||
             "",
-
         passportExpiry:
             passenger?.passport_expiry ||
             passenger?.Passport_Expiry ||
             "",
-
         // Frequent Flyer
         airline:
             passenger?.frequent_flyer_airline_code ||
             "",
-        
         ffNumber:
             passenger?.frequent_flyer_number ||
             "",
-
         // Passenger ID
         paxId:
             passenger?.pax_id ||
             passenger?.Pax_Id ||
             "",
-
         paxType:
             passenger?.pax_type ??
             passenger?.Pax_type ??
             "", 
-
-
         panCardNo:
           passenger?.panCardNo ||
           passenger?.Pancard_Number ||
           "",
-
         countryCode:
           passenger?.countryCode ||
           passenger?.CountryCode ||
           "+91",
-
         mobile:
           passenger?.mobile ||
-          passenger?.Mobile ||
+          passenger?.Mobile || passenger?.Passenger_Mobile ||
           "",
 
         email:
           passenger?.email ||
-          passenger?.Email ||
+          passenger?.Email || passenger?.Passenger_Email ||
           "",
 
         showFF: false,
-
-        // Important
         isSavedPassenger: true,
       });
 
@@ -396,6 +398,7 @@ export const FlightReviewDetails = () => {
             ) === 0
         )
         .map(mapSavedPassenger);
+
 
       const children = savedPassengers
         .filter(
@@ -1006,9 +1009,6 @@ const infantCount = passengers.filter(
       // Meal availability
       const mealAvailable = Array.isArray(mealsList) && mealsList.length > 0;
 
-      console.log("Seat Available:", seatAvailable);
-      console.log("Meal Available:", mealAvailable);
-
       if (!seatAvailable && !mealAvailable) {
         // NO SEAT + NO MEAL
         setShowSeatMealSection(false);
@@ -1045,8 +1045,6 @@ const infantCount = passengers.filter(
   };
 
   const handleSeatSkip = () => {
-    console.log("User skipped seat selection");
-
     // Clear selected seats
     setSelectedSeats([]);
 
@@ -1077,8 +1075,6 @@ const infantCount = passengers.filter(
 
 
   const handleMealSkip = () => {
-    console.log("User skipped meal selection");
-
     // Clear selected meals
     setSelectedMeals({});
 
@@ -1095,7 +1091,6 @@ const infantCount = passengers.filter(
   };
 
   const handleChooseSeat = () => {
-    console.log("User wants to choose seat manually");
     // Close recommendation popup
     setShowSeatRecommendationModal(false);
     // Open seat/meal section
@@ -1104,10 +1099,8 @@ const infantCount = passengers.filter(
     setActiveSeatMealTab("seats");
   };
 
-  console.log(activeSeatMealTab, 'activeSeatMealTab');
 
   const handleAcceptRecommendedSeat = (recommendedSeats) => {
-    console.log("Recommended seats:", recommendedSeats);
 
     setSeatRecommendationError("");
 
@@ -1352,23 +1345,11 @@ const infantCount = passengers.filter(
 
 
   const generatePassengerRecommendations = useCallback(() => {
-    console.log(
-        "Generating passenger recommendations:",
-        recommendedSeats
-    );
-
     /*
-     * -----------------------------------------
-     * CREATE PASSENGER LIST
-     * -----------------------------------------
-     *
      * PaxType:
      * 0 = Adult
      * 1 = Child
      * 2 = Infant
-     *
-     * Infants are NOT added here because
-     * infants normally do not require seats.
      */
 
     const passengers = [];
@@ -1403,7 +1384,6 @@ const infantCount = passengers.filter(
         });
     }
 
-    console.log("Passengers:", passengers);
 
     /*
      * -----------------------------------------
@@ -1501,14 +1481,6 @@ const infantCount = passengers.filter(
 
                 return false;
             }
-
-            /*
-             * Passenger type matches
-             */
-            console.log(
-                `Seat ${seatName} IS allowed for ${passenger.type} ${passenger.paxId}`
-            );
-
             return true;
         });
 
@@ -1519,12 +1491,7 @@ const infantCount = passengers.filter(
          */
 
         if (!recommendation) {
-            console.log(
-                `No compatible recommendation for ${passenger.type} ${passenger.paxId}`
-            );
-
             missingPassengers.push(passenger);
-
             return;
         }
 
@@ -1555,27 +1522,7 @@ const infantCount = passengers.filter(
 
             isRecommended: true,
         });
-
-        console.log(
-            `Assigned ${seatName} to ${passenger.type} ${passenger.paxId}`
-        );
     });
-
-    /*
-     * -----------------------------------------
-     * LOG RESULTS
-     * -----------------------------------------
-     */
-
-    console.log(
-        "Successfully assigned recommended seats:",
-        assignedSeats
-    );
-
-    console.log(
-        "Passengers without compatible seats:",
-        missingPassengers
-    );
 
     /*
      * -----------------------------------------
@@ -1584,13 +1531,6 @@ const infantCount = passengers.filter(
      */
 
     setAssignedRecommendedSeats(assignedSeats);
-
-    /*
-     * -----------------------------------------
-     * CHECK FOR MISSING PASSENGERS
-     * -----------------------------------------
-     */
-    console.log(missingPassengers, 'missingPassengers');
 
     if (missingPassengers.length > 0) {
         const missingPassengerText =
@@ -1658,10 +1598,6 @@ const infantCount = passengers.filter(
     ) {
         return;
     }
-
-    console.log(
-        "Seat map updated. Generating passenger recommendations..."
-    );
 
     /*
      * Now seatMap is updated,
@@ -1744,14 +1680,6 @@ const infantCount = passengers.filter(
     return d;
   };
 
-  //   const firstSegment = segments[0];
-
-
-  // const departureDate = parseDate(segment?.Departure_DateTime);
-  // const arrivalDate = parseDate(segment?.Arrival_DateTime);
-  // const totalMinutes = Math.floor((arrivalDate - departureDate) / (1000 * 60));
-  // const hours = Math.floor(totalMinutes / 60);
-  // const minutes = totalMinutes % 60;
 
   const baggageTypes = ["ADDITIONALBAGGAGE", "BAGGAGE"];
 
@@ -1998,9 +1926,7 @@ const infantCount = passengers.filter(
   ];
 
   const handleSeatMealContinue = () => {
-    // =====================================================
-    // SEATS
-    // =====================================================
+
     if (activeSeatMealTab === "seats") {
         // Seat validation
         if (!isSeatSelectionComplete) {
@@ -2082,7 +2008,6 @@ const infantCount = passengers.filter(
   };
 
   const handleExtraAddOnSkip = () => {
-    // Skip extra add-ons → Booking
     setShowSeatMealSection(true);
     setFlightBookingModal(true);
   };
@@ -2205,10 +2130,6 @@ const infantCount = passengers.filter(
     }
   };
 
-  console.log(selectedMeals, 'selectedMeals'); 
-
-  console.log(selectedMealList, 'selectedMealList');
-
   const extraAddOnTypes = ["ADDITIONALBAGGAGE", "BAGGAGE", "SEAT", "COMPLIMENTORY_MEALS", "MEALS"];
 
   const extraAddOnList =
@@ -2220,7 +2141,6 @@ const infantCount = passengers.filter(
 
   const hasSeatOrMeal = hasSeat || hasMeal || hasExtraAddOn;
 
-  console.log(hasSeatOrMeal, 'hasSeatOrMeal'); 
 
   const extraBaggageCharges = Object.values(selectedSSR || {}).reduce(
     (total, passengerSSR) => {
@@ -2282,11 +2202,6 @@ const infantCount = passengers.filter(
   //   0
   // );
 
-  // ============================================================
-  // TOTAL
-  // ============================================================
-
-
   const totallAmountt =
     baseFareTotal +
     taxAmount +
@@ -2294,10 +2209,6 @@ const infantCount = passengers.filter(
     seatCharges +
     mealCharges + extraAddOnCharges + Number(extraBaggageCharges || 0);
     // discountAmount;
-
-  // ============================================================
-  // CURRENCY
-  // ============================================================
 
   const currency =
     fareDetail?.Currency_Code ||
@@ -2415,8 +2326,6 @@ const infantCount = passengers.filter(
     totallAmountt - couponDiscount
   );
 
-  console.log(totallAmountt, 'totallAmountt');
-  console.log(finalAmount, 'finalAmount');
 
   const handleProceedToPayment = () => {
     setFlightBookingModal(false);
@@ -2425,6 +2334,7 @@ const infantCount = passengers.filter(
       search_key,
       allFlightDetails,
       segment,
+      segments,
       repriceFlight,
       bookingPassengers,
       selectedSeatList: Array.isArray(selectedSeatList)
@@ -2456,335 +2366,9 @@ const infantCount = passengers.filter(
       JSON.stringify(paymentData)
     );
 
-    navigate(`/flight-payment/${fareId}`, {
+    navigate(`/flight-payment-review/${fareId}/${lockTicketDetails?.booking_reference}`, {
       state: paymentData,
     });
-  };
-
-  const getFlightKey = () => {
-    return (
-      repriceFlight?.Flight_Key ||
-      repriceFlight?.AirRepriceResponses?.[0]?.Flight_Key ||
-      ""
-    );
-  };
-
-  const getGender = (gender) => {
-    if (
-      gender === "Female" ||
-      gender === "F" ||
-      gender === 1 ||
-      gender === "1"
-    ) {
-      return 1;
-    }
-    return 0;
-  };
-
-  const getPaxType = (passengerType) => {
-    switch (passengerType) {
-      case "Adult":
-        return 0;
-
-      case "Child":
-        return 1;
-
-      case "Infant":
-        return 2;
-
-      default:
-        return 0;
-    }
-  };
-
-  const createPAXDetails = () => {
-    return bookingPassengers.map((passenger, index) => ({
-      Pax_Id: index + 1,
-
-      Pax_type: getPaxType(
-        passenger?.passengerType
-      ),
-
-      Title:
-        passenger?.title || "",
-
-      First_Name:
-        passenger?.firstName || "",
-
-      Last_Name:
-        passenger?.lastName || "",
-
-      Gender:
-        getGender(passenger?.gender),
-
-      Age:
-        passenger?.age
-          ? Number(passenger.age)
-          : null,
-
-      DOB:
-        // passenger?.dob || null,
-        passenger?.dob
-        ? (() => {
-            const [year, month, day] = passenger.dob.split("-");
-            return `${month}/${day}/${year}`;
-          })()
-        : null,
-
-      Passport_Number:
-        passenger?.passportNumber || null,
-
-      Passport_Issuing_Country:
-        passenger?.passportCountry || null,
-
-      Passport_Expiry:
-        passenger?.passportExpiry || null,
-
-      Nationality:
-        passenger?.nationality || null,
-
-      Pancard_Number:
-        passenger?.panCardNo || null,
-
-      FrequentFlyerDetails:
-        passenger?.showFF &&
-        passenger?.ffNumber
-          ? {
-              Airline_Code:
-                passenger?.airline || "",
-
-              FrequentFlyerNumber:
-                passenger?.ffNumber || "",
-            }
-          : null,
-    }));
-  };
-
-  const createBookingSSRDetails = () => {
-    const ssrDetails = [];
-
-    if (Array.isArray(selectedSeatList)) {
-      selectedSeatList.forEach((seat) => {
-        ssrDetails.push({
-          // Pax_Id: Number(seat?.passengerIndex) + 1,
-          Pax_Id: Number(seat.paxId),
-          SSR_Key: seat.ssrKey || "",
-        });
-      });
-    }
-
-    if (Array.isArray(selectedMealList)) {
-      selectedMealList.forEach((meal) => {
-        console.log(meal, 'mealsergderhpayment');
-        ssrDetails.push({
-          // SSR_Type: "MEAL",
-
-          // Pax_Id: Number(meal?.passengerIndex) + 1,
-          Pax_Id: meal?.paxId,
-          SSR_Key: meal.SSR_Key || "",
-          // SSR_Code: meal?.SSR_Code || meal?.Meal_Code || meal?.code || "",
-
-          // Amount: Number(
-          //   meal?.Total_Amount || meal?.Amount || meal?.price || 0,
-          // ),
-        });
-      });
-    }
-
-    Object.values(selectedSSR || {}).forEach((passengerSSR) => {
-      Object.values(passengerSSR || {}).forEach((ssr) => {
-        if (!ssr) return;
-
-        ssrDetails.push({
-          // SSR_Type: ssr?.SSR_TypeName || ssr?.SSR_Type || "",
-          Pax_Id: Number(ssr?.passengerIndex ?? ssr?.Pax_Id ?? 0) + 1,
-          SSR_Key: ssr.ssrKey || "",
-          // SSR_Code: ssr?.SSR_Code || ssr?.code || "",
-          // Amount: Number(ssr?.Total_Amount || ssr?.Amount || ssr?.price || 0),
-        });
-      });
-    });
-
-    return ssrDetails;
-  };
-
-  const createTempBookingPayload = () => {
-    const firstPassenger =
-      bookingPassengers?.[0] || {};
-
-    const paxDetails = createPAXDetails();
-
-    // if (paxDetails.length === 0) {
-    //   throw new Error("PAX_Details is empty");
-    // }
-
-
-    const payload = {
-      Customer_Mobile:
-        firstPassenger?.mobile || "",
-
-      Passenger_Mobile:
-        firstPassenger?.mobile || "",
-
-      WhatsAPP_Mobile:
-        null,
-
-      Passenger_Email:
-        firstPassenger?.email || "",
-
-      PAX_Details: paxDetails,
-
-      GST:
-        false,
-
-      GST_Number:
-        "",
-
-      GST_HolderName:
-        "GST Holder Name",
-
-      GST_Address:
-        "GST Address",
-
-      BookingFlightDetails: [
-        {
-          Search_Key:
-            search_key || "",
-
-          Flight_Key:
-            getFlightKey(),
-
-          BookingSSRDetails:
-            createBookingSSRDetails(),
-        },
-      ],
-
-      CostCenterId:
-        0,
-
-      ProjectId:
-        0,
-
-      BookingRemark:
-        "Flight Booking",
-
-      CorporateStatus:
-        0,
-
-      CorporatePaymentMode:
-        0,
-
-      MissedSavingReason:
-        null,
-
-      CorpTripType:
-        null,
-
-      CorpTripSubType:
-        null,
-
-      TripRequestId:
-        null,
-
-      BookingAlertIds:
-        null,
-    };
-
-    return payload;
-  }; 
-  // eslint-disable-next-line
-  const handleHoldTicket = async () => {
-    try {
-
-      setLoading(true);
-
-        if (!Array.isArray(bookingPassengers) || bookingPassengers.length === 0) {
-          alert("Passenger details are missing. Please enter passenger details.");
-          return;
-        }
-        setFlightBookingModal(false);
-
-        const payload = {
-            ...createTempBookingPayload(),
-            repriceFlight,
-            user_id: user?.id,
-            // amount: Number(finalAmount || 0),
-            base_fare: Number(baseFareTotal || 0),
-            tax_amount: Number(taxAmount || 0),
-            // seat_charges: Number(seatCharges || 0),
-            // meal_charges: Number(mealCharges || 0),
-            // extra_baggage_charges: Number(extraBaggageCharges || 0),
-            // extra_addon_charges: Number(extraAddOnCharges || 0),
-            // other_charges: Number(otherCharges || 0),
-            // coupon_discount: Number(couponDiscount || 0),
-        };
-        const response = await http.post(
-          "/flight-temp-booking-lock-ticket",
-          payload
-        );
-
-      const bookingReference =  response?.booking_reference ||
-              response?.BookingId ||
-              response?.booking_id ||
-              response?.Booking_Reference ||
-              response?.BookingReference ||
-              response?.BookingRef ||
-              response?.PNR ||
-              response?.pnr ||
-              response?.data?.Booking_Id ||
-              response?.data?.BookingId ||
-              response?.data?.Booking_Reference ||
-              response?.data?.booking_reference ||
-              response?.data?.BookingReference || "";
-
-        if (!bookingReference) {
-            throw new Error("Booking reference not found from Temp Booking response.");
-        }
-
-        const ticketingType = "0";
-
-        const ticketingPayload = {
-            BookingReference: bookingReference,
-            Ticketing_Type: ticketingType,
-            User_id: user?.id,
-        };
-
-
-        const ticketResponse = await http.post(
-          "/flight-ticketing-lock-price",
-          ticketingPayload,
-        );
-
-        if(ticketResponse?.data?.success === false){
-          alert(ticketResponse?.data?.message);
-        }
-
-        if (ticketResponse?.data?.success === true) {
-          // const holdTicketResponse = ticketResponse?.data?.data;
-
-          sessionStorage.setItem(
-            `heldBookingReference`,
-            JSON.stringify(ticketResponse?.data?.data)
-          );
-
-          navigate(`/flight-locked-thankYou/${bookingReference}`, {
-            state: {
-              fareDetailsData,
-            },
-          });
-          return;
-        }
-
-    } catch (error) {
-      console.error("Hold ticket failed:", error);
-      alert(
-        error?.response?.data?.message ||
-        error?.message ||
-        "Something went wrong while holding the ticket."
-      );
-    } finally {
-      setLoading(false);
-    }
   };
 
 
@@ -4351,7 +3935,6 @@ const infantCount = passengers.filter(
                                   setIsSeatSelectionComplete
                                 }
                                 onSeatChange={(seats) => {
-                                  console.log("Selected seats:", seats);
                                   setSelectedSeats(seats);
                                 }} 
                               />
