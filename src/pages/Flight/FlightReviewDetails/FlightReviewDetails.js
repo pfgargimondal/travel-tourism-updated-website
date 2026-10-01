@@ -2326,6 +2326,7 @@ const infantCount = passengers.filter(
     totallAmountt - couponDiscount
   );
 
+  const bookingReferenceParams = lockTicketDetails?.booking_reference;
 
   const handleProceedToPayment = () => {
     setFlightBookingModal(false);
@@ -2366,7 +2367,7 @@ const infantCount = passengers.filter(
       JSON.stringify(paymentData)
     );
 
-    navigate(`/flight-payment-review/${fareId}/${lockTicketDetails?.booking_reference}`, {
+    navigate(`/flight-payment-review/${fareId}/${bookingReferenceParams}`, {
       state: paymentData,
     });
   };

@@ -778,8 +778,6 @@ export const FlightFilter = () => {
   }));
 
 
-  console.log(airlineCounts, 'airlineCountsairlineCounts');
-
 
   const cabinClassMap = {
     "0": "Economy",
@@ -2115,10 +2113,6 @@ export const FlightFilter = () => {
                                       </div>
                                     </div>
                                   </div>
-
-                                  {/* <a href="/" className="compare-link">
-                                                      Add to compare +
-                                                  </a> */}
 
                                   <div className="icsnduhh row align-items-center mt-2">
                                     {/* Airline Details */}

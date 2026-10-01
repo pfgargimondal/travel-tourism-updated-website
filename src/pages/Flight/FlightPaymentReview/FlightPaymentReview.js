@@ -7,7 +7,7 @@ import http from "../../../http";
 export const FlightPaymentReview = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { bookingReferenceParams } = useParams();
+  const { bookingReference } = useParams();
   // eslint-disable-next-line
   const [loading, setLoading] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -17,9 +17,11 @@ export const FlightPaymentReview = () => {
   // eslint-disable-next-line
   const [timeLeft, setTimeLeft] = useState(9 * 60 + 17);
 
+  console.log(bookingReference, 'bookingReferenceParams');
+
   const {
     search_key,
-    flight,
+    flight, 
     segment,
     // eslint-disable-next-line
     segments,
@@ -835,7 +837,6 @@ export const FlightPaymentReview = () => {
         return;
       }
 
-      const bookingReference = bookingReferenceParams;
 
       if (!bookingReference) {
         console.error(
