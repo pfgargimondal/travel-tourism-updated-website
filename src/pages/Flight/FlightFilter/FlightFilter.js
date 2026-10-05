@@ -1980,7 +1980,7 @@ export const FlightFilter = () => {
               <div className="col-lg-9">
                 <div className="ajhfbmuihehee d-flex justify-content-between align-items-center mb-4">
                   <h5 className="fw-semibold mb-0">
-                    {filteredFlights.length} Flights
+                    {flightList.length} Flights
                     Found on Your Search
                   </h5>
 
