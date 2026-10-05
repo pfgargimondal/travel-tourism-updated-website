@@ -496,6 +496,7 @@ export const FlightFilter = () => {
   useEffect(() => {
     const fetchFlights = async () => {
       setLoading(true);
+
       try {
         const payload = {
           origin,
@@ -512,12 +513,94 @@ export const FlightFilter = () => {
           StudentFare_Search,
           DefenceFare_Search,
         };
+
         const response = await http.post("/flight-search", payload);
-        setFlightsList(response.data.flightList);
+
+        const flightList = response?.data?.flightList || {};
+
+        console.log("FULL FLIGHT LIST:", flightList);
+
+        const tripDetails = flightList?.TripDetails || [];
+
+        console.log("TRIP DETAILS:", tripDetails);
+
+        // ==========================================
+        // ONE WAY
+        // ==========================================
+
+        if (tripDetails.length === 1) {
+          const flights = tripDetails?.[0]?.Flights || [];
+
+          console.log("ONE WAY FLIGHTS:", flights);
+
+          setFlightsList(flights);
+        }
+
+        // ==========================================
+        // ROUND TRIP
+        // ==========================================
+
+        else if (tripDetails.length >= 2) {
+          const onwardTrip = tripDetails.find(
+            (trip) => Number(trip?.Trip_Id) === 0
+          );
+
+          const returnTrip = tripDetails.find(
+            (trip) => Number(trip?.Trip_Id) === 1
+          );
+
+          const onwardFlights = onwardTrip?.Flights || [];
+          const returnFlights = returnTrip?.Flights || [];
+
+          console.log("ONWARD FLIGHTS:", onwardFlights);
+          console.log("RETURN FLIGHTS:", returnFlights);
+
+          const roundTripFlights = [];
+
+          onwardFlights.forEach((onwardFlight) => {
+            returnFlights.forEach((returnFlight) => {
+              roundTripFlights.push({
+                // Keep onward flight properties
+                ...onwardFlight,
+
+                // Explicit references
+                onwardFlight,
+                returnFlight,
+
+                // Round-trip flag
+                isRoundTrip: true,
+
+                // Search information
+                Search_Key: flightList?.Search_Key,
+
+                // Keep original trip data
+                TripDetails: tripDetails,
+              });
+            });
+          });
+
+          console.log(
+            "ROUND TRIP COMBINATIONS:",
+            roundTripFlights
+          );
+
+          setFlightsList(roundTripFlights);
+        }
+
+        // ==========================================
+        // NO FLIGHTS
+        // ==========================================
+
+        else {
+          setFlightsList([]);
+        }
+
       } catch (error) {
-        console.log(error);
+        console.log("Flight search error:", error);
+        setFlightsList([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchFlights();
@@ -536,7 +619,7 @@ export const FlightFilter = () => {
     StudentFare_Search,
     DefenceFare_Search,
   ]);
-    
+      
 
   useEffect(() => {
     const fetchAirportList = async () => {
@@ -1445,34 +1528,6 @@ export const FlightFilter = () => {
           </div>
         </section>
 
-        {/* <section className="cdsnxfggfsD pt-3">
-          <div className="container">
-            <div className="airlines-row">
-                {airlineCounts.map((airline) => (
-                  <div
-                    className="airline-item"
-                    key={airline.airlineCode}
-                  >
-                    <img
-                        src={`https://images.kiwi.com/airlines/64/${airline.airlineCode}.png`}
-                        className="airline-logo"
-                        alt={airline.airlineName}
-                        onError={(e) => {
-                          e.target.src = "./images/indigo.png";
-                        }}
-                      />
-                    <div>
-                      <h6>{airline.airlineName}</h6>
-                      <p>
-                        {airline.count} {airline.count === 1 ? "Flight" : "Flights"}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          </div>
-        </section> */}
-
         <section className="flight-results-section py-5">
           <div className="container">
             <div className="row g-4">
@@ -2038,29 +2093,830 @@ export const FlightFilter = () => {
                 </div>
 
                 <div className="flight-filtr-wrppr">
-                  {filteredFlights?.length > 0 ? (
-                      [...filteredFlights]
-                          .sort((a, b) => {
-                              const priceA =
-                                  a.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity;
+             
 
-                              const priceB =
-                                  b.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity;
+                  {flightList?.length > 0 ? (
+                  [...flightList]
+                    .sort((a, b) => {
+                      const priceA = a.isRoundTrip
+                        ? Number(
+                            a?.onwardFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
+                          ) +
+                          Number(
+                            a?.returnFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
+                          )
+                        : Number(
+                            a?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity
+                          );
 
-                              return Number(priceA) - Number(priceB);
-                          })
-                          .map((flight, index) => {
-                              const firstSegment = flight.Segments[0];
+                      const priceB = b.isRoundTrip
+                        ? Number(
+                            b?.onwardFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
+                          ) +
+                          Number(
+                            b?.returnFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
+                          )
+                        : Number(
+                            b?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity
+                          );
 
-                              const lastSegment =
-                                  flight.Segments[flight.Segments.length - 1];
+                      return priceA - priceB;
+                    })
+                    .map((flight, index) => {
 
-                              const cheapestFare =
-                                  flight.Fares[0]?.FareDetails[0];
+                      if (flight?.isRoundTrip) {
+                        const onwardFlight = flight?.onwardFlight;
+                        const returnFlight = flight?.returnFlight;
 
-                              const destinationSegment =
-                                  lastSegment || firstSegment;
+                        const onwardSegments = onwardFlight?.Segments || [];
+                        const returnSegments = returnFlight?.Segments || [];
 
+                        const onwardFirstSegment = onwardSegments?.[0];
+                        const onwardLastSegment =
+                          onwardSegments?.[onwardSegments.length - 1];
+
+                        const returnFirstSegment = returnSegments?.[0];
+                        const returnLastSegment =
+                          returnSegments?.[returnSegments.length - 1];
+
+                        const onwardFare =
+                          onwardFlight?.Fares?.[0]?.FareDetails?.[0];
+
+                        const returnFare =
+                          returnFlight?.Fares?.[0]?.FareDetails?.[0];
+
+                        const onwardPrice = Number(
+                          onwardFare?.Total_Amount || 0
+                        );
+
+                        const returnPrice = Number(
+                          returnFare?.Total_Amount || 0
+                        );
+
+                        const totalRoundTripPrice =
+                          onwardPrice + returnPrice;
+
+                        return (
+                          <div
+                            className="flight-card"
+                            key={`${onwardFlight?.Flight_Id}-${returnFlight?.Flight_Id}-${index}`}
+                          >
+
+                            <div className="flight-body">
+
+                              <div className="duihnjaka">
+
+                                {/* =====================================================
+                                    TWO COLUMNS
+                                ===================================================== */}
+
+                                <div className="row">
+
+                                  {/* ===================================================
+                                      ONWARD
+                                  =================================================== */}
+
+                                  <div className="col-lg-6 border-end">
+
+                                    <div className="px-2">
+
+                                      {/* Header */}
+
+                                      <div className="d-flex align-items-center justify-content-between gap-2 mb-3">
+
+                                        <div className="uiajsdkcoijzczx d-flex gap-3 align-items-center">
+
+                                          <img
+                                            src={`https://images.kiwi.com/airlines/64/${onwardFirstSegment?.Airline_Code}.png`}
+                                            className="airline-logo"
+                                            alt=""
+                                            onError={(e) => {
+                                              e.target.src =
+                                                "./images/indigo.png";
+                                            }}
+                                          />
+
+                                          <div className="gfjh55">
+
+                                            <div className="fw-semibold">
+                                              {onwardFirstSegment?.Airline_Name}
+                                            </div>
+
+                                            <p className="mb-0">
+                                              <small className="sjkdnfslfs text-muted">
+                                                {onwardFirstSegment?.Airline_Code}{" "}
+                                                {onwardFirstSegment?.Flight_Number}
+                                              </small>
+                                            </p>
+
+                                          </div>
+
+                                        </div>
+
+                                        <span className="badge bg-light text-dark">
+                                          DEPARTURE
+                                        </span>
+
+                                      </div>
+
+
+                                      {/* Flight route */}
+
+                                      <div className="icsnduhh row align-items-center mt-2">
+
+                                        {/* Origin */}
+
+                                        <div className="col-3">
+
+                                          <div className="gfjh55 text-start">
+
+                                            <h5 className="fw-semibold mb-0 d-flex flex-column gap-1">
+
+                                              <span>
+                                                {
+                                                  onwardFirstSegment?.Origin_City?.match(
+                                                    /\((.*?)\)/
+                                                  )?.[1] || ""
+                                                }
+                                              </span>
+
+                                              <span>
+                                                {onwardFirstSegment?.Origin_City
+                                                  ?.replace(/\s*\(.*?\)/g, "")
+                                                  ?.trim()}
+                                              </span>
+
+                                            </h5>
+
+                                            <small
+                                              style={{
+                                                fontWeight: 500,
+                                                color:
+                                                  "var(--light-highlighted-text-color)",
+                                              }}
+                                            >
+                                              Terminal{" "}
+                                              {onwardFirstSegment?.Origin_Terminal}
+                                            </small>
+
+                                          </div>
+
+                                        </div>
+
+
+                                        {/* Time */}
+
+                                        <div className="col-6">
+
+                                          <div className="time-wrapper d-flex justify-content-between gap-2">
+
+                                            <div className="text-center pt-1">
+
+                                              <h5 className="mb-0">
+
+                                                {
+                                                  onwardFirstSegment?.Departure_DateTime?.split(
+                                                    " "
+                                                  )[1]
+                                                }
+
+                                              </h5>
+
+                                            </div>
+
+
+                                            <div className="duration-wrapper flex-fill text-center">
+
+                                              <small className="dyusbnbsdhfc">
+
+                                                {onwardSegments
+                                                  .map((segment) => {
+                                                    const [
+                                                      hours,
+                                                      minutes,
+                                                    ] =
+                                                      segment.Duration.split(
+                                                        ":"
+                                                      );
+
+                                                    return `${hours}h ${minutes}m`;
+                                                  })
+                                                  .join(" + ")}
+
+                                              </small>
+
+
+                                              <div className="dinsjihfnsidhfsdf d-flex align-items-center justify-content-center position-relative my-2">
+
+                                                <span className="flgt-drtn-circle d-block"></span>
+
+                                                <span className="flgt-drtn-line d-block"></span>
+
+                                                <span className="flgt-drtn-circle d-block"></span>
+
+                                                <div className="dijsenifjsdf position-absolute text-center">
+
+                                                  <i className="bi bi-airplane-engines d-block text-white"></i>
+
+                                                </div>
+
+                                              </div>
+
+
+                                              <small className="dyusbnbsdhfc">
+
+                                                {onwardSegments.length === 1
+                                                  ? "Non Stop"
+                                                  : `${onwardSegments.length - 1} Stop`}
+
+                                              </small>
+
+                                            </div>
+
+
+                                            <div className="text-center pt-1">
+
+                                              <h5 className="mb-0">
+
+                                                {
+                                                  onwardLastSegment?.Arrival_DateTime?.split(
+                                                    " "
+                                                  )[1]
+                                                }
+
+                                              </h5>
+
+                                            </div>
+
+                                          </div>
+
+                                        </div>
+
+
+                                        {/* Destination */}
+
+                                        <div className="col-3">
+
+                                          <div className="gfjh55 text-end">
+
+                                            <h5 className="fw-semibold mb-0 d-flex flex-column gap-1">
+
+                                              <span>
+                                                {
+                                                  onwardLastSegment?.Destination_City?.match(
+                                                    /\((.*?)\)/
+                                                  )?.[1] || ""
+                                                }
+                                              </span>
+
+                                              <span>
+                                                {onwardLastSegment?.Destination_City
+                                                  ?.replace(/\s*\(.*?\)/g, "")
+                                                  ?.trim()}
+                                              </span>
+
+                                            </h5>
+
+                                            <small
+                                              style={{
+                                                fontWeight: 500,
+                                                color:
+                                                  "var(--light-highlighted-text-color)",
+                                              }}
+                                            >
+                                              Terminal{" "}
+                                              {onwardLastSegment?.Destination_Terminal}
+                                            </small>
+
+                                          </div>
+
+                                        </div>
+
+                                      </div>
+
+
+                                      {/* Date */}
+
+                                      <div className="text-center mt-3">
+
+                                        <small className="text-muted">
+                                          {
+                                            onwardFirstSegment?.Departure_DateTime?.split(
+                                              " "
+                                            )[0]
+                                          }
+                                        </small>
+
+                                      </div>
+
+
+                                      {/* Baggage */}
+
+                                      <div className="d-flex justify-content-between mt-3">
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Cabin
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              onwardFare?.FareClasses?.[0]
+                                                ?.CabinClass
+                                            }
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Baggage
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              onwardFare?.Free_Baggage
+                                                ?.Check_In_Baggage
+                                            }
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Cabin Baggage
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              onwardFare?.Free_Baggage
+                                                ?.Hand_Baggage
+                                            }
+                                          </p>
+                                        </div>
+
+                                      </div>
+
+                                    </div>
+
+                                  </div>
+
+
+                                  {/* ===================================================
+                                      RETURN
+                                  =================================================== */}
+
+                                  <div className="col-lg-6">
+
+                                    <div className="px-2">
+
+                                      {/* Header */}
+
+                                      <div className="d-flex align-items-center justify-content-between gap-2 mb-3">
+
+                                        <div className="uiajsdkcoijzczx d-flex gap-3 align-items-center">
+
+                                          <img
+                                            src={`https://images.kiwi.com/airlines/64/${returnFirstSegment?.Airline_Code}.png`}
+                                            className="airline-logo"
+                                            alt=""
+                                            onError={(e) => {
+                                              e.target.src =
+                                                "./images/indigo.png";
+                                            }}
+                                          />
+
+                                          <div className="gfjh55">
+
+                                            <div className="fw-semibold">
+                                              {returnFirstSegment?.Airline_Name}
+                                            </div>
+
+                                            <p className="mb-0">
+                                              <small className="sjkdnfslfs text-muted">
+                                                {returnFirstSegment?.Airline_Code}{" "}
+                                                {returnFirstSegment?.Flight_Number}
+                                              </small>
+                                            </p>
+
+                                          </div>
+
+                                        </div>
+
+                                        <span className="badge bg-light text-dark">
+                                          RETURN
+                                        </span>
+
+                                      </div>
+
+
+                                      {/* Flight route */}
+
+                                      <div className="icsnduhh row align-items-center mt-2">
+
+                                        {/* Origin */}
+
+                                        <div className="col-3">
+
+                                          <div className="gfjh55 text-start">
+
+                                            <h5 className="fw-semibold mb-0 d-flex flex-column gap-1">
+
+                                              <span>
+                                                {
+                                                  returnFirstSegment?.Origin_City?.match(
+                                                    /\((.*?)\)/
+                                                  )?.[1] || ""
+                                                }
+                                              </span>
+
+                                              <span>
+                                                {returnFirstSegment?.Origin_City
+                                                  ?.replace(/\s*\(.*?\)/g, "")
+                                                  ?.trim()}
+                                              </span>
+
+                                            </h5>
+
+                                            <small
+                                              style={{
+                                                fontWeight: 500,
+                                                color:
+                                                  "var(--light-highlighted-text-color)",
+                                              }}
+                                            >
+                                              Terminal{" "}
+                                              {returnFirstSegment?.Origin_Terminal}
+                                            </small>
+
+                                          </div>
+
+                                        </div>
+
+
+                                        {/* Time */}
+
+                                        <div className="col-6">
+
+                                          <div className="time-wrapper d-flex justify-content-between gap-2">
+
+                                            <div className="text-center pt-1">
+
+                                              <h5 className="mb-0">
+
+                                                {
+                                                  returnFirstSegment?.Departure_DateTime?.split(
+                                                    " "
+                                                  )[1]
+                                                }
+
+                                              </h5>
+
+                                            </div>
+
+
+                                            <div className="duration-wrapper flex-fill text-center">
+
+                                              <small className="dyusbnbsdhfc">
+
+                                                {returnSegments
+                                                  .map((segment) => {
+                                                    const [
+                                                      hours,
+                                                      minutes,
+                                                    ] =
+                                                      segment.Duration.split(
+                                                        ":"
+                                                      );
+
+                                                    return `${hours}h ${minutes}m`;
+                                                  })
+                                                  .join(" + ")}
+
+                                              </small>
+
+
+                                              <div className="dinsjihfnsidhfsdf d-flex align-items-center justify-content-center position-relative my-2">
+
+                                                <span className="flgt-drtn-circle d-block"></span>
+
+                                                <span className="flgt-drtn-line d-block"></span>
+
+                                                <span className="flgt-drtn-circle d-block"></span>
+
+                                                <div className="dijsenifjsdf position-absolute text-center">
+
+                                                  <i className="bi bi-airplane-engines d-block text-white"></i>
+
+                                                </div>
+
+                                              </div>
+
+
+                                              <small className="dyusbnbsdhfc">
+
+                                                {returnSegments.length === 1
+                                                  ? "Non Stop"
+                                                  : `${returnSegments.length - 1} Stop`}
+
+                                              </small>
+
+                                            </div>
+
+
+                                            <div className="text-center pt-1">
+
+                                              <h5 className="mb-0">
+
+                                                {
+                                                  returnLastSegment?.Arrival_DateTime?.split(
+                                                    " "
+                                                  )[1]
+                                                }
+
+                                              </h5>
+
+                                            </div>
+
+                                          </div>
+
+                                        </div>
+
+
+                                        {/* Destination */}
+
+                                        <div className="col-3">
+
+                                          <div className="gfjh55 text-end">
+
+                                            <h5 className="fw-semibold mb-0 d-flex flex-column gap-1">
+
+                                              <span>
+                                                {
+                                                  returnLastSegment?.Destination_City?.match(
+                                                    /\((.*?)\)/
+                                                  )?.[1] || ""
+                                                }
+                                              </span>
+
+                                              <span>
+                                                {returnLastSegment?.Destination_City
+                                                  ?.replace(/\s*\(.*?\)/g, "")
+                                                  ?.trim()}
+                                              </span>
+
+                                            </h5>
+
+                                            <small
+                                              style={{
+                                                fontWeight: 500,
+                                                color:
+                                                  "var(--light-highlighted-text-color)",
+                                              }}
+                                            >
+                                              Terminal{" "}
+                                              {returnLastSegment?.Destination_Terminal}
+                                            </small>
+
+                                          </div>
+
+                                        </div>
+
+                                      </div>
+
+
+                                      {/* Date */}
+
+                                      <div className="text-center mt-3">
+
+                                        <small className="text-muted">
+                                          {
+                                            returnFirstSegment?.Departure_DateTime?.split(
+                                              " "
+                                            )[0]
+                                          }
+                                        </small>
+                                      </div>
+
+
+                                      {/* Baggage */}
+
+                                      <div className="d-flex justify-content-between mt-3">
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Cabin
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              returnFare?.FareClasses?.[0]
+                                                ?.CabinClass
+                                            }
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Baggage
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              returnFare?.Free_Baggage
+                                                ?.Check_In_Baggage
+                                            }
+                                          </p>
+                                        </div>
+
+                                        <div>
+                                          <small className="text-muted">
+                                            Cabin Baggage
+                                          </small>
+
+                                          <p className="mb-0">
+                                            {
+                                              returnFare?.Free_Baggage
+                                                ?.Hand_Baggage
+                                            }
+                                          </p>
+                                        </div>
+
+                                      </div>
+
+                                    </div>
+
+                                  </div>
+
+                                </div>
+
+
+                                {/* =====================================================
+                                    ROUND TRIP PRICE
+                                ===================================================== */}
+
+                                <div className="row mt-3 border-top pt-3">
+
+                                  <div className="col-lg-8">
+
+                                    <div className="flight-top d-flex align-items-center">
+
+                                      <div className="uhncoikcdf d-flex align-items-center">
+
+                                        <div className="heart bg-white">
+
+                                          <img
+                                            src="./images/likeicon.png"
+                                            alt=""
+                                          />
+
+                                        </div>
+
+                                        <p className="mb-0">
+
+                                          {onwardFlight?.IsLCC
+                                            ? "Low Cost Carrier"
+                                            : "Full Service Airline"}
+
+                                        </p>
+
+                                      </div>
+
+                                    </div>
+
+                                  </div>
+
+
+                                  <div className="col-lg-4">
+
+                                    <div className="d-flex flex-column align-items-end">
+
+                                      <small>
+                                        Round Trip
+                                      </small>
+
+                                      <h4 className="mb-0">
+
+                                        <strong>
+                                          ₹{" "}
+                                          {totalRoundTripPrice.toLocaleString()}
+                                        </strong>
+
+                                      </h4>
+
+                                      <small>
+                                        per traveller
+                                      </small>
+
+
+                                      <button
+                                        className="btn btn-tour mt-2"
+                                        onClick={() =>
+                                          handleFlightFareDetails(flight)
+                                        }
+                                      >
+                                        View Price
+                                      </button>
+
+                                    </div>
+
+                                  </div>
+
+                                </div>
+
+
+                                {/* =====================================================
+                                    ROUND TRIP DETAILS
+                                ===================================================== */}
+
+                                <div className="flight-top d-flex justify-content-between align-items-center mt-3">
+
+                                  <div className="offer-strip">
+
+                                    <div className="doasjjishnidchsd d-flex align-items-center gap-2">
+
+                                      <div className="dosncjknzkczxc position-relative rounded-circle">
+
+                                        <img
+                                          src="./images/seatb.png"
+                                          className="position-absolute top-50 start-50 translate-middle img-fluid"
+                                          alt=""
+                                        />
+
+                                      </div>
+
+                                      <div className="dinsdlcjiodsfc">
+
+                                        <small>
+                                          Onward Seats
+                                        </small>
+
+                                        <p className="mb-0">
+                                          {
+                                            onwardFlight?.Fares?.[0]
+                                              ?.Seats_Available
+                                          }{" "}
+                                          Seats Left
+                                        </p>
+
+                                      </div>
+
+                                    </div>
+
+                                  </div>
+
+
+                                  <div className="offer-strip">
+
+                                    <div className="doasjjishnidchsd d-flex align-items-center gap-2">
+
+                                      <div className="dosncjknzkczxc position-relative rounded-circle">
+
+                                        <img
+                                          src="./images/seatb.png"
+                                          className="position-absolute top-50 start-50 translate-middle img-fluid"
+                                          alt=""
+                                        />
+
+                                      </div>
+
+                                      <div className="dinsdlcjiodsfc">
+
+                                        <small>
+                                          Return Seats
+                                        </small>
+
+                                        <p className="mb-0">
+                                          {
+                                            returnFlight?.Fares?.[0]
+                                              ?.Seats_Available
+                                          }{" "}
+                                          Seats Left
+                                        </p>
+
+                                      </div>
+
+                                    </div>
+
+                                  </div>
+
+                                </div>
+
+                              </div>
+
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      const firstSegment = flight?.Segments?.[0];
+
+                      const lastSegment =
+                        flight?.Segments?.[flight?.Segments?.length - 1];
+
+                      const cheapestFare =
+                        flight?.Fares?.[0]?.FareDetails?.[0];
+
+                      const destinationSegment =
+                        lastSegment || firstSegment;
 
                       return (
                         <div className="flight-card" key={index}>
@@ -2388,18 +3244,24 @@ export const FlightFilter = () => {
                           </div>
                         </div>
                       );
-                    },
-                    )
-                  ) : (
-                    <div className="text-center p-5">
-                      <h5 className="mb-3"><b>No Matching Flights Available</b></h5>
+                    })
+                ) : (
+                  <div className="text-center p-5">
 
-                      <p className="mb-0">Unfortunately, there are no flights available for your selected route and dates. <br /> Try adjusting your search to explore more options.</p>
-                    </div>
-                  )}
+                    <h5 className="mb-3">
+                      <b>No Matching Flights Available</b>
+                    </h5>
+
+                    <p className="mb-0">
+                      Unfortunately, there are no flights available for your
+                      selected route and dates.
+                      <br />
+                      Try adjusting your search to explore more options.
+                    </p>
+
+                  </div>
+                )}
                 </div>
-
-                {/*flight fare modal*/}
 
                 <div
                   className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
