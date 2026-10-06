@@ -20,6 +20,123 @@ import { useAuth } from "../../../context/AuthContext";
 
 
 
+const getAdultFare = (flight) =>
+  flight?.Fares?.flatMap((fare) => fare?.FareDetails || []).find(
+    (detail) => Number(detail?.PAX_Type) === 0
+  );
+
+const getFlightPrice = (flight) =>
+  Number(getAdultFare(flight)?.Total_Amount || 0);
+
+const isFlightRefundable = (flight) =>
+  flight?.Fares?.some((fare) =>
+    fare?.FareDetails?.some(
+      (d) =>
+        Number(d?.PAX_Type) === 0 &&
+        (d?.Refundable === true || d?.Refundable === "true" || d?.Refundable === 1)
+    )
+  );
+
+// one-way item => [item], round-trip item => [onward, return]
+const getLegs = (item) =>
+  item?.isRoundTrip
+    ? [item.onwardFlight, item.returnFlight].filter(Boolean)
+    : [item];
+
+const getAirlineCode = (leg) =>
+  leg?.Airline_Code || leg?.Segments?.[0]?.Airline_Code;
+
+const getItemPrice = (item) =>
+  getLegs(item).reduce((sum, leg) => sum + getFlightPrice(leg), 0);
+
+const parseFlightDateTime = (dateTime) => {
+  if (!dateTime) return null;
+  const [datePart, timePart] = dateTime.split(" ");
+  if (!datePart || !timePart) return null;
+  const [month, day, year] = datePart.split("/").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes).getTime();
+};
+
+const getLegDurationMinutes = (leg) =>
+  (leg?.Segments || []).reduce((total, s) => {
+    if (!s?.Duration) return total;
+    const [h, m] = s.Duration.split(":").map(Number);
+    return total + h * 60 + m;
+  }, 0);
+
+const getItemDuration = (item) =>
+  getLegs(item).reduce((sum, leg) => sum + getLegDurationMinutes(leg), 0);
+
+const isSameDate = (dateTimeStr, targetDate) => {
+  if (!dateTimeStr || !targetDate) return true;
+  const [month, day, year] = dateTimeStr.split(" ")[0].split("/").map(Number);
+  const t = new Date(targetDate);
+  return (
+    month === t.getMonth() + 1 &&
+    day === t.getDate() &&
+    year === t.getFullYear()
+  );
+};
+
+const legPassesFilters = (leg, filters) => {
+  const segments = leg?.Segments || [];
+  if (!segments.length) return false;
+  const stopCount = segments.length - 1;
+
+  if (
+    filters.stops.length > 0 &&
+    !filters.stops.some(
+      (s) =>
+        (s === "NON_STOP" && stopCount === 0) ||
+        (s === "1_CHANGE" && stopCount === 1)
+    )
+  ) return false;
+
+  if (filters.farePolicy.length > 0) {
+    const refundable = !!isFlightRefundable(leg);
+    const ok = filters.farePolicy.some((p) =>
+      p === "REFUNDABLE" ? refundable : p === "NON_REFUNDABLE" ? !refundable : false
+    );
+    if (!ok) return false;
+  }
+
+  if (
+    filters.airlines.length > 0 &&
+    !filters.airlines.includes(getAirlineCode(leg))
+  ) return false;
+
+  if (filters.others.includes("SAME_DAY_ARRIVAL") && !isSameDayArrival(leg))
+    return false;
+
+  return true;
+};
+
+const itemPassesFilters = (item, filters) => {
+  const legs = getLegs(item);
+  if (!legs.length) return false;
+
+  // stops, refundable, airline, same-day: every leg must pass
+  if (!legs.every((leg) => legPassesFilters(leg, filters))) return false;
+
+  // price: total of all legs
+  const price = getItemPrice(item);
+  if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
+
+  // times and date: onward leg
+  const segs = legs[0].Segments;
+  const first = segs[0];
+  const last = segs[segs.length - 1];
+
+  if (!matchesTimeSlot(getTimeInMinutes(first.Departure_DateTime), filters.departureTime))
+    return false;
+  if (!matchesTimeSlot(getTimeInMinutes(last.Arrival_DateTime), filters.arrivalTime))
+    return false;
+  if (filters.selectedDate && !isSameDate(first.Departure_DateTime, filters.selectedDate))
+    return false;
+
+  return true;
+};
 
 
 
@@ -65,27 +182,27 @@ const matchesTimeSlot = (minutes, selectedSlots) => {
   });
 };
 
-const getAdultFare = (flight) => {
-  return flight?.Fares?.flatMap(
-    (fare) => fare?.FareDetails || []
-  ).find((detail) => detail?.PAX_Type === 0);
-};
+// const getAdultFare = (flight) => {
+//   return flight?.Fares?.flatMap(
+//     (fare) => fare?.FareDetails || []
+//   ).find((detail) => detail?.PAX_Type === 0);
+// };
 
-const getFlightPrice = (flight) => {
-  const adultFare = getAdultFare(flight);
+// const getFlightPrice = (flight) => {
+//   const adultFare = getAdultFare(flight);
 
-  return Number(adultFare?.Total_Amount || 0);
-};
+//   return Number(adultFare?.Total_Amount || 0);
+// };
 
-const isFlightRefundable = (flight) => {
-  return flight?.Fares?.some((fare) =>
-    fare?.FareDetails?.some(
-      (detail) =>
-        detail?.PAX_Type === 0 &&
-        detail?.Refundable === true
-    )
-  );
-};
+// const isFlightRefundable = (flight) => {
+//   return flight?.Fares?.some((fare) =>
+//     fare?.FareDetails?.some(
+//       (detail) =>
+//         detail?.PAX_Type === 0 &&
+//         detail?.Refundable === true
+//     )
+//   );
+// };
 
 const isSameDayArrival = (flight) => {
   const firstSegment = flight?.Segments?.[0];
@@ -113,6 +230,7 @@ export const FlightFilter = () => {
   const [searchParams] = useSearchParams();
   const { isLoggedIn, setLoginRegModal } = useAuth();
   const [flightList, setFlightsList] = useState([]);
+  const [searchKey, setSearchKey] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showFareModal, setShowFareModal] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -138,299 +256,338 @@ export const FlightFilter = () => {
 
   const { filters, toggleStop, toggleFarePolicy, setPriceRange, toggleDepartureTime, toggleArrivalTime, toggleAirline, toggleOtherFilter, setSelectedDate, resetFilters } = useFlightFilters();
 
-  // const allFlights = useMemo(() => {
-  //   return (
-  //     flightList?.TripDetails?.flatMap(
-  //       (trip) => trip?.Flights || []
-  //     ) || []
-  //   );
-  // }, [flightList]);
-  const allFlights = useMemo(() => {
-    return (
-      flightList?.TripDetails?.flatMap((trip) =>
-        (trip?.Flights || []).map((flight) => ({
-          ...flight,
-          tripId: trip.Trip_Id,
-        }))
-      ) || []
-    );
-  }, [flightList]);
-
-  const parseFlightDateTime = (dateTime) => {
-    if (!dateTime) return null;
-
-    const [datePart, timePart] = dateTime.split(" ");
-    if (!datePart || !timePart) return null;
-
-    const [month, day, year] = datePart.split("/").map(Number);
-    const [hours, minutes] = timePart.split(":").map(Number);
-
-    // returns a real millisecond timestamp, not just minutes-in-day
-    return new Date(year, month - 1, day, hours, minutes).getTime();
-  };
-
-  const getTotalDurationMinutes = (flight) => {
-    const segments = flight?.Segments || [];
-
-    return segments.reduce((total, segment) => {
-      if (!segment?.Duration) return total;
-
-      const [hours, minutes] = segment.Duration.split(":").map(Number);
-      return total + (hours * 60 + minutes);
-    }, 0);
-  };
-
-  const isSameDate = (dateTimeStr, targetDate) => {
-    if (!dateTimeStr || !targetDate) return true; // no date selected = don't filter anything out
-
-    const datePart = dateTimeStr.split(" ")[0]; // "MM/DD/YYYY"
-    const [month, day, year] = datePart.split("/").map(Number);
-
-    const target = new Date(targetDate);
-
-    return (
-      month === target.getMonth() + 1 &&
-      day === target.getDate() &&
-      year === target.getFullYear()
-    );
-  };
+  const allFlights = flightList; // flat array: one-way flights or round-trip combos
 
   const filteredFlights = useMemo(() => {
+    const dir = sortConfig.direction === "asc" ? 1 : -1;
+
+    return allFlights
+      .filter((item) => itemPassesFilters(item, filters))
+      .sort((a, b) => {
+        switch (sortConfig.key) {
+          case "Airline":
+            return (
+              (a.Segments?.[0]?.Airline_Name || "").localeCompare(
+                b.Segments?.[0]?.Airline_Name || ""
+              ) * dir
+            );
+          case "Departure":
+            return (
+              ((parseFlightDateTime(a.Segments?.[0]?.Departure_DateTime) ?? 0) -
+                (parseFlightDateTime(b.Segments?.[0]?.Departure_DateTime) ?? 0)) * dir
+            );
+          case "Arrival": {
+            const la = a.Segments[a.Segments.length - 1];
+            const lb = b.Segments[b.Segments.length - 1];
+            return (
+              ((parseFlightDateTime(la?.Arrival_DateTime) ?? 0) -
+                (parseFlightDateTime(lb?.Arrival_DateTime) ?? 0)) * dir
+            );
+          }
+          case "Duration":
+            return (getItemDuration(a) - getItemDuration(b)) * dir;
+          case "Price":
+            return (getItemPrice(a) - getItemPrice(b)) * dir;
+          default:
+            return getItemPrice(a) - getItemPrice(b); // cheapest first
+        }
+      });
+  }, [allFlights, filters, sortConfig]);
+
+  const availableAirlines = useMemo(() => {
+    const map = {};
+    allFlights.forEach((item) => {
+      const seen = new Set();
+      getLegs(item).forEach((leg) => {
+        const code = getAirlineCode(leg);
+        if (!code || seen.has(code)) return;
+        seen.add(code);
+        if (!map[code]) {
+          map[code] = { code, name: leg?.Segments?.[0]?.Airline_Name || code, count: 0 };
+        }
+        map[code].count += 1;
+      });
+    });
+    return Object.values(map);
+  }, [allFlights]);
+
+  // const parseFlightDateTime = (dateTime) => {
+  //   if (!dateTime) return null;
+
+  //   const [datePart, timePart] = dateTime.split(" ");
+  //   if (!datePart || !timePart) return null;
+
+  //   const [month, day, year] = datePart.split("/").map(Number);
+  //   const [hours, minutes] = timePart.split(":").map(Number);
+
+  //   // returns a real millisecond timestamp, not just minutes-in-day
+  //   return new Date(year, month - 1, day, hours, minutes).getTime();
+  // };
+
+  // const getTotalDurationMinutes = (flight) => {
+  //   const segments = flight?.Segments || [];
+
+  //   return segments.reduce((total, segment) => {
+  //     if (!segment?.Duration) return total;
+
+  //     const [hours, minutes] = segment.Duration.split(":").map(Number);
+  //     return total + (hours * 60 + minutes);
+  //   }, 0);
+  // };
+
+  // const isSameDate = (dateTimeStr, targetDate) => {
+  //   if (!dateTimeStr || !targetDate) return true; // no date selected = don't filter anything out
+
+  //   const datePart = dateTimeStr.split(" ")[0]; // "MM/DD/YYYY"
+  //   const [month, day, year] = datePart.split("/").map(Number);
+
+  //   const target = new Date(targetDate);
+
+  //   return (
+  //     month === target.getMonth() + 1 &&
+  //     day === target.getDate() &&
+  //     year === target.getFullYear()
+  //   );
+  // };
+
+  // const filteredFlights = useMemo(() => {
     
-    const result = allFlights.filter((flight) => {
-      const segments = flight?.Segments || [];
+  //   const result = allFlights.filter((flight) => {
+  //     const segments = flight?.Segments || [];
 
-      if (!segments.length) {
-        return false;
-      }
+  //     if (!segments.length) {
+  //       return false;
+  //     }
 
-      const firstSegment = segments[0];
+  //     const firstSegment = segments[0];
 
-      const lastSegment = segments[segments.length - 1];
+  //     const lastSegment = segments[segments.length - 1];
 
-      /*
-      ==========================================
-      1. STOPS
-      ==========================================
-      */
+  //     /*
+  //     ==========================================
+  //     1. STOPS
+  //     ==========================================
+  //     */
 
-      const stopCount = Math.max(segments.length - 1, 0);
+  //     const stopCount = Math.max(segments.length - 1, 0);
 
-      const stopMatches =
-        filters.stops.length === 0 ||
-        filters.stops.some((stop) => {
-          switch (stop) {
-            case "NON_STOP":
-              return stopCount === 0;
+  //     const stopMatches =
+  //       filters.stops.length === 0 ||
+  //       filters.stops.some((stop) => {
+  //         switch (stop) {
+  //           case "NON_STOP":
+  //             return stopCount === 0;
 
-            case "1_CHANGE":
-              return stopCount === 1;
+  //           case "1_CHANGE":
+  //             return stopCount === 1;
 
-            default:
-              return false;
-          }
-        });
+  //           default:
+  //             return false;
+  //         }
+  //       });
 
-      if (!stopMatches) {
-        return false;
-      }
-
-
-      /*
-      ==========================================
-      2. FARE POLICY
-      ==========================================
-      */
-
-      const farePolicyMatches =
-        filters.farePolicy.length === 0 ||
-        filters.farePolicy.some((policy) => {
-          if (policy === "REFUNDABLE") {
-            return isFlightRefundable(flight);
-          }
-
-          if (policy === "NON_REFUNDABLE") {
-            return !isFlightRefundable(flight);
-          }
-
-          return false;
-        });
-
-      if (!farePolicyMatches) {
-        return false;
-      }
+  //     if (!stopMatches) {
+  //       return false;
+  //     }
 
 
-      /*
-      ==========================================
-      3. PRICE RANGE
-      ==========================================
-      */
+  //     /*
+  //     ==========================================
+  //     2. FARE POLICY
+  //     ==========================================
+  //     */
 
-      const price = getFlightPrice(flight);
+  //     const farePolicyMatches =
+  //       filters.farePolicy.length === 0 ||
+  //       filters.farePolicy.some((policy) => {
+  //         if (policy === "REFUNDABLE") {
+  //           return isFlightRefundable(flight);
+  //         }
 
-      // console.log(price, 'pricepricepricepriceprice');
-      // console.log(filters, 'filtersfiltersfiltersfiltersfilters');
+  //         if (policy === "NON_REFUNDABLE") {
+  //           return !isFlightRefundable(flight);
+  //         }
 
-      const priceMatches =
-        price >= filters.priceRange[0] &&
-        price <= filters.priceRange[1];
+  //         return false;
+  //       });
 
-      if (!priceMatches) {
-        return false;
-      }
-
-
-      /*
-      ==========================================
-      4. DEPARTURE TIME
-      ==========================================
-      */
-
-      const departureMinutes = getTimeInMinutes(
-        firstSegment.Departure_DateTime
-      );
-
-      const departureMatches = matchesTimeSlot(
-        departureMinutes,
-        filters.departureTime
-      );
-
-      if (!departureMatches) {
-        return false;
-      }
+  //     if (!farePolicyMatches) {
+  //       return false;
+  //     }
 
 
-      /*
-      ==========================================
-      5. ARRIVAL TIME
-      ==========================================
-      */
+  //     /*
+  //     ==========================================
+  //     3. PRICE RANGE
+  //     ==========================================
+  //     */
 
-      const arrivalMinutes = getTimeInMinutes(
-        lastSegment.Arrival_DateTime
-      );
+  //     const price = getFlightPrice(flight);
 
-      const arrivalMatches = matchesTimeSlot(
-        arrivalMinutes,
-        filters.arrivalTime
-      );
+  //     // console.log(price, 'pricepricepricepriceprice');
+  //     // console.log(filters, 'filtersfiltersfiltersfiltersfilters');
 
-      if (!arrivalMatches) {
-        return false;
-      }
+  //     const priceMatches =
+  //       price >= filters.priceRange[0] &&
+  //       price <= filters.priceRange[1];
 
-
-      /*
-      ==========================================
-      6. OTHER FILTERS
-      ==========================================
-      */
-
-      const othersMatch =
-        filters.others.length === 0 ||
-        filters.others.every((option) => {
-          switch (option) {
-            case "SAME_DAY_ARRIVAL":
-              return isSameDayArrival(flight);
-
-            default:
-              return true;
-          }
-        });
-
-      if (!othersMatch) {
-        return false;
-      }
-
-      /*
-      ==========================================
-      7. AIRLINES
-      ==========================================
-      */
-
-      const airlineMatches =
-        filters.airlines.length === 0 ||
-        filters.airlines.includes(flight.Airline_Code);
-
-      if (!airlineMatches) {
-        return false;
-      }
-
-      /*
-      ==========================================
-      8. SELECTED DATE
-      ==========================================
-      */
-
-      const dateMatches =
-        !filters.selectedDate ||
-        isSameDate(firstSegment.Departure_DateTime, filters.selectedDate);
-
-      if (!dateMatches) {
-        return false;
-      }
+  //     if (!priceMatches) {
+  //       return false;
+  //     }
 
 
-      /*
-      ==========================================
-      FLIGHT PASSES ALL FILTERS
-      ==========================================
-      */
+  //     /*
+  //     ==========================================
+  //     4. DEPARTURE TIME
+  //     ==========================================
+  //     */
 
-      return true;
-    });
+  //     const departureMinutes = getTimeInMinutes(
+  //       firstSegment.Departure_DateTime
+  //     );
 
-    return result.sort((a, b) => {
-      const dir = sortConfig.direction === 'asc' ? 1 : -1;
+  //     const departureMatches = matchesTimeSlot(
+  //       departureMinutes,
+  //       filters.departureTime
+  //     );
 
-      switch (sortConfig.key) {
-        case 'Airline': {
-          const nameA = a.Segments[0]?.Airline_Name || "";
-          const nameB = b.Segments[0]?.Airline_Name || "";
-          return nameA.localeCompare(nameB) * dir;
-        }
+  //     if (!departureMatches) {
+  //       return false;
+  //     }
 
-        case 'Departure': {
-          const tsA = parseFlightDateTime(a.Segments[0]?.Departure_DateTime) ?? 0;
-          const tsB = parseFlightDateTime(b.Segments[0]?.Departure_DateTime) ?? 0;
-          return (tsA - tsB) * dir;
-        }
 
-        case 'Duration': {
-          const durationA = getTotalDurationMinutes(a);
-          const durationB = getTotalDurationMinutes(b);
-          return (durationA - durationB) * dir;
-        }
+  //     /*
+  //     ==========================================
+  //     5. ARRIVAL TIME
+  //     ==========================================
+  //     */
 
-        case 'Arrival': {
-          const lastA = a.Segments[a.Segments.length - 1];
-          const lastB = b.Segments[b.Segments.length - 1];
-          const tsA = parseFlightDateTime(lastA?.Arrival_DateTime) ?? 0;
-          const tsB = parseFlightDateTime(lastB?.Arrival_DateTime) ?? 0;
-          return (tsA - tsB) * dir;
-        }
+  //     const arrivalMinutes = getTimeInMinutes(
+  //       lastSegment.Arrival_DateTime
+  //     );
 
-        case 'Price': {
-          return (getFlightPrice(a) - getFlightPrice(b)) * dir;
-        }
+  //     const arrivalMatches = matchesTimeSlot(
+  //       arrivalMinutes,
+  //       filters.arrivalTime
+  //     );
 
-        default:
-          return 0; // no sort applied
-      }
-    });
-  }, [
-    allFlights,
-    filters.stops,
-    filters.farePolicy,
-    filters.priceRange,
-    filters.departureTime,
-    filters.arrivalTime,
-    filters.airlines,
-    filters.others,
-    filters.selectedDate,
-    sortConfig
-  ]);
+  //     if (!arrivalMatches) {
+  //       return false;
+  //     }
+
+
+  //     /*
+  //     ==========================================
+  //     6. OTHER FILTERS
+  //     ==========================================
+  //     */
+
+  //     const othersMatch =
+  //       filters.others.length === 0 ||
+  //       filters.others.every((option) => {
+  //         switch (option) {
+  //           case "SAME_DAY_ARRIVAL":
+  //             return isSameDayArrival(flight);
+
+  //           default:
+  //             return true;
+  //         }
+  //       });
+
+  //     if (!othersMatch) {
+  //       return false;
+  //     }
+
+  //     /*
+  //     ==========================================
+  //     7. AIRLINES
+  //     ==========================================
+  //     */
+
+  //     const airlineMatches =
+  //       filters.airlines.length === 0 ||
+  //       filters.airlines.includes(flight.Airline_Code);
+
+  //     if (!airlineMatches) {
+  //       return false;
+  //     }
+
+  //     /*
+  //     ==========================================
+  //     8. SELECTED DATE
+  //     ==========================================
+  //     */
+
+  //     const dateMatches =
+  //       !filters.selectedDate ||
+  //       isSameDate(firstSegment.Departure_DateTime, filters.selectedDate);
+
+  //     if (!dateMatches) {
+  //       return false;
+  //     }
+
+
+  //     /*
+  //     ==========================================
+  //     FLIGHT PASSES ALL FILTERS
+  //     ==========================================
+  //     */
+
+  //     return true;
+  //   });
+
+  //   return result.sort((a, b) => {
+  //     const dir = sortConfig.direction === 'asc' ? 1 : -1;
+
+  //     switch (sortConfig.key) {
+  //       case 'Airline': {
+  //         const nameA = a.Segments[0]?.Airline_Name || "";
+  //         const nameB = b.Segments[0]?.Airline_Name || "";
+  //         return nameA.localeCompare(nameB) * dir;
+  //       }
+
+  //       case 'Departure': {
+  //         const tsA = parseFlightDateTime(a.Segments[0]?.Departure_DateTime) ?? 0;
+  //         const tsB = parseFlightDateTime(b.Segments[0]?.Departure_DateTime) ?? 0;
+  //         return (tsA - tsB) * dir;
+  //       }
+
+  //       case 'Duration': {
+  //         const durationA = getTotalDurationMinutes(a);
+  //         const durationB = getTotalDurationMinutes(b);
+  //         return (durationA - durationB) * dir;
+  //       }
+
+  //       case 'Arrival': {
+  //         const lastA = a.Segments[a.Segments.length - 1];
+  //         const lastB = b.Segments[b.Segments.length - 1];
+  //         const tsA = parseFlightDateTime(lastA?.Arrival_DateTime) ?? 0;
+  //         const tsB = parseFlightDateTime(lastB?.Arrival_DateTime) ?? 0;
+  //         return (tsA - tsB) * dir;
+  //       }
+
+  //       case 'Price': {
+  //         return (getFlightPrice(a) - getFlightPrice(b)) * dir;
+  //       }
+
+  //       default:
+  //         return 0; // no sort applied
+  //     }
+  //   });
+  // }, [
+  //   allFlights,
+  //   filters.stops,
+  //   filters.farePolicy,
+  //   filters.priceRange,
+  //   filters.departureTime,
+  //   filters.arrivalTime,
+  //   filters.airlines,
+  //   filters.others,
+  //   filters.selectedDate,
+  //   sortConfig
+  // ]);
+
+
 
 
   // useEffect(() => {
@@ -517,6 +674,7 @@ export const FlightFilter = () => {
         const response = await http.post("/flight-search", payload);
 
         const flightList = response?.data?.flightList || {};
+        setSearchKey(flightList?.Search_Key || null);
 
         console.log("FULL FLIGHT LIST:", flightList);
 
@@ -596,6 +754,8 @@ export const FlightFilter = () => {
         }
 
       } catch (error) {
+        setFlightsList([]);
+        setSearchKey(null);
         console.log("Flight search error:", error);
         setFlightsList([]);
       } finally {
@@ -698,7 +858,7 @@ export const FlightFilter = () => {
             const fareId = fare.Fare_Id;
             const response = await http.post("/flight-fare-details", {
               fare_id: fareId,
-              search_key: flightList.Search_Key,
+              search_key: searchKey,
               Flight_Key: selectedFlight.Flight_Key,
             });
             return {
@@ -717,7 +877,7 @@ export const FlightFilter = () => {
       }
     };
     fetchFareData();
-  }, [selectedFlight, flightList.Search_Key]);
+  }, [selectedFlight, searchKey]);
 
   // eslint-disable-next-line
   const handleFlightDetails = (flight, search_key, fareId, apiFareDetails) => {
@@ -822,43 +982,6 @@ export const FlightFilter = () => {
   //   ).values(),
   // ];
 
-
-  const airlineCounts = useMemo(() => {
-    const airlineMap = {};
-
-    filteredFlights.forEach((flight) => {
-      const segment = flight?.Segments?.[0];
-
-      const airlineCode =
-        segment?.Airline_Code || flight?.Airline_Code;
-
-      const airlineName =
-        segment?.Airline_Name || airlineCode;
-
-      if (!airlineCode) {
-        return;
-      }
-
-      if (!airlineMap[airlineCode]) {
-        airlineMap[airlineCode] = {
-          airlineCode,
-          airlineName,
-          count: 0,
-        };
-      }
-
-      airlineMap[airlineCode].count += 1;
-    });
-
-    return Object.values(airlineMap);
-  }, [filteredFlights]);
-
-
-  const availableAirlines = airlineCounts.map((airline) => ({
-    code: airline.airlineCode,
-    name: airline.airlineName,
-    count: airline.count,
-  }));
 
 
 
@@ -972,6 +1095,9 @@ export const FlightFilter = () => {
                         id="cbx-15"
                         name="flight"
                         type="radio"
+                        value="0"
+                        checked={tripType === "0"}
+                        readOnly
                         style={{ display: "none" }}
                       />
 
@@ -990,6 +1116,9 @@ export const FlightFilter = () => {
                         id="cbx-16"
                         name="flight"
                         type="radio"
+                        value="1"
+                        checked={tripType === "1"}
+                        readOnly
                         style={{ display: "none" }}
                       />
 
@@ -1008,6 +1137,9 @@ export const FlightFilter = () => {
                         id="cbx-17"
                         name="flight"
                         type="radio"
+                        value="2"
+                        checked={tripType === "2"}
+                        readOnly
                         style={{ display: "none" }}
                       />
 
@@ -1980,7 +2112,7 @@ export const FlightFilter = () => {
               <div className="col-lg-9">
                 <div className="ajhfbmuihehee d-flex justify-content-between align-items-center mb-4">
                   <h5 className="fw-semibold mb-0">
-                    {flightList.length} Flights
+                    {filteredFlights.length} Flights
                     Found on Your Search
                   </h5>
 
@@ -2095,34 +2227,8 @@ export const FlightFilter = () => {
                 <div className="flight-filtr-wrppr">
              
 
-                  {flightList?.length > 0 ? (
-                  [...flightList]
-                    .sort((a, b) => {
-                      const priceA = a.isRoundTrip
-                        ? Number(
-                            a?.onwardFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
-                          ) +
-                          Number(
-                            a?.returnFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
-                          )
-                        : Number(
-                            a?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity
-                          );
-
-                      const priceB = b.isRoundTrip
-                        ? Number(
-                            b?.onwardFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
-                          ) +
-                          Number(
-                            b?.returnFlight?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount || 0
-                          )
-                        : Number(
-                            b?.Fares?.[0]?.FareDetails?.[0]?.Total_Amount ?? Infinity
-                          );
-
-                      return priceA - priceB;
-                    })
-                    .map((flight, index) => {
+                  {filteredFlights.length > 0 ? (
+                    filteredFlights.map((flight, index) => {
 
                       if (flight?.isRoundTrip) {
                         const onwardFlight = flight?.onwardFlight;
@@ -2157,11 +2263,9 @@ export const FlightFilter = () => {
                           onwardPrice + returnPrice;
 
                         return (
-                          <div
-                            className="flight-card"
+                          <div className="flight-card"
                             key={`${onwardFlight?.Flight_Id}-${returnFlight?.Flight_Id}-${index}`}
                           >
-
                             <div className="flight-body">
 
                               <div className="duihnjaka">
@@ -3640,12 +3744,7 @@ export const FlightFilter = () => {
                                         <button
                                           className="btn-tour py-2"
                                           onClick={() =>
-                                            handleFlightDetails(
-                                              selectedFlight,
-                                              flightList?.Search_Key,
-                                              fare.Fare_Id,
-                                              apiFareDetails,
-                                            )
+                                            handleFlightDetails(selectedFlight, searchKey, fare.Fare_Id, apiFareDetails)
                                           }
                                         >
                                           Book Now
