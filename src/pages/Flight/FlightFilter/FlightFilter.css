@@ -1430,17 +1430,11 @@ label.nihnuidnuiwehrwer img{
 }
 
 
-
-
-
 @media only screen and (max-width: 624px){
     .dinsdlcjiodsfc p {
         font-size: 10px !important;
     }
 }
-
-
-
 
 
 @media only screen and (max-width: 600px){
@@ -1640,19 +1634,12 @@ label.nihnuidnuiwehrwer img{
 }
 
 
-
-
-
 @media (max-width:576px) {
     .time-wrapper {
         gap: 12vw;
         margin-top: 12px;
     }
 }
-
-
-
-
 
 
 @media (max-width:562px){
@@ -1668,10 +1655,6 @@ label.nihnuidnuiwehrwer img{
 }
 
 
-
-
-
-
 @media only screen and (max-width: 470px){
     .srch-filtr-wrpper .flight-trip-type > .container {
         justify-content: initial;
@@ -1682,9 +1665,6 @@ label.nihnuidnuiwehrwer img{
         margin-right: 0.5rem !important;
     }
 }
-
-
-
 
 
 @media only screen and (max-width: 393px) {
@@ -1705,8 +1685,6 @@ label.nihnuidnuiwehrwer img{
         font-size: 12px;
     }
 }
-
-
 
 
 @media only screen and (max-width: 375px) {
@@ -1730,10 +1708,6 @@ label.nihnuidnuiwehrwer img{
 }
 
 
-
-
-
-
 @media only screen and (max-width: 360px){
     .filter-card .filter-header{
         width: 95%;
@@ -1751,10 +1725,6 @@ label.nihnuidnuiwehrwer img{
         font-size: 1.1rem;
     }
 }
-
-
-
-
 
 
 @media only screen and (max-width: 336px){
@@ -1794,3 +1764,143 @@ label.nihnuidnuiwehrwer img{
         padding-inline: 0;
     }
 }
+
+
+
+
+
+
+
+
+/* return flight css */
+.round-trip-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+.round-trip-column {
+  min-width: 0;
+}
+
+.trip-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.trip-heading strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 9px 12px;
+  background: #fff;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.separate-flight-card {
+  border: 1px solid #087cff;
+  border-radius: 16px;
+  padding: 16px;
+  background: #fff;
+}
+
+.airline-logo {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.flight-route-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.airport-info h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.airport-info strong {
+  display: block;
+  margin-top: 4px;
+  color: #d88a00;
+  font-size: 13px;
+}
+
+.flight-duration small {
+  font-size: 12px;
+  color: #777;
+}
+
+.flight-line {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.flight-line span {
+  height: 1px;
+  background: #aaa;
+  flex: 1;
+}
+
+.plane-icon {
+  margin: 0 6px;
+  font-size: 14px;
+}
+
+.flight-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-top: 1px solid #eee;
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.flight-bottom small {
+  color: #888;
+  font-size: 11px;
+}
+
+.flight-bottom p {
+  margin: 2px 0 0;
+  font-size: 12px;
+}
+
+.flight-price {
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+
+.flight-card {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: 0.2s;
+}
+
+.flight-card.selected {
+  border: 2px solid #007bff;
+  background: #f5f9ff;
+}
+
+.selectable-div {
+  user-select: text;
+}
+/* return flight css */
