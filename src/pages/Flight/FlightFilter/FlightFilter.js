@@ -2414,17 +2414,9 @@ export const FlightFilter = () => {
                 </div>
 
                 <div className="flight-filtr-wrppr">
-                  {/* =====================================================
-                      ROUND TRIP
-                  ====================================================== */}
-
                   {isRoundTrip ? (
                     <div className="round-trip-container">
-                      {/* =================================================
-                          ONWARD COLUMN
-                      ================================================== */}
                       <div className="round-trip-column">
-                        {/* ONWARD HEADING */}
                         <div className="round-trip-heading mb-3">
                           <div className="trip-heading-item">
                             <strong>
@@ -2443,20 +2435,13 @@ export const FlightFilter = () => {
                           </div>
                         </div>
 
-
-                        {/* ONWARD FLIGHTS */}
                         {onwardFlights.length > 0 ? (
                           onwardFlights.map((flight, index) => {
                             const segments = flight?.Segments || [];
-
                             const firstSegment = segments?.[0];
-
                             const lastSegment = segments?.[segments.length - 1];
-
                             const fare = flight?.Fares?.[0]?.FareDetails?.[0];
-
                             const price = Number(fare?.Total_Amount || 0);
-
                             return (
                               <div
                                 key={flight?.Flight_Id || `onward-${index}`}
@@ -2468,7 +2453,6 @@ export const FlightFilter = () => {
                                 {/* ===============================
                                     AIRLINE
                                 ================================ */}
-
                                 <div className="d-flex align-items-center gap-2 mb-3">
                                   <img
                                     src={`https://images.kiwi.com/airlines/64/${firstSegment?.Airline_Code}.png`}
@@ -2490,11 +2474,9 @@ export const FlightFilter = () => {
                                     </small>
                                   </div>
                                 </div>
-
                                 {/* ===============================
                                     ROUTE
                                 ================================ */}
-
                                 <div className="flight-route-row">
                                   {/* DEPARTURE */}
                                   <div className="airport-info text-start">
@@ -2562,11 +2544,9 @@ export const FlightFilter = () => {
                                     </strong>
                                   </div>
                                 </div>
-
                                 {/* ===============================
                                     BOTTOM
                                 ================================ */}
-
                                 <div className="flight-bottom">
                                   <div>
                                     <small>Cabin</small>
@@ -2731,18 +2711,14 @@ export const FlightFilter = () => {
                                 <div className="flight-bottom">
                                   <div>
                                     <small>Cabin</small>
-
                                     <p>{fare?.FareClasses?.[0]?.CabinClass}</p>
                                   </div>
-
                                   <div>
                                     <small>Baggage</small>
-
                                     <p>
                                       {fare?.Free_Baggage?.Check_In_Baggage}
                                     </p>
                                   </div>
-
                                   <div className="flight-price">
                                     <strong>₹ {price.toLocaleString()}</strong>
                                   </div>
@@ -3120,7 +3096,6 @@ export const FlightFilter = () => {
                 <div
                   className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
                 ></div>
-
                 {showFareModal && selectedFlight && (
                   <div
                     className={`${showFareModal && selectedFlight ? "flight-fare-modal" : "flight-fare-modal flight-fare-modal-hide"} bg-white position-fixed start-50 top-50 translate-middle`}
