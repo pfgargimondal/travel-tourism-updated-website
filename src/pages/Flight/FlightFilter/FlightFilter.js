@@ -670,6 +670,8 @@ export const FlightFilter = () => {
   // eslint-disable-next-line
   const [selectedTripType, setSelectedTripType] = useState(tripType || 0);
   const [flightDrpdwn, setFlightDrpdwn] = useState(false);
+  const [selectedOnwardFlight, setSelectedOnwardFlight] = useState(null);
+  const [selectedReturnFlight, setSelectedReturnFlight] = useState(null);
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -708,40 +710,6 @@ export const FlightFilter = () => {
         }
 
         else if (tripDetails.length >= 2) {
-          // const onwardTrip = tripDetails.find(
-          //   (trip) => Number(trip?.Trip_Id) === 0
-          // );
-
-          // const returnTrip = tripDetails.find(
-          //   (trip) => Number(trip?.Trip_Id) === 1
-          // );
-
-          // const onwardFlights = onwardTrip?.Flights || [];
-          // const returnFlights = returnTrip?.Flights || [];
-
-          // const roundTripFlights = [];
-
-          // onwardFlights.forEach((onwardFlight) => {
-          //   returnFlights.forEach((returnFlight) => {
-          //     roundTripFlights.push({
-          //       // Keep onward flight properties
-          //       ...onwardFlight,
-
-          //       // Explicit references
-          //       onwardFlight,
-          //       returnFlight,
-
-          //       // Round-trip flag
-          //       isRoundTrip: true,
-
-          //       // Search information
-          //       Search_Key: flightList?.Search_Key,
-
-          //       // Keep original trip data
-          //       TripDetails: tripDetails,
-          //     });
-          //   });
-          // });
 
           const onwardFlights =
             flightList?.TripDetails?.find((trip) => trip.Trip_Id === 0)
@@ -756,9 +724,6 @@ export const FlightFilter = () => {
           
         }
 
-        // ==========================================
-        // NO FLIGHTS
-        // ==========================================
         else {
           setFlightsList([]);
         }
@@ -1026,6 +991,34 @@ export const FlightFilter = () => {
       document.removeEventListener("click", handleOutsideClick);
     };
   }, [flightDrpdwn]);
+
+  useEffect(() => {
+    if (onwardFlights.length > 0) {
+      setSelectedOnwardFlight((prev) => {
+        const stillExists = onwardFlights.some(
+          (flight) => flight.Flight_Id === prev?.Flight_Id
+        );
+
+        return stillExists ? prev : onwardFlights[0];
+      });
+    } else {
+      setSelectedOnwardFlight(null);
+    }
+  }, [onwardFlights]);
+
+  useEffect(() => {
+    if (returnFlights.length > 0) {
+      setSelectedReturnFlight((prev) => {
+        const stillExists = returnFlights.some(
+          (flight) => flight.Flight_Id === prev?.Flight_Id
+        );
+
+        return stillExists ? prev : returnFlights[0];
+      });
+    } else {
+      setSelectedReturnFlight(null);
+    }
+  }, [returnFlights]);
 
   const isRoundTrip = onwardFlights.length > 0 && returnFlights.length > 0;
 
@@ -2444,15 +2437,14 @@ export const FlightFilter = () => {
                             const price = Number(fare?.Total_Amount || 0);
                             return (
                               <div
-                                key={flight?.Flight_Id || `onward-${index}`}
-                                className={`flight-card mb-3 ${
-                                  selectedFlight?.Flight_Id === flight?.Flight_Id ? "selected" : ""
-                                }`}
-                                onClick={() => setSelectedFlight(flight)}
+                                 key={flight?.Flight_Id || `onward-${index}`}
+                                  className={`flight-card mb-3 ${
+                                    selectedOnwardFlight?.Flight_Id === flight?.Flight_Id
+                                      ? "selected"
+                                      : ""
+                                  }`}
+                                  onClick={() => setSelectedOnwardFlight(flight)}
                               >
-                                {/* ===============================
-                                    AIRLINE
-                                ================================ */}
                                 <div className="d-flex align-items-center gap-2 mb-3">
                                   <img
                                     src={`https://images.kiwi.com/airlines/64/${firstSegment?.Airline_Code}.png`}
@@ -2474,11 +2466,7 @@ export const FlightFilter = () => {
                                     </small>
                                   </div>
                                 </div>
-                                {/* ===============================
-                                    ROUTE
-                                ================================ */}
                                 <div className="flight-route-row">
-                                  {/* DEPARTURE */}
                                   <div className="airport-info text-start">
                                     <h4>
                                       {
@@ -2495,6 +2483,17 @@ export const FlightFilter = () => {
                                         )?.[1]
                                       }
                                     </strong>
+
+                                    <small
+                                      style={{
+                                        fontWeight: 500,
+                                        color:
+                                          "var(--light-highlighted-text-color)",
+                                      }}
+                                    >
+                                      Terminal{" "}
+                                      {firstSegment?.Origin_Terminal}
+                                    </small>
                                   </div>
 
                                   {/* DURATION */}
@@ -2528,25 +2527,23 @@ export const FlightFilter = () => {
                                   {/* ARRIVAL */}
                                   <div className="airport-info text-end">
                                     <h4>
-                                      {
-                                        lastSegment?.Arrival_DateTime?.split(
-                                          " ",
-                                        )[1]
-                                      }
+                                      {lastSegment?.Arrival_DateTime?.split( " ",)[1]}
                                     </h4>
 
                                     <strong>
-                                      {
-                                        lastSegment?.Destination_City?.match(
-                                          /\((.*?)\)/,
-                                        )?.[1]
-                                      }
+                                      {lastSegment?.Destination_City?.match( /\((.*?)\)/,)?.[1]}
                                     </strong>
+                                    <small
+                                      style={{
+                                        fontWeight: 500,
+                                        color:
+                                          "var(--light-highlighted-text-color)",
+                                      }}
+                                    >
+                                      Terminal{" "}{lastSegment?.Destination_Terminal}
+                                    </small>
                                   </div>
                                 </div>
-                                {/* ===============================
-                                    BOTTOM
-                                ================================ */}
                                 <div className="flight-bottom">
                                   <div>
                                     <small>Cabin</small>
@@ -2617,9 +2614,11 @@ export const FlightFilter = () => {
                               <div
                                 key={flight?.Flight_Id || `return-${index}`}
                                 className={`flight-card mb-3 ${
-                                  selectedFlight?.Flight_Id === flight?.Flight_Id ? "selected" : ""
+                                  selectedReturnFlight?.Flight_Id === flight?.Flight_Id
+                                    ? "selected"
+                                    : ""
                                 }`}
-                                onClick={() => setSelectedFlight(flight)}
+                                onClick={() => setSelectedReturnFlight(flight)}
                               >
                                 <div className="d-flex align-items-center gap-2 mb-3">
                                   <img
@@ -2660,6 +2659,16 @@ export const FlightFilter = () => {
                                         )?.[1]
                                       }
                                     </strong>
+                                    <small
+                                      style={{
+                                        fontWeight: 500,
+                                        color:
+                                          "var(--light-highlighted-text-color)",
+                                      }}
+                                    >
+                                      Terminal{" "}
+                                      {firstSegment?.Origin_Terminal}
+                                    </small>
                                   </div>
 
                                   <div className="flight-duration text-center">
@@ -2705,6 +2714,19 @@ export const FlightFilter = () => {
                                         )?.[1]
                                       }
                                     </strong>
+
+                                    <small
+                                      style={{
+                                        fontWeight: 500,
+                                        color:
+                                          "var(--light-highlighted-text-color)",
+                                      }}
+                                    >
+                                      Terminal{" "}
+                                      {
+                                        lastSegment?.Destination_Terminal
+                                      }
+                                    </small>
                                   </div>
                                 </div>
 
@@ -3091,8 +3113,206 @@ export const FlightFilter = () => {
 
                     </div>
                   )}
-                </div>
 
+                  {/* FIXED BOTTOM BOOKING SUMMARY */}
+                  {selectedOnwardFlight && selectedReturnFlight && (
+                    <div className="round-trip-booking-bar">
+                      {/* ONWARD FLIGHT */}
+                      <div className="booking-flight-section">
+                        <div className="booking-airline">
+                          <img
+                            src={`https://images.kiwi.com/airlines/64/${
+                              selectedOnwardFlight?.Segments?.[0]?.Airline_Code
+                            }.png`}
+                            alt=""
+                            onError={(e) => {
+                              e.currentTarget.src = "/images/indigo.png";
+                            }}
+                          />
+
+                          <strong>
+                            {selectedOnwardFlight?.Segments?.[0]?.Airline_Name}
+                          </strong>
+                        </div>
+
+                        <div className="booking-flight-details">
+                          <div>
+                            <strong>
+                              {selectedOnwardFlight?.Segments?.[0]?.Departure_DateTime?.split(" ")[1]}
+                            </strong>
+
+                            <small>
+                              {selectedOnwardFlight?.Segments?.[0]?.Origin_City?.match(/\((.*?)\)/)?.[1]}
+                            </small>
+                          </div>
+
+                          <div className="booking-route">
+                            <span>⟶</span>
+                            <small>
+                              {selectedOnwardFlight?.Segments
+                              .map((segment) => {
+                                const [hours, minutes] =
+                                  segment.Duration.split(":");
+
+                                return `${hours}h ${minutes}m`;
+                              })
+                              .join(" + ")}
+                            </small>
+                            <small>
+                              {selectedOnwardFlight?.Segments?.length === 1 ? "Non Stop"
+                                : `${selectedOnwardFlight?.Segments?.length - 1} Stop`}
+                            </small>
+                          </div>
+
+                          <div>
+                            <strong>
+                              {
+                                selectedOnwardFlight?.Segments?.[selectedOnwardFlight?.Segments?.length - 1
+                                ]?.Arrival_DateTime?.split(" ")[1]
+                              }
+                            </strong>
+
+                            <small>
+                              {
+                                selectedOnwardFlight?.Segments?.[
+                                  selectedOnwardFlight?.Segments?.length - 1
+                                ]?.Destination_City?.match(/\((.*?)\)/)?.[1]
+                              }
+                            </small>
+                          </div>
+
+                          <div className="booking-flight-price">
+                            ₹{" "}
+                            {Number(
+                              selectedOnwardFlight?.Fares?.[0]?.FareDetails?.[0]
+                                ?.Total_Amount || 0
+                            ).toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* RETURN FLIGHT */}
+                      <div className="booking-flight-section">
+                        <div className="booking-airline">
+                          <img
+                            src={`https://images.kiwi.com/airlines/64/${
+                              selectedReturnFlight?.Segments?.[0]?.Airline_Code
+                            }.png`}
+                            alt=""
+                            onError={(e) => {
+                              e.currentTarget.src = "/images/indigo.png";
+                            }}
+                          />
+
+                          <strong>
+                            {selectedReturnFlight?.Segments?.[0]?.Airline_Name}
+                          </strong>
+                        </div>
+
+                        <div className="booking-flight-details">
+                          <div>
+                            <strong>
+                              {
+                                selectedReturnFlight?.Segments?.[0]?.Departure_DateTime?.split(
+                                  " "
+                                )[1]
+                              }
+                            </strong>
+
+                            <small>
+                              {selectedReturnFlight?.Segments?.[0]?.Origin_City?.match(
+                                /\((.*?)\)/
+                              )?.[1]}
+                            </small>
+                          </div>
+
+                          <div className="booking-route">
+                            <span>⟶</span>
+                            <small>
+                              {selectedReturnFlight?.Segments
+                              .map((segment) => {
+                                const [hours, minutes] =
+                                  segment.Duration.split(":");
+
+                                return `${hours}h ${minutes}m`;
+                              })
+                              .join(" + ")}
+                            </small>
+                            <small>
+                              {selectedReturnFlight?.Segments?.length === 1
+                                ? "Non Stop"
+                                : `${selectedReturnFlight?.Segments?.length - 1} Stop`}
+                            </small>
+                          </div>
+
+                          <div>
+                            <strong>
+                              {
+                                selectedReturnFlight?.Segments?.[
+                                  selectedReturnFlight?.Segments?.length - 1
+                                ]?.Arrival_DateTime?.split(" ")[1]
+                              }
+                            </strong>
+
+                            <small>
+                              {
+                                selectedReturnFlight?.Segments?.[
+                                  selectedReturnFlight?.Segments?.length - 1
+                                ]?.Destination_City?.match(/\((.*?)\)/)?.[1]
+                              }
+                            </small>
+                          </div>
+
+                          <div className="booking-flight-price">
+                            ₹{" "}
+                            {Number(
+                              selectedReturnFlight?.Fares?.[0]?.FareDetails?.[0]
+                                ?.Total_Amount || 0
+                            ).toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* TOTAL AND ACTIONS */}
+                      <div className="booking-actions">
+                        <div className="booking-total">
+                          <strong>
+                            ₹{" "}
+                            {(
+                              Number(
+                                selectedOnwardFlight?.Fares?.[0]?.FareDetails?.[0]
+                                  ?.Total_Amount || 0
+                              ) +
+                              Number(
+                                selectedReturnFlight?.Fares?.[0]?.FareDetails?.[0]
+                                  ?.Total_Amount || 0
+                              )
+                            ).toLocaleString("en-IN")}
+                          </strong>
+
+                          <small>Total Price</small>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="btn-book-now"
+                          onClick={""}
+                        >
+                          BOOK NOW
+                        </button>
+
+                        <button
+                          type="button"
+                          className="btn-lock-price"
+                          onClick={""}
+                        >
+                          LOCK PRICE
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
                 <div
                   className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
                 ></div>

@@ -1903,4 +1903,267 @@ label.nihnuidnuiwehrwer img{
 .selectable-div {
   user-select: text;
 }
+
+
+
+
+/* Fixed booking summary bar */
+
+.round-trip-booking-bar {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 30px);
+  max-width: 1250px;
+  min-height: 96px;
+  padding: 12px;
+  background: #303030;
+  color: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 9999;
+}
+
+/* Individual flight sections */
+
+.booking-flight-section {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+  border-right: 1px solid #777;
+}
+
+.booking-airline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  min-width: 0;
+}
+
+.booking-airline img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.booking-airline strong {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Flight timing and price */
+
+.booking-flight-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.booking-flight-details > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.booking-flight-details strong {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.booking-flight-details small {
+  color: #d0d0d0;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.booking-route {
+  align-items: center;
+  text-align: center;
+  flex: 1;
+}
+
+.booking-route span {
+  font-size: 20px;
+  line-height: 20px;
+}
+
+.booking-flight-price {
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  padding-left: 8px;
+}
+
+/* Booking buttons */
+
+.booking-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.booking-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: 4px;
+}
+
+.booking-total strong {
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.booking-total small {
+  color: #ccc;
+  font-size: 11px;
+}
+
+.btn-book-now,
+.btn-lock-price {
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn-book-now {
+  background: #3185ff;
+  color: #fff;
+  border: 1px solid #3185ff;
+}
+
+.btn-book-now:hover {
+  background: #176ce0;
+}
+
+.btn-lock-price {
+  background: #fff;
+  color: #0879ff;
+  border: 1px solid #0879ff;
+}
+
+.btn-lock-price:hover {
+  background: #eaf3ff;
+}
+
+/* Prevent the bar from covering the bottom content */
+
+.round-trip-page {
+  padding-bottom: 125px;
+}
+
+/* Responsive design */
+
+@media (max-width: 900px) {
+  .round-trip-booking-bar {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .booking-flight-section {
+    padding: 0 6px;
+  }
+
+  .booking-airline strong {
+    font-size: 12px;
+  }
+
+  .booking-flight-details {
+    gap: 5px;
+  }
+
+  .booking-flight-details strong {
+    font-size: 12px;
+  }
+
+  .booking-flight-price {
+    font-size: 12px;
+    padding-left: 3px;
+  }
+
+  .booking-actions {
+    gap: 5px;
+  }
+
+  .booking-total strong {
+    font-size: 15px;
+  }
+
+  .btn-book-now,
+  .btn-lock-price {
+    padding: 8px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .round-trip-booking-bar {
+    bottom: 0;
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+    flex-wrap: wrap;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .booking-flight-section {
+    flex: 1 1 calc(50% - 8px);
+    padding: 0 5px;
+    border-right: none;
+  }
+
+  .booking-airline {
+    gap: 5px;
+  }
+
+  .booking-airline img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .booking-airline strong {
+    font-size: 11px;
+  }
+
+  .booking-flight-details {
+    flex-wrap: wrap;
+  }
+
+  .booking-flight-details strong {
+    font-size: 11px;
+  }
+
+  .booking-flight-details small {
+    font-size: 9px;
+  }
+
+  .booking-route span {
+    font-size: 14px;
+  }
+
+  .booking-flight-price {
+    font-size: 11px;
+  }
+
+  .booking-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+    border-top: 1px solid #555;
+    padding-top: 8px;
+  }
+}
 /* return flight css */
