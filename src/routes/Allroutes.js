@@ -33,7 +33,8 @@ import {
   Visa,
   FlightTicket,
   FlightPaymentConfirmation,
-  CancellationPolicy
+  CancellationPolicy,
+  FlightInvoice
 } from "../pages";
 
 // function PageRenderer() {
@@ -86,6 +87,7 @@ function Allroutes() {
       <Route path="/change-password" element={<PasswordChange />} />
 
       <Route path="/flight-ticket" element={<FlightTicket />} />
+      <Route path="/flight-invoice" element={<FlightInvoice />} />
  
       {/* <Route
         path="/:slug"

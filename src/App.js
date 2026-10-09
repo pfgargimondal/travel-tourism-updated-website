@@ -15,7 +15,7 @@ function App() {
   
   const pathName = useLocation().pathname;  
 
-  const excludeNavs = pathName.includes("/flight-ticket");
+  const excludeNavs = ["/flight-ticket", "/flight-invoice"].some(path => pathName.includes(path));
 
   useEffect(() => {
     const isHeaderNewIncluded = ["/thank-you", "/flight-booking-pending", "/user-profile", "/account-information", "/user-booking", "/user-hold-ticket", "/change-password", "/wishlist"].some(path => pathName.includes(path));

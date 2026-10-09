@@ -1,0 +1,519 @@
+/* =========================================
+   OVERLAY
+========================================= */
+
+.rt-fare-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 12px;
+
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* =========================================
+   MODAL
+========================================= */
+
+.rt-fare-modal {
+  width: 100%;
+  max-width: 1000px;
+  max-height: 92vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  color: #252525;
+  background: #fff;
+
+  border-radius: 9px;
+
+  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.rt-fare-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 15px 22px;
+
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.rt-fare-header h5 {
+  margin: 0;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.rt-fare-close {
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  background: transparent;
+
+  color: #888;
+
+  font-size: 30px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+/* =========================================
+   TABS
+========================================= */
+
+.rt-fare-tabs {
+  display: flex;
+
+  border-bottom: 2px solid #e8e8e8;
+}
+
+.rt-fare-tabs button {
+  flex: 1;
+
+  padding: 14px 10px;
+
+  border: none;
+  border-bottom: 3px solid transparent;
+
+  background: #fff;
+
+  color: #777;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.rt-fare-tabs button:hover {
+  color: #1687ff;
+}
+
+.rt-fare-tabs button.active {
+  color: #111;
+
+  border-bottom-color: #1687ff;
+}
+
+/* =========================================
+   FLIGHT DETAILS
+========================================= */
+
+.rt-fare-flight-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 15px 22px;
+
+  background: #fafafa;
+  border-bottom: 1px solid #eee;
+}
+
+.rt-fare-flight-info > img {
+  width: 34px;
+  height: 34px;
+
+  object-fit: contain;
+}
+
+.rt-fare-airline {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rt-fare-airline strong {
+  font-size: 12px;
+}
+
+.rt-fare-airline span {
+  font-size: 11px;
+  color: #777;
+}
+
+.rt-fare-flight-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-left: 15px;
+}
+
+.rt-fare-flight-summary strong {
+  font-size: 12px;
+}
+
+.rt-fare-flight-summary span {
+  font-size: 11px;
+  color: #777;
+}
+
+.rt-fare-duration {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin-left: auto;
+
+  text-align: right;
+}
+
+.rt-fare-duration strong {
+  font-size: 12px;
+}
+
+.rt-fare-duration span {
+  font-size: 11px;
+  color: #777;
+}
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.rt-fare-content {
+  flex: 1;
+  min-height: 150px;
+
+  padding: 20px 22px;
+
+  overflow-y: auto;
+}
+
+.rt-fare-intro {
+  margin-bottom: 16px;
+}
+
+.rt-fare-intro h6 {
+  margin-bottom: 5px;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.rt-fare-intro p {
+  margin: 0;
+
+  color: #777;
+  font-size: 12px;
+}
+
+/* =========================================
+   FARE GRID
+========================================= */
+
+.rt-fare-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 14px;
+}
+
+.rt-fare-option {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+
+  padding: 14px 12px;
+
+  border: 1px solid #ddd;
+  border-radius: 7px;
+
+  background: #fff;
+
+  color: #333;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.rt-fare-option:hover {
+  border-color: #1687ff;
+}
+
+.rt-fare-option.selected {
+  border: 1px solid #1687ff;
+
+  background: #f5faff;
+
+  box-shadow: 0 0 0 1px rgba(22, 135, 255, 0.08);
+}
+
+/* =========================================
+   PRICE
+========================================= */
+
+.rt-fare-option-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  gap: 5px;
+
+  margin-bottom: 12px;
+}
+
+.rt-fare-radio {
+  color: #1687ff;
+
+  font-size: 19px;
+  line-height: 1;
+}
+
+.rt-fare-option-top strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.rt-fare-option-top small {
+  font-size: 10px;
+  color: #666;
+}
+
+.rt-fare-option h6 {
+  margin: 0 0 12px;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* =========================================
+   FEATURES
+========================================= */
+
+.rt-fare-feature {
+  padding-top: 11px;
+  margin-top: 8px;
+
+  border-top: 1px solid #e8e8e8;
+}
+
+.rt-fare-feature > strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.rt-fare-feature p {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+
+  margin: 6px 0;
+
+  font-size: 11px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.rt-fare-check {
+  color: #13a88a;
+  font-weight: 700;
+}
+
+/* =========================================
+   SELECTED FARE FOOTER
+========================================= */
+
+.rt-fare-option-footer {
+  margin-top: auto;
+  padding-top: 12px;
+
+  color: #1687ff;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.rt-fare-empty {
+  padding: 40px 15px;
+
+  text-align: center;
+}
+
+.rt-fare-empty h6 {
+  margin-bottom: 8px;
+}
+
+.rt-fare-empty p {
+  margin: 0;
+
+  color: #777;
+  font-size: 12px;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.rt-fare-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 18px;
+
+  padding: 12px 22px;
+
+  background: #fff;
+
+  border-top: 1px solid #ddd;
+
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.rt-fare-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.rt-fare-total strong {
+  font-size: 21px;
+  font-weight: 700;
+}
+
+.rt-fare-total small {
+  color: #0a0a0a;
+  font-size: 10px;
+}
+
+.rt-fare-total span {
+  color: #0a0a0a;
+  font-size: 10px;
+}
+
+.rt-fare-continue {
+  padding: 12px 24px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #3185ff;
+
+  color: #fff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.rt-fare-continue:hover:not(:disabled) {
+  background: #176ce0;
+}
+
+.rt-fare-continue:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 768px) {
+  .rt-fare-modal {
+    max-height: 95vh;
+  }
+
+  .rt-fare-header {
+    padding: 12px;
+  }
+
+  .rt-fare-header h5 {
+    font-size: 14px;
+  }
+
+  .rt-fare-tabs button {
+    padding: 12px 5px;
+    font-size: 10px;
+  }
+
+  .rt-fare-flight-info {
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .rt-fare-flight-summary {
+    margin-left: 0;
+  }
+
+  .rt-fare-duration {
+    margin-left: auto;
+  }
+
+  .rt-fare-content {
+    padding: 14px;
+  }
+
+  .rt-fare-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rt-fare-footer {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .rt-fare-continue {
+    padding: 11px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rt-fare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rt-fare-flight-info {
+    gap: 8px;
+  }
+
+  .rt-fare-flight-summary {
+    width: 100%;
+  }
+
+  .rt-fare-total strong {
+    font-size: 17px;
+  }
+
+  .rt-fare-total span {
+    display: none;
+  }
+
+  .rt-fare-continue {
+    padding: 10px 12px;
+    font-size: 11px;
+  }
+}

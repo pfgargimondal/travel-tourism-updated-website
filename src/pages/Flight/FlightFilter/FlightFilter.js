@@ -1,6 +1,6 @@
 import { FollowUsInstagram } from "../../../component/FollowUsInstagram/FollowUsInstagram";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -17,6 +17,7 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useAuth } from "../../../context/AuthContext";
+import { RoundTripFareModal } from "./Components/RoundTripFareModal";
 
 const getAdultFare = (flight) =>
   flight?.Fares?.flatMap((fare) => fare?.FareDetails || []).find(
@@ -672,6 +673,8 @@ export const FlightFilter = () => {
   const [flightDrpdwn, setFlightDrpdwn] = useState(false);
   const [selectedOnwardFlight, setSelectedOnwardFlight] = useState(null);
   const [selectedReturnFlight, setSelectedReturnFlight] = useState(null);
+  const [onwardFareApiData, setOnwardFareApiData] = useState({});
+  const [returnFareApiData, setReturnFareApiData] = useState({});
 
   useEffect(() => {
     const fetchFlights = async () => {
@@ -823,35 +826,76 @@ export const FlightFilter = () => {
     setShowFareModal(true);
   };
 
-  useEffect(() => {
-    const fetchFareData = async () => {
-      if (!selectedFlight?.Fares?.length) return;
+  const fetchFareDetails = useCallback(
+    async (selectedFlight) => {
+      if (!selectedFlight?.Fares?.length) {
+        return {};
+      }
+
       try {
         const responses = await Promise.all(
           selectedFlight.Fares.map(async (fare) => {
             const fareId = fare.Fare_Id;
+
             const response = await http.post("/flight-fare-details", {
               fare_id: fareId,
               search_key: searchKey,
               Flight_Key: selectedFlight.Flight_Key,
             });
+
             return {
               fareId,
               data: response.data,
             };
-          }),
+          })
         );
+
         const mappedData = {};
+
         responses.forEach((item) => {
           mappedData[item.fareId] = item.data;
         });
-        setFareApiData(mappedData);
+
+        return mappedData;
       } catch (error) {
-        console.log(error);
+        console.error("Error fetching fare details:", error);
+        return {};
+      }
+    },
+    [searchKey]
+  );
+
+  useEffect(() => {
+  let isMounted = true;
+
+  const fetchAllFareDetails = async () => {
+      const [oneWayData, onwardData, returnData] = await Promise.all([
+        fetchFareDetails(selectedFlight),
+        fetchFareDetails(selectedOnwardFlight),
+        fetchFareDetails(selectedReturnFlight),
+      ]);
+
+      if (isMounted) {
+        setFareApiData(oneWayData);
+        setOnwardFareApiData(onwardData);
+        setReturnFareApiData(returnData);
       }
     };
-    fetchFareData();
-  }, [selectedFlight, searchKey]);
+
+    fetchAllFareDetails();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    selectedFlight,
+    selectedOnwardFlight,
+    selectedReturnFlight,
+    fetchFareDetails,
+  ]);
+
+  console.log(fareApiData, 'fareApiDatafareApiDatafareApiData');
+  console.log(selectedFlight, 'selectedFlightselectedFlight');
 
   // eslint-disable-next-line
   const handleFlightDetails = (flight, search_key, fareId, apiFareDetails) => {
@@ -1019,6 +1063,22 @@ export const FlightFilter = () => {
   }, [returnFlights]);
 
   const isRoundTrip = onwardFlights.length > 0 && returnFlights.length > 0;
+
+  const handleRoundTripFareContinue = (fareSelection) => {
+    setShowFareModal(false);
+
+    navigate("/flight-details", {
+      state: {
+        ...fareSelection,
+        search_key: searchKey,
+        tripType,
+        travelType,
+        cabinClass,
+        onwardFlight: selectedOnwardFlight,
+        returnFlight: selectedReturnFlight,
+      },
+    });
+  };
 
   if (loading) return <Loader />;
 
@@ -3716,6 +3776,19 @@ export const FlightFilter = () => {
                       </div> */}
                     </div>
                   </div>
+                )}
+
+                {showFareModal && tripType === "1" && (
+                  <RoundTripFareModal
+                    show={showFareModal}
+                    onClose={() => setShowFareModal(false)}
+                    onwardFlight={selectedOnwardFlight}
+                    returnFlight={selectedReturnFlight}
+                    onwardFareApiData={onwardFareApiData}
+                    returnFareApiData={returnFareApiData}
+                    adults={Number(adults) || 1}
+                    onContinue={handleRoundTripFareContinue}
+                  />
                 )}
               </div>
             </div>
