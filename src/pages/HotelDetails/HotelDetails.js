@@ -4,7 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import http from "../../http";
 import Loader from "../../component/Loader/Loader";
 import { Navigation, Scrollbar, A11y } from 'swiper/modules';
-
+import { useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from 'swiper/react';
 
 import "./HotelDetails.css";
@@ -27,7 +27,7 @@ export const HotelDetails = () => {
   const [showModal, setShowModal] = useState(false);
   // eslint-disable-next-line
   const [selectedRoom, setSelectedRoom] = useState(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchHotelDetails = async () => {
       setLoading(true);
@@ -206,10 +206,28 @@ export const HotelDetails = () => {
   const handleShow = () => setShowModal(true);
   const handleClose = () => setShowModal(false);
 
-  const selectRoom = (room) => {
+const selectRoom = (room) => {
     setSelectedRoom(room);
     handleClose();
-  };
+
+    const checkin = searchParams.get("checkin");
+    const checkout = searchParams.get("checkout");
+    const rooms = searchParams.get("rooms");
+    const adults = searchParams.get("adults");
+    const children = searchParams.get("children");
+
+    navigate("/hotel-booking", {
+        state: {
+            room,
+            hotel: hotelDetails,
+            checkin,
+            checkout,
+            rooms,
+            adults,
+            children,
+        },
+    });
+};
 
 
   if (loading) {
@@ -291,7 +309,15 @@ export const HotelDetails = () => {
                       <div className="row">
                         <div className="col-lg-8">
                           <div className="bhjddsfs">
-                            <img src={hotelDetails?.image} alt="" />
+                            <img
+                              src={hotelDetails?.image}
+                              alt="Hotel"
+                              onClick={() => {
+                                setSelectedImage(hotelDetails?.image);
+                                setGalleryOpen(true);
+                              }}
+                              style={{ cursor: "pointer" }}
+                            />
                           </div>
                         </div>
                         <div className="col-lg-4">
@@ -311,10 +337,16 @@ export const HotelDetails = () => {
                                   alt="Hotel"
                                 />
 
-                                <div className="overlay-text">
-                                  +{hotelDetails.hotel_images.length - 1} All
-                                  Photos
-                                </div>
+                               <div
+                                className="overlay-text"
+                                onClick={() => {
+                                  setSelectedImage(hotelDetails?.image);
+                                  setGalleryOpen(true);
+                                }}
+                                style={{ cursor: "pointer" }}
+                              >
+                                +{hotelDetails.hotel_images.length - 1} All Photos
+                              </div>
                               </div>
                             )}
                           </div>
@@ -390,7 +422,13 @@ export const HotelDetails = () => {
                         </div>
                       </div>
 
-                      <button className="btn-tour w-100">Book This Now</button>
+                      <button
+                        className="btn-tour w-100"
+                        onClick={() => selectRoom(room)}
+                        disabled={!room}
+                      >
+                        Book This Now
+                      </button>
 
                       <div className="xvbzxbcfndddd mt-2">
                         <button
@@ -435,7 +473,7 @@ export const HotelDetails = () => {
                         <div className="map-img">
                           <iframe
                             src="https://www.google.com/maps?q=Anjuna+Beach&output=embed"
-                            allowfullscreen=""
+                            allowFullScreen
                             loading="lazy"
                             title="map"
                           ></iframe>
@@ -572,7 +610,7 @@ export const HotelDetails = () => {
                                   .filter((item) => item.length > 0);
                               const isExpanded = expandedRooms[index] || false;
                               return (
-                                <div className="idjkbnasjknfsd">
+                                <div className="idjkbnasjknfsd" key={index}>
                                   <div className="row">
                                     <div className="col-lg-3">
                                       <div className="sikncjknsldcf bzdvzxczxc position-relative">
@@ -948,7 +986,7 @@ export const HotelDetails = () => {
                                 onSlideChange={() => console.log('slide change')}
                               >
                                 {hotelDetails?.hotel_images?.map((hotelImage, index) => (
-                                  <SwiperSlide>
+                                  <SwiperSlide key={index}>
                                     <img
                                       key={index}
                                       src={hotelImage.image_url}

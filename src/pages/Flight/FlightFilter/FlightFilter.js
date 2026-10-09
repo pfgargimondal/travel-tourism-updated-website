@@ -998,7 +998,6 @@ export const FlightFilter = () => {
         const stillExists = onwardFlights.some(
           (flight) => flight.Flight_Id === prev?.Flight_Id
         );
-
         return stillExists ? prev : onwardFlights[0];
       });
     } else {
@@ -1012,7 +1011,6 @@ export const FlightFilter = () => {
         const stillExists = returnFlights.some(
           (flight) => flight.Flight_Id === prev?.Flight_Id
         );
-
         return stillExists ? prev : returnFlights[0];
       });
     } else {
@@ -3296,7 +3294,13 @@ export const FlightFilter = () => {
                         <button
                           type="button"
                           className="btn-book-now"
-                          onClick={""}
+                          disabled={
+                            !selectedOnwardFlight ||
+                            !selectedReturnFlight
+                          }
+                          onClick={() => {
+                            setShowFareModal(true);
+                          }}
                         >
                           BOOK NOW
                         </button>
@@ -3316,7 +3320,7 @@ export const FlightFilter = () => {
                 <div
                   className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
                 ></div>
-                {showFareModal && selectedFlight && (
+                {showFareModal && selectedFlight && tripType !== "1" && (
                   <div
                     className={`${showFareModal && selectedFlight ? "flight-fare-modal" : "flight-fare-modal flight-fare-modal-hide"} bg-white position-fixed start-50 top-50 translate-middle`}
                   >
