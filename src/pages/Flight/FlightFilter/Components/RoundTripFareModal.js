@@ -190,6 +190,8 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
     });
   };
 
+  console.log(currentFareOptions, 'currentFareOptions');
+
   return (
     <div
       className="rt-fare-overlay"
