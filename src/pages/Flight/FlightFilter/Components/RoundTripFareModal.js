@@ -9,6 +9,7 @@ export const RoundTripFareModal = ({
   onContinue,
   onwardFareApiData,
   returnFareApiData,
+  selectedCabinClass,
   adults = 1,
 }) => {
   const [activeTab, setActiveTab] = useState("onward");
@@ -190,7 +191,29 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
     });
   };
 
-  console.log(currentFareOptions, 'currentFareOptions');
+  const cabinClassMap = {
+    0: "Economy",
+    3: "Premium Economy",
+    1: "Business",
+    2: "First Class",
+  };
+
+  const filteredCurrentFareOptions = currentFareOptions.filter((item) => {
+    console.log(item, 'itemitemitemitemitemitem');
+    const adultFare = item.fare?.FareDetails?.find(
+      (detail) => detail.PAX_Type === 0
+    );
+    const fareCabinClass = adultFare?.FareClasses?.[0]?.CabinClass;
+    const selectedCabinName = cabinClassMap[selectedCabinClass];
+
+    return (
+      !selectedCabinClass ||
+      fareCabinClass?.toLowerCase() ===
+        selectedCabinName?.toLowerCase()
+    );
+  });
+
+  console.log(filteredCurrentFareOptions, 'filteredCurrentFareOptionsfilteredCurrentFareOptions');
 
   return (
     <div
@@ -333,9 +356,9 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
             </p>
           </div>
 
-          {currentFareOptions.length > 0 ? (
+          {filteredCurrentFareOptions.length > 0 ? (
             <div className="rt-fare-grid">
-              {currentFareOptions.map((item, index) => {
+              {filteredCurrentFareOptions.map((item, index) => {
                 const isSelected =
                   selectedFareIndex === index;
                 return (

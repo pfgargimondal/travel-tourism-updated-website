@@ -3886,6 +3886,7 @@ export const FlightFilter = () => {
                     returnFlight={selectedReturnFlight}
                     onwardFareApiData={onwardFareApiData}
                     returnFareApiData={returnFareApiData}
+                    selectedCabinClass={selectedCabinClass}
                     adults={Number(adults) || 1}
                     onContinue={handleRoundTripFareContinue}
                   />
