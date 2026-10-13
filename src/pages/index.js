@@ -12,6 +12,7 @@ export {BusFilter} from "./Bus/BusFilter";
 export {Visa} from "./Visa/Visa";
 export {FlightFilter} from "./Flight/FlightFilter/FlightFilter";
 export {FlightDetails} from "./Flight/FlightDetails/FlightDetails";
+export {FlightDetailsRoundTrip} from "./Flight/FlightDetailsRoundTrip/FlightDetailsRoundTrip";
 export {FlightPayment} from "./Flight/FlightPayment/FlightPayment";
 export {FlightBookingPending} from "./Flight/FlightBookingPending/FlightBookingPending";
 export {FlightPaymentConfirmation} from "./Flight/FlightPaymentConfirmation/FlightPaymentConfirmation";

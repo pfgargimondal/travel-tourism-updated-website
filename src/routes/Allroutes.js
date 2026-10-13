@@ -11,6 +11,7 @@ import {
   HotelDetails,
   FlightFilter,
   FlightDetails,
+  FlightDetailsRoundTrip,
   FlightPayment,
   FlightBookingPending,
   FlightLocked,
@@ -61,6 +62,7 @@ function Allroutes() {
 
       <Route path="/flight-filter" element={<FlightFilter />} />
       <Route path="/flight-details/:flightId" element={<FlightDetails />} />
+      <Route path="/flight-details/:onWardflightId/:returnflightId" element={<FlightDetailsRoundTrip />} />
       <Route path="/flight-payment/:fareId" element={<FlightPayment />}/>
       <Route path="/flight-booking-pending/:bookingReference" element={<FlightBookingPending />}/>
       <Route path="/flight-locked-thankYou/:bookingReference" element={<FlightLocked />}/>

@@ -13,14 +13,10 @@ export const RoundTripFareModal = ({
   adults = 1,
 }) => {
   const [activeTab, setActiveTab] = useState("onward");
+  const [fareRules, setFareRules] = useState(null);
+  const [selectedOnwardFareIndex, setSelectedOnwardFareIndex] = useState(0);
+  const [selectedReturnFareIndex, setSelectedReturnFareIndex] = useState(0);
 
-  const [selectedOnwardFareIndex, setSelectedOnwardFareIndex] =
-    useState(0);
-
-  const [selectedReturnFareIndex, setSelectedReturnFareIndex] =
-    useState(0);
-
-  // Reset modal selections when it opens for different flights.
   useEffect(() => {
     if (show) {
       setActiveTab("onward");
@@ -29,7 +25,6 @@ export const RoundTripFareModal = ({
     }
   }, [show, onwardFlight?.Flight_Id, returnFlight?.Flight_Id]);
 
-  // Safely extract fare options from the flight response.
   const getFareOptions = (flight) => {
     const fares = flight?.Fares || [];
 
@@ -64,7 +59,6 @@ export const RoundTripFareModal = ({
     [returnFlight]
   );
 
-  // Don't render the modal when closed.
   if (!show) {
     return null;
   }
@@ -80,9 +74,9 @@ export const RoundTripFareModal = ({
     ? onwardFareOptions
     : returnFareOptions;
 
-console.log(onwardFareApiData, 'onwardFareApiDataonwardFareApiData');
-console.log(returnFareApiData, 'returnFareApiDatareturnFareApiData');
-console.log(currentFlight, 'currentFlightcurrentFlight');
+  console.log(onwardFareApiData, 'onwardFareApiDataonwardFareApiData');
+  console.log(returnFareApiData, 'returnFareApiDatareturnFareApiData');
+  console.log(currentFlight, 'currentFlightcurrentFlight');
 
   const selectedFareIndex = isOnwardTab
     ? selectedOnwardFareIndex
@@ -199,10 +193,11 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
   };
 
   const filteredCurrentFareOptions = currentFareOptions.filter((item) => {
-    console.log(item, 'itemitemitemitemitemitem');
     const adultFare = item.fare?.FareDetails?.find(
       (detail) => detail.PAX_Type === 0
     );
+    
+
     const fareCabinClass = adultFare?.FareClasses?.[0]?.CabinClass;
     const selectedCabinName = cabinClassMap[selectedCabinClass];
 
@@ -213,7 +208,10 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
     );
   });
 
-  console.log(filteredCurrentFareOptions, 'filteredCurrentFareOptionsfilteredCurrentFareOptions');
+
+  const handleFareRules = (fareId) => {
+    setFareRules((prev) => (prev === fareId ? null : fareId));
+  };
 
   return (
     <div
@@ -360,7 +358,17 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
             <div className="rt-fare-grid">
               {filteredCurrentFareOptions.map((item, index) => {
                 const isSelected =
-                  selectedFareIndex === index;
+                  selectedFareIndex === index; 
+
+                const fareApiSource = isOnwardTab
+                  ? onwardFareApiData
+                  : returnFareApiData;
+
+                const fareId = item.fare?.Fare_Id;
+                const apiFareDetails = fareApiSource?.[fareId];
+
+                const isFareRulesOpen = fareRules === fareId;
+
                 return (
                   <button
                     type="button"
@@ -443,6 +451,60 @@ console.log(currentFlight, 'currentFlightcurrentFlight');
                         ? "✓ Selected"
                         : "Select this fare"}
                     </div>
+
+                    {apiFareDetails?.status && (
+                      <div className="djnskmlfdsf">
+                        <div className="imdiajojidsf">
+                          <div
+                            onClick={() => handleFareRules(fareId)}
+                            className="d-flex align-items-center justify-content-between px-3 pb-3"
+                            style={{ cursor: "pointer" }}
+                          >
+                            <h6 className="d-flex align-items-center mb-0">
+                              <i className="bi me-1 text-center text-white bi-info-lg" />
+                              Fare Rules
+                            </h6>
+
+                            <i
+                              className={`bi ${
+                                isFareRulesOpen
+                                  ? "bi-chevron-up"
+                                  : "bi-chevron-right"
+                              }`}
+                            />
+                          </div>
+
+                          {isFareRulesOpen && (
+                            <div className="xnfgsfsdcfe sdjkcnsidjcije position-absolute bg-white w-100 rounded-2 border-top p-3 pe-0">
+                              <div className="unjcisdosidd me-3 d-flex align-items-center justify-content-between mb-4">
+                                <h6 className="mb-0 d-flex align-items-center">
+                                  <i className="bi me-1 d-inline-block text-center text-white bi-info-lg" />
+                                  Fare Rules
+                                </h6>
+
+                                <i
+                                  className="fa-solid fa-xmark"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => setFareRules(null)}
+                                />
+                              </div>
+
+                              {apiFareDetails.fareDetails?.FareRules?.map(
+                                (rule, ruleIndex) => (
+                                  <div
+                                    key={ruleIndex}
+                                    className="jifjisiudj"
+                                    dangerouslySetInnerHTML={{
+                                      __html: rule.FareRuleDesc,
+                                    }}
+                                  />
+                                )
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </button>
                 );
               })}
