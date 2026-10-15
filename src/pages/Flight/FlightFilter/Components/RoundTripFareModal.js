@@ -213,6 +213,7 @@ export const RoundTripFareModal = ({
     setFareRules((prev) => (prev === fareId ? null : fareId));
   };
 
+
   return (
     <div
       className="rt-fare-overlay"

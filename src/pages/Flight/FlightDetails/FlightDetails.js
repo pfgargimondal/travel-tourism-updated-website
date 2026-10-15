@@ -268,17 +268,20 @@ export const FlightDetails = () => {
   const cancellationCharges = (() => {
     const grouped = {};
 
-    allfareDetails.forEach((passenger) => {
-      const passengerFare = Number(passenger.Total_Amount || 0);
+    (allfareDetails || []).forEach((passenger) => {
+      // Get passenger's total fare safely
+      const passengerFare = Number(passenger?.Total_Amount ?? 0);
 
-      (passenger.CancellationCharges || []).forEach((charge) => {
+      (passenger?.CancellationCharges || []).forEach((charge) => {
+        // Create a unique key for each cancellation duration
         const key = [
-          charge.DurationFrom,
-          charge.DurationTo,
-          charge.DurationTypeFrom,
-          charge.DurationTypeTo,
+          charge?.DurationFrom,
+          charge?.DurationTo,
+          charge?.DurationTypeFrom,
+          charge?.DurationTypeTo,
         ].join("-");
 
+        // Initialize the group if it doesn't exist
         if (!grouped[key]) {
           grouped[key] = {
             ...charge,
@@ -286,20 +289,30 @@ export const FlightDetails = () => {
           };
         }
 
+        // Safely convert cancellation charge value to a number
+        const chargeValue = Number(charge?.Value ?? 0);
+
         let penalty = 0;
 
-        if (charge.ValueType === 1) {
-          // Percentage based cancellation charge
-          penalty = (passengerFare * Number(charge.Value || 0)) / 100;
-        } else {
-          // Fixed amount
-          penalty = Number(charge.Value || 0);
+        if (
+          Number.isFinite(passengerFare) &&
+          Number.isFinite(chargeValue)
+        ) {
+          if (Number(charge?.ValueType) === 1) {
+            // Percentage-based cancellation charge
+            penalty = (passengerFare * chargeValue) / 100;
+          } else {
+            // Fixed cancellation charge
+            penalty = chargeValue;
+          }
         }
 
+        // Add this passenger's penalty to the matching duration
         grouped[key].totalValue += penalty;
       });
     });
 
+    // Return grouped cancellation charges
     return Object.values(grouped);
   })();
 
@@ -1443,11 +1456,17 @@ export const FlightDetails = () => {
 
 
   const formatPenalty = (item) => {
-    if (item.ValueType === 1) {
-      return `${item.Value}%`;
+    const value = Number(item?.totalValue ?? 0);
+
+    if (!Number.isFinite(value)) {
+      return "₹ 0";
     }
 
-    return `₹ ${Number(item.Value).toLocaleString("en-IN")}`;
+    if (Number(item?.ValueType) === 1) {
+      return `${Number(item.Value)}%`;
+    }
+
+    return `₹ ${Math.round(value).toLocaleString("en-IN")}`;
   };
 
   const formatDate = (date) =>
@@ -3081,7 +3100,7 @@ console.log(selectedSeats, 'selectedSeats');
                       <div className="timeline mt-2">
                         <div className="timeline-item first">
                           <strong>Now</strong>
-                        </div>
+                        </div> 
 
                         {cancellationCharges.map((item, index) => {
                           const dt = getBoundaryDate(item);
