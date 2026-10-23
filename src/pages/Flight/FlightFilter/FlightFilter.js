@@ -746,6 +746,7 @@ export const FlightFilter = () => {
   const children = searchParams.get("children");
   const infants = searchParams.get("infants");
   const tripType = searchParams.get("tripType");
+  const discountFare = searchParams.get("discountFare");
   const travelType = searchParams.get("travelType");
   const cabinClass = searchParams.get("cabinClass");
   const SrCitizen_Search = searchParams.get("SrCitizen_Search");
@@ -798,6 +799,7 @@ export const FlightFilter = () => {
           children,
           infants,
           tripType,
+          discountFare,
           travelType,
           cabinClass,
           SrCitizen_Search,
@@ -851,6 +853,7 @@ export const FlightFilter = () => {
     children,
     infants,
     tripType,
+    discountFare,
     travelType,
     cabinClass,
     SrCitizen_Search,

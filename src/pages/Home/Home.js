@@ -53,11 +53,10 @@ const [specialFare, setSpecialFare] = useState("regular");
 // const [roomCount, setRoomCount] = useState(1);
 const [adultCount, setAdultCount] = useState(1);
 const [childrenCount, setChildrenCount] = useState(0);
-
 const [childrenAges, setChildrenAges] = useState([]);
-
 const [infantCount, setInfantCount] = useState(0);
 const [infantAges, setInfantAges] = useState([]);
+const [discountFare, setDiscountFare] = useState(false);
 
 // const totalGuests = adultCount + childrenCount + infantCount;
 
@@ -297,6 +296,7 @@ const [infantAges, setInfantAges] = useState([]);
           infants: infantCount,
           travelType: travelType,
           tripType: tripType,
+          discountFare: discountFare,
           cabinClass: cabinClass,
           SrCitizen_Search: specialFare === "senior",
           StudentFare_Search: specialFare === "student",
@@ -387,78 +387,109 @@ const [infantAges, setInfantAges] = useState([]);
             )}
 
             <div className="flight-content-area mt-3">
-              <div className="flight-trip-type d-flex align-items-center mb-3">
-                <div className="checkbox-wrapper-15">
-                  <input
-                    className="inp-cbx"
-                    id="cbx-15"
-                    name="flight"
-                    type="radio"
-                    style={{ display: "none" }}
-                    checked={tripType === 0}
-                    onChange={() => {setTripType(0); setReturnDate(null); }}
-                  />
+              <div className="oidjomeofj d-flex justify-content-between align-items-center mb-3">
+                <div className="flight-trip-type d-flex align-items-center">
+                  <div className="checkbox-wrapper-15">
+                    <input
+                      className="inp-cbx"
+                      id="cbx-15"
+                      name="flight"
+                      type="radio"
+                      style={{ display: "none" }}
+                      checked={tripType === 0}
+                      onChange={() => {setTripType(0); setReturnDate(null); setDiscountFare(false); }}
+                    />
 
-                  <label className="cbx" htmlFor="cbx-15">
-                    <span>
-                      <svg width="12px" height="9px" viewBox="0 0 12 9">
-                        <polyline points="1 5 4 8 11 1" />
-                      </svg>
-                    </span>
-                    <span>One Way</span>
-                  </label>
-                </div> 
+                    <label className="cbx" htmlFor="cbx-15">
+                      <span>
+                        <svg width="12px" height="9px" viewBox="0 0 12 9">
+                          <polyline points="1 5 4 8 11 1" />
+                        </svg>
+                      </span>
+                      <span>One Way</span>
+                    </label>
+                  </div> 
 
-                <div className="checkbox-wrapper-15">
-                  <input
-                    className="inp-cbx"
-                    id="cbx-16"
-                    name="flight"
-                    type="radio"
-                    style={{ display: "none" }}
-                    checked={tripType === 1}
-                    // onChange={() => setTripType(1)}
-                    onChange={() => {
-                      setTripType(1);
+                  <div className="checkbox-wrapper-15">
+                    <input
+                      className="inp-cbx"
+                      id="cbx-16"
+                      name="flight"
+                      type="radio"
+                      style={{ display: "none" }}
+                      checked={tripType === 1}
+                      // onChange={() => setTripType(1)}
+                      onChange={() => {
+                        setTripType(1);
+                        setDiscountFare(false);
 
-                      if (departureDate) {
-                        const nextDay = new Date(departureDate);
-                        nextDay.setDate(nextDay.getDate() + 1);
-                        setReturnDate(nextDay);
-                      }
-                    }}
-                  />
+                        if (departureDate) {
+                          const nextDay = new Date(departureDate);
+                          nextDay.setDate(nextDay.getDate() + 1);
+                          setReturnDate(nextDay);
+                        }
+                      }}
+                    />
 
-                  <label className="cbx" htmlFor="cbx-16">
-                    <span>
-                      <svg width="12px" height="9px" viewBox="0 0 12 9">
-                        <polyline points="1 5 4 8 11 1" />
-                      </svg>
-                    </span>
-                    <span>Round Trip</span>
-                  </label>
+                    <label className="cbx" htmlFor="cbx-16">
+                      <span>
+                        <svg width="12px" height="9px" viewBox="0 0 12 9">
+                          <polyline points="1 5 4 8 11 1" />
+                        </svg>
+                      </span>
+                      <span>Round Trip</span>
+                    </label>
+                  </div>
+
+                  <div className="checkbox-wrapper-15">
+                    <input
+                      className="inp-cbx"
+                      id="cbx-17"
+                      name="flight"
+                      type="radio"
+                      style={{ display: "none" }}
+                      // checked={tripType === 2}
+                      // onChange={() => {setTripType(2); setDiscountFare(false);}}
+                    />
+
+                    <label className="cbx" htmlFor="cbx-17">
+                      <span>
+                        <svg width="12px" height="9px" viewBox="0 0 12 9">
+                          <polyline points="1 5 4 8 11 1" />
+                        </svg>
+                      </span>
+                      <span>Multi City</span>
+                    </label>
+                  </div>
                 </div>
 
-                <div className="checkbox-wrapper-15">
-                  <input
-                    className="inp-cbx"
-                    id="cbx-17"
-                    name="flight"
-                    type="radio"
-                    style={{ display: "none" }}
-                    checked={tripType === 2}
-                    onChange={() => setTripType(2)}
-                  />
+                {tripType === 1 && (
+                  <div className="uidnskdhfsdf">
+                    <div className="checkbox-wrapper-15">
+                      <input
+                        className="inp-cbx"
+                        id="fgd-sdf"
+                        name="discountFare"
+                        type="checkbox"
+                        style={{ display: "none" }}
+                        checked={discountFare}
+                        onChange={(e) => {
+                          setDiscountFare(e.target.checked);
+                          console.log("Discount Fare checked:", e.target.checked);
+                        }}
+                      />
 
-                  <label className="cbx" htmlFor="cbx-17">
-                    <span>
-                      <svg width="12px" height="9px" viewBox="0 0 12 9">
-                        <polyline points="1 5 4 8 11 1" />
-                      </svg>
-                    </span>
-                    <span>Multi City</span>
-                  </label>
-                </div>
+                      <label className="cbx" htmlFor="fgd-sdf">
+                        <span>
+                          <svg width="12px" height="9px" viewBox="0 0 12 9">
+                            <polyline points="1 5 4 8 11 1" />
+                          </svg>
+                        </span>
+                        <span>Discount Fare <img src="./images/jbjhbdiscount.png" className="uindjbhui ms-1" style={{ width: "1.5rem" }} alt="" /></span>
+                      </label>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="form row g-4">

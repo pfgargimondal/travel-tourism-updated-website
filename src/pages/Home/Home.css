@@ -758,6 +758,30 @@ h2.secondary-heading{
     z-index: 9999;
 }
 
+.uindjbhui{
+    transform-origin: 65.15% 0%;
+    animation: swinging 3.5s ease-in-out infinite;
+}
+
+@keyframes swinging{
+    0% {
+        transform: rotate(20deg);
+    }
+    50% {
+        transform: rotate(-10deg);
+    }
+    100% {
+        transform: rotate(20deg);
+    }
+}
+
+.uidnskdhfsdf{
+    border: 1px solid var(--light-border-color);
+    border-radius: 25px;
+    background: #fff;
+    padding: 1px 10px;
+}
+
 
 
 /*radio button start*/
