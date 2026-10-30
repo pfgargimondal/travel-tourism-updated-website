@@ -2167,3 +2167,347 @@ label.nihnuidnuiwehrwer img{
   }
 }
 /* return flight css */
+
+
+/* Discount Fare Container */
+.discount-fare-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Main Card */
+.discount-flight-card {
+  background: #fff;
+  border: 1px solid #e3e8ef;
+  border-radius: 12px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+.discount-flight-card:hover {
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Main Content */
+.discount-flight-main {
+  display: grid;
+  grid-template-columns: 155px minmax(0, 1fr) 145px;
+  align-items: stretch;
+  gap: 16px;
+  padding: 22px 20px;
+}
+
+/* Airline Section */
+.discount-airline {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding-top: 20px;
+  min-width: 0;
+}
+
+.discount-airline img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.discount-airline > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.discount-airline strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #252b36;
+  overflow-wrap: anywhere;
+}
+
+.discount-airline small {
+  font-size: 12px;
+  color: #747d8b;
+}
+
+/* Journey Columns */
+.discount-flight-journeys.row {
+  /* display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); */
+  gap: 0;
+  width: 100%;
+  margin: 0;
+  min-width: 0;
+}
+
+.discount-journey-column {
+  min-width: 0;
+  max-width: none;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+.discount-journey-column + .discount-journey-column {
+  border-left: 1px solid #e8ebf0;
+}
+
+.discount-journey-label {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  color: #4455a5;
+  background: #f0f2ff;
+  padding: 5px 9px;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+/* Individual Journey */
+.discount-flight-leg {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(65px, 0.9fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 10px;
+}
+
+.discount-time-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.discount-time-block strong {
+  font-size: 19px;
+  line-height: 1.2;
+  font-weight: 700;
+  color: #202633;
+}
+
+.discount-time-block small {
+  font-size: 11px;
+  color: #7b8492;
+  display: flex;
+}
+
+.discount-time-block span {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #5f6876;
+  overflow-wrap: anywhere;
+}
+
+.discount-duration-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+  min-width: 0;
+}
+
+.discount-duration-block small {
+  font-size: 10px;
+  color: #7b8492;
+  white-space: nowrap;
+}
+
+.discount-duration-line {
+  width: 100%;
+  height: 1px;
+  background: #cbd2dc;
+  position: relative;
+}
+
+.discount-duration-line::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8c96a7;
+}
+
+.discount-arrival {
+  text-align: center;
+}
+
+/* Price Section */
+.discount-flight-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  border-left: 1px solid #e8ebf0;
+  padding-left: 16px;
+  gap: 10px;
+  min-width: 0;
+}
+
+.discount-flight-price h5 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 700;
+  color: #202633;
+  white-space: nowrap;
+}
+
+.discount-instant {
+  font-size: 11px;
+  color: #16834a;
+  text-align: right;
+  line-height: 1.4;
+}
+
+.discount-book-btn {
+  width: 100%;
+  border: none;
+  border-radius: 6px;
+  padding: 11px 12px;
+  background: #e85b28;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.discount-book-btn:hover {
+  background: #cf481a;
+}
+
+.discount-more-fares {
+  width: 100%;
+  border: 1px solid #dce2eb;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fff;
+  color: #414b5b;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.discount-more-fares:hover {
+  background: #f7f8fb;
+}
+
+/* Bottom Information Bar */
+.discount-flight-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #f8f9fc;
+  border-top: 1px solid #e8ebf0;
+}
+
+.discount-view-details {
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: #4455a5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.discount-view-details:hover {
+  color: #293b91;
+}
+
+.discount-baggage {
+  font-size: 12px;
+  color: #596273;
+}
+
+@media (max-width: 1100px) {
+  .discount-flight-main {
+    grid-template-columns: 125px minmax(0, 1fr) 125px;
+    gap: 10px;
+    padding: 18px 14px;
+  }
+
+  .discount-journey-column {
+    padding: 8px 10px;
+  }
+
+  .discount-flight-leg {
+    grid-template-columns: minmax(0, 1fr) minmax(55px, 0.8fr) minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .discount-time-block strong {
+    font-size: 16px;
+  }
+
+  .discount-flight-price {
+    padding-left: 10px;
+  }
+
+  .discount-flight-price h5 {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 767px) {
+  .discount-flight-main {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .discount-airline {
+    padding-top: 0;
+    align-items: center;
+  }
+
+  .discount-flight-journeys.row {
+    grid-template-columns: 1fr;
+  }
+
+  .discount-journey-column {
+    padding: 14px 0;
+  }
+
+  .discount-journey-column + .discount-journey-column {
+    border-left: none;
+    border-top: 1px solid #e8ebf0;
+  }
+
+  .discount-flight-price {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    border-left: none;
+    border-top: 1px solid #e8ebf0;
+    padding: 16px 0 0;
+  }
+
+  .discount-flight-price h5 {
+    font-size: 22px;
+  }
+
+  .discount-instant {
+    text-align: left;
+  }
+
+  .discount-book-btn,
+  .discount-more-fares {
+    width: 100%;
+  }
+
+  .discount-flight-footer {
+    padding: 12px 16px;
+  }
+}

@@ -862,6 +862,7 @@ export const FlightFilter = () => {
   ]);
 
 
+
   useEffect(() => {
     const fetchAirportList = async () => {
       try {
@@ -1182,6 +1183,10 @@ export const FlightFilter = () => {
       },
     });
   };
+
+  console.log(isRoundTrip, 'isRoundTripisRoundTrip');
+  console.log(discountFare, 'discountFarediscountFare');
+
 
   if (loading) return <Loader />;
 
@@ -2568,7 +2573,7 @@ export const FlightFilter = () => {
                 </div>
 
                 <div className="flight-filtr-wrppr">
-                  {isRoundTrip ? (
+                  {(isRoundTrip === true && discountFare === 'false') ? (
                     <div className="round-trip-container">
                       <div className="round-trip-column">
                         <div className="round-trip-heading mb-3">
@@ -2733,10 +2738,6 @@ export const FlightFilter = () => {
                           </div>
                         )}
                       </div>
-
-                      {/* =================================================
-                          RETURN COLUMN
-                      ================================================== */}
 
                       <div className="round-trip-column">
                         {/* RETURN HEADING */}
@@ -2915,6 +2916,303 @@ export const FlightFilter = () => {
                           </div>
                         )}
                       </div>
+                    </div>
+                  ) : (isRoundTrip === false && discountFare === 'true') ? (
+                    <div className="discount-fare-container">
+                      {filteredFlights.length > 0 ? (
+                        filteredFlights.map((flight, index) => {
+                          const segments = flight?.Segments || [];
+
+                          // Separate onward and return flights
+                          const onwardSegments = segments.filter(
+                            (segment) => segment?.Return_Flight !== true
+                          );
+
+                          const returnSegments = segments.filter(
+                            (segment) => segment?.Return_Flight === true
+                          );
+
+                          
+                          const onwardFirst = onwardSegments[0];
+                          const onwardLast = onwardSegments[onwardSegments.length - 1];
+
+                          const returnFirst = returnSegments[0];
+                          const returnLast = returnSegments[returnSegments.length - 1];
+
+
+                          // Round-trip fare details
+                          const fareDetails = flight?.Fares?.[0]?.FareDetails?.[0];
+
+                          const totalAmount = Number(fareDetails?.Total_Amount || 0);
+                          const instantDiscount = Number(fareDetails?.Promo_Discount || 0);
+
+                          // Baggage
+                          const baggage = fareDetails?.Free_Baggage || {};
+
+                          const checkInBaggage = baggage?.Check_In_Baggage || "";
+                          const handBaggage = baggage?.Hand_Baggage || "";
+
+                          // Format API date: MM/DD/YYYY HH:mm
+                          const formatFlightDate = (dateTime) => {
+                            if (!dateTime) {
+                              return { date: "--", time: "--" };
+                            }
+
+                            const [datePart, timePart] = dateTime.split(" ");
+
+                            if (!datePart || !timePart) {
+                              return { date: "--", time: "--" };
+                            }
+
+                            const [month, day, year] = datePart.split("/");
+
+                            const date = new Date(
+                              Number(year),
+                              Number(month) - 1,
+                              Number(day)
+                            );
+
+                            const formattedDate = date.toLocaleDateString("en-GB", {
+                              weekday: "short",
+                              day: "2-digit",
+                              month: "short",
+                            });
+
+                            const [hours, minutes] = timePart.split(":").map(Number);
+
+                            const formattedTime = new Date(
+                              2000,
+                              0,
+                              1,
+                              hours,
+                              minutes
+                            ).toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: false,
+                            });
+
+                            return {
+                              date: formattedDate,
+                              time: formattedTime,
+                            };
+                          };
+
+                          // Calculate duration using the first departure and last arrival
+                          const getDuration = (first, last) => {
+                            if (!first?.Departure_DateTime || !last?.Arrival_DateTime) {
+                              return "--";
+                            }
+
+                            const parseDateTime = (value) => {
+                              const [datePart, timePart] = value.split(" ");
+                              const [month, day, year] = datePart.split("/");
+                              const [hours, minutes] = timePart.split(":").map(Number);
+
+                              return new Date(
+                                Number(year),
+                                Number(month) - 1,
+                                Number(day),
+                                hours,
+                                minutes
+                              );
+                            };
+
+                            const start = parseDateTime(first.Departure_DateTime);
+                            const end = parseDateTime(last.Arrival_DateTime);
+
+                            const diff = end.getTime() - start.getTime();
+
+                            if (Number.isNaN(diff) || diff < 0) {
+                              return "--";
+                            }
+
+                            const totalMinutes = Math.floor(diff / 60000);
+                            const hours = Math.floor(totalMinutes / 60);
+                            const minutes = totalMinutes % 60;
+
+                            return `${String(hours).padStart(2, "0")}h : ${String(
+                              minutes
+                            ).padStart(2, "0")}m`;
+                          };
+
+                          // Render only the requested journey
+                          const renderLeg = (first, last, legSegments, label) => {
+                            if (!first || !last) return null;
+
+                            console.log(first, 'firstfirstfirst');
+                            console.log(last, 'lastlastlastlast');
+
+                            const departure = formatFlightDate(first.Departure_DateTime);
+                            const arrival = formatFlightDate(last.Arrival_DateTime);
+
+                            console.log(departure, 'departuredeparture');
+                            console.log(arrival, 'arrivalarrival');
+
+                            const stopCount = Math.max(legSegments.length - 1, 0);
+
+                            return (
+                              <div className={`discount-flight-leg ${label}-leg`} key={label}>
+                                {/* Departure */}
+                                <div className="discount-time-block">
+                                  <small>{departure.date}</small>
+
+                                  <strong>{departure.time}</strong>
+
+                                  <span>
+                                    {first.Origin_City || first.Origin}
+                                  </span>
+                                </div>
+
+                                {/* Duration and stops */}
+                                <div className="discount-duration-block">
+                                  <small>{getDuration(first, last)}</small>
+
+                                  <div className="discount-duration-line" />
+
+                                  <small>
+                                    {stopCount === 0
+                                      ? "Non-Stop"
+                                      : `${stopCount} Stop${stopCount > 1 ? "s" : ""}`}
+                                  </small>
+                                </div>
+
+                                {/* Arrival */}
+                                <div className="discount-time-block discount-arrival">
+                                  <small>{arrival.date}</small>
+
+                                  <strong>{arrival.time}</strong>
+
+                                  <span>
+                                    {last.Destination_City || last.Destination}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          };
+
+                          return (
+                            <div
+                              className="discount-flight-card"
+                              key={flight?.Flight_Id || index}
+                            >
+                              <div className="discount-flight-main">
+                                {/* Airline information */}
+                                <div className="discount-airline">
+                                  <img
+                                    src={`https://images.kiwi.com/airlines/64/${
+                                      onwardFirst?.Airline_Code || flight?.Airline_Code
+                                    }.png`}
+                                    alt={onwardFirst?.Airline_Name || "Airline"}
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+
+                                  <div>
+                                    <strong>
+                                      {onwardFirst?.Airline_Name ||
+                                        flight?.Airline_Code ||
+                                        "Airline"}
+                                    </strong>
+
+                                    <small>
+                                      {onwardFirst?.Airline_Code}{" "}
+                                      {onwardFirst?.Flight_Number?.trim()},{returnFirst?.Flight_Number?.trim()}
+                                    </small>
+                                  </div>
+                                </div>
+
+                                {/* Onward and Return Flights - Two Columns */}
+                                <div className="discount-flight-journeys row">
+                                  {/* Onward Flight - col-md-6 */}
+                                  <div className="col-md-6 discount-journey-column">
+                                    <div className="discount-journey-label">
+                                      ONWARD
+                                    </div>
+
+                                    {renderLeg(
+                                      onwardFirst,
+                                      onwardLast,
+                                      onwardSegments,
+                                      "onward"
+                                    )}
+                                  </div>
+
+                                  {/* Return Flight - col-md-6 */}
+                                  <div className="col-md-6 discount-journey-column">
+                                    <div className="discount-journey-label">
+                                      RETURN
+                                    </div>
+
+                                    {renderLeg(
+                                      returnFirst,
+                                      returnLast,
+                                      returnSegments,
+                                      "return"
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Price and booking actions */}
+                                <div className="discount-flight-price">
+                                  <h5>
+                                    ₹ {totalAmount.toLocaleString("en-IN")}
+                                  </h5>
+
+                                  {instantDiscount > 0 && (
+                                    <small className="discount-instant">
+                                      ₹ {instantDiscount.toLocaleString("en-IN")} Instant
+                                      Discount
+                                    </small>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    className="discount-book-btn"
+                                    onClick={() => handleFlightFareDetails(flight)}
+                                  >
+                                    BOOK
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    className="discount-more-fares"
+                                    onClick={() => handleFlightFareDetails(flight)}
+                                  >
+                                    More Fares <span>⌄</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Bottom information */}
+                              <div className="discount-flight-footer">
+                                <button
+                                  type="button"
+                                  className="discount-view-details"
+                                  onClick={() => handleFlightFareDetails(flight)}
+                                >
+                                  View Details <span>⌄</span>
+                                </button>
+
+                                <span className="discount-baggage">
+                                  {checkInBaggage
+                                    ? checkInBaggage.split("|")[0]
+                                    : "--"}
+                                  {" / "}
+                                  {handBaggage
+                                    ? handBaggage.split("|")[0]
+                                    : "--"}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center p-5">
+                          <h5>No Discount Fare Flights Available</h5>
+                        </div>
+                      )}
                     </div>
                   ) : 
                   filteredFlights.length > 0 ? (
