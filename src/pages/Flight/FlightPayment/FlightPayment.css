@@ -561,30 +561,6 @@
   font-weight: 600;
 }
 
-.traveller-details-body {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
-  padding: 12px 18px;
-}
-
-.traveller-label {
-  font-size: 14px;
-  color: var(--light-black-text-color);
-  margin-bottom: 6px;
-  font-weight: 600;
-  font-family: var(--font-family-raleway);
-}
-
-.traveller-value {
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-
 /* =========================================================
    WALLET LOGIN
 ========================================================= */

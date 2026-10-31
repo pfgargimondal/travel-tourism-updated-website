@@ -1299,7 +1299,7 @@ span.duiewnrme-divider{
   border-top: 0;
 }
 
-.flight-booking-modal-backdrop{
+/* .flight-booking-modal-backdrop{
   background: rgba(0, 0, 0, 0.6);
   z-index: 99999;
   opacity: 1;
@@ -1320,26 +1320,26 @@ span.duiewnrme-divider{
   visibility: visible;
   border-radius: 10px;
   transition: 0.2s ease-in-out;
-}
+} */
 
-.flight-booking-modal-hide{
+/* .flight-booking-modal-hide{
   z-index: -999999;
   opacity: 0;
   visibility: hidden;
-}
+} */
 
-.flight-booking-modal-header{
+/* .flight-booking-modal-header{
   border-bottom: 1px solid var(--border);
-}
+} */
 
-.flight-booking-modal-header i{
+/* .flight-booking-modal-header i{
   font-size: 1.4rem;
   cursor: pointer;
-}
+} */
 
 .idhijweoijorwekrwer{
-  max-height: 65vh;
-  overflow-y: auto;
+  border: 1px solid var(--border);
+  padding: 20px;
 }
 
 .booking-total{
@@ -1636,6 +1636,1584 @@ p.jomkodokofjdf{
   font-weight: 600;
   color: var(--light-black-text-color) !important;
 }
+
+
+
+/*flight booking steps start*/
+
+.bs-bar {
+  list-style: none;
+  margin: 0;
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #dcdcdc;
+}
+
+.bs-step {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.bs-step:last-child {
+  flex: 0 0 auto;
+}
+
+.bs-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bs-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c2c2c2;
+  flex: none;
+}
+
+.bs-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: #fff;
+}
+
+.bs-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.bs-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  color: #9a9a9a;
+}
+
+.bs-title {
+  font-size: 16px;
+  color: #9a9a9a;
+  font-weight: 500;
+}
+
+.bs-line {
+  flex: 1;
+  height: 2px;
+  margin: 0 20px;
+  background: #cfcfcf;
+}
+
+.bs-step.done .bs-circle {
+  background: #62a22c;
+}
+
+.bs-step.done .bs-title {
+  color: #62a22c;
+}
+
+.bs-step.done .bs-line {
+  background: #8dba68;
+}
+
+.bs-step.active .bs-circle {
+  background: var(--blue-primary-color);
+}
+
+.bs-step.active .bs-title {
+  color: #333;
+}
+
+.bs-body {
+  margin-top: 1.4rem;
+}
+
+.bs-body h3 {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+
+.bs-box {
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.bs-box p {
+  margin: 4px 0;
+}
+
+.bs-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bs-row input,
+.bs-row select {
+  flex: 1;
+  min-width: 160px;
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #cfcfcf;
+  border-radius: 6px;
+}
+
+.bs-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.bs-btn {
+  min-width: 120px;
+  padding: 11px 22px;
+  border-radius: 6px;
+  border: 1px solid var(--blue-primary-color);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bs-prev {
+  background: #fff;
+  color: #62a22c;
+}
+
+.bs-next {
+  background: #62a22c;
+  color: #fff;
+}
+
+.bs-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+
+/*payment start*/
+
+.sjkbcfksdndf{
+  width: 100%;
+  padding: 4rem 0;
+}
+
+.flight-detail-card {
+  background: #fff;
+  border: 1px solid #d8e3ef;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Top */
+.flight-detail-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px 8px;
+}
+
+.flight-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 7px;
+  background: var(--blue-primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flight-detail-top h5 {
+  font-size: 17px;
+  color: #071e42;
+}
+
+.hide-details-btn {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 8px;
+  padding: 7px 13px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--blue-secondary-color);
+  font-family: var(--font-family-raleway);
+}
+
+/* Summary */
+.flight-summary {
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #526b87;
+  font-size: 11px;
+}
+
+.flight-summary strong {
+  color: #142f52;
+}
+
+.flight-summary p{
+  line-height: 1.6;
+  font-weight: 600;
+  color: #000 !important;
+}
+
+/* Sector */
+.sector-section {
+  border-top: 1px solid #e0e7ef;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sector-title {
+  background: #fff;
+  color: var(--blue-secondary-color);
+  font-size: 10px;
+  border: 1px solid var(--border);
+  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-family: var(--font-family-raleway);
+}
+
+.sector-route {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
+}
+
+.flight-number {
+  color: var(--blue-secondary-color);
+  font-family: var(--font-family-raleway);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.flight-number i {
+  background: var(--blue-primary-color);
+  transform: rotate(-90deg);
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: 5px;
+}
+
+.saver-badge {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--light-blue-highlighted-background-color);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* Route */
+.flight-route-details {
+  display: grid;
+  grid-template-columns: 125px 1fr 125px 250px;
+  gap: 15px;
+  align-items: center;
+  padding: 10px 14px 15px;
+}
+
+.airport-detail .time {
+  font-size: 24px;
+  color: #000;
+  font-family: var(--font-family-raleway);
+}
+
+.airport-detail div {
+  font-size: 12px;
+  color: var(--blue-secondary-color);
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
+}
+
+.airport-detail div span {
+  color: #8090a3;
+}
+
+.airport-detail small {
+  display: block;
+  color: var(--light-black-text-color);
+  font-size: 11px;
+  margin-top: 2px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
+}
+
+.arrival {
+  text-align: right;
+}
+
+/* Duration */
+.duration-detail {
+  text-align: center;
+  color: #63778f;
+  font-size: 10px;
+}
+
+.duration-line {
+  border: 1px dashed var(--border);
+  margin: 10px 0;
+}
+
+.duration-detail > span{
+  font-family: var(--font-family-raleway);
+  font-size: 12px;
+  color: var(--blue-primary-color);
+  font-weight: 600;
+  border: 1px solid var(--blue-primary-color);  
+  border-radius: 25px;
+  padding: 3px 10px;
+}
+
+.duration-detail small {
+  color: var(--light-highlighted-text-color);
+  border: 1px solid var(--blue-primary-color);  
+  border-radius: 25px;
+  padding: 3px 10px;
+  font-weight: 500;
+}
+
+/* Baggage */
+
+.aircraft-title {
+  font-size: 11px;
+  margin-bottom: 8px;
+  color: var(--light-black-text-color);
+}
+
+.baggage-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #5c6d81;
+  padding: 2px 0;
+}
+
+.baggage-row strong {
+  color: #172d4b;
+}
+
+.flight-payment-page {
+  min-height: 100vh;
+  background: #f4f6f8;
+  padding-bottom: 40px;
+}
+
+.payment-page-header {
+  background: var(--light-green-highlighted-background-color);
+  padding: 14px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.payment-page-header h4 {
+  color: #10233f;
+}
+
+.payment-page-header small {
+  color: #52657d;
+}
+
+.booking-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.booking-step span:not(.active) {
+  color: #777;
+}
+
+.booking-step .active {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d6efd;
+  color: #fff;
+  font-weight: 600;
+}
+
+.step-line {
+  width: 35px;
+  height: 1px;
+  background: #ccc;
+}
+
+.payment-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
+}
+
+.card-title {
+  background: #d9ecff;
+  padding: 11px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #10233f;
+}
+
+.flight-detail-body {
+  padding: 18px;
+}
+
+.route-box {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 15px 0;
+}
+
+.route-point {
+  flex: 1;
+}
+
+.route-point strong {
+  font-size: 20px;
+}
+
+.route-middle {
+  width: 35%;
+  text-align: center;
+  color: #666;
+}
+
+.flight-line {
+  height: 1px;
+  background: #ddd;
+  margin-bottom: 7px;
+}
+
+.aircraft-info {
+  border: 1px solid #dce3eb;
+  border-radius: 10px;
+  padding: 10px;
+  padding-bottom: 5px;
+  max-width: 300px;
+  margin-left: auto;
+}
+
+.aircraft-info div {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
+}
+
+.aircraft-info div:last-child {
+  margin-bottom: 0;
+}
+
+.aircraft-info span {
+  color: var(--light-black-text-color);
+  font-size: 13px;
+}
+
+.aircraft-info p {
+  font-size: 13px;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
+}
+
+.traveller-body {
+  padding: 16px;
+}
+
+.traveller-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.traveller-grid div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.traveller-grid small {
+  color: #555;
+}
+
+.traveller-grid strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.selected-services {
+  padding: 16px;
+}
+
+.service-section {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.service-section:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+
+.service-section h6 {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.service-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  font-size: 14px;
+}
+
+.payment-method-body {
+  padding: 16px;
+}
+
+.payment-method p{
+  font-size: 0.7rem !important;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.payment-option {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+.payment-option input {
+  margin-top: 4px;
+}
+
+.payment-option div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-option small {
+  color: #777;
+}
+
+.price-summary-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 20px;
+}
+
+.price-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 1rem;
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(to right, color-mix(in srgb, var(--main-golden) 70%, #fff 40%), #fff, color-mix(in srgb, var(--main-yellow-color) 70%, #fff 80%));
+}
+
+.price-summary-header h5 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.flight-passenger-count{
+  border-radius: 25px;
+  border: 1px solid var(--border);
+  color: var(--blue-secondary-color);
+  padding: 0px 8px;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.price-row span {
+  font-size: 0.8rem;
+  color: #000 !important;
+}
+
+.price-row span i{
+  color: var(--blue-primary-color);
+  font-size: 14px;
+}
+
+.price-row p {
+  color: #000 !important;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
+}
+
+.grand-total {
+  background: #fff;
+  color: #000;
+  border-radius: 8px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-family-raleway);
+}
+
+.grand-total h5{
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.dhubewnwer{
+  padding-inline: 1rem;
+}
+
+@media (max-width: 991px) {
+  .payment-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .traveller-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .price-summary-card {
+    position: static;
+  }
+}
+
+@media (max-width: 576px) {
+  .traveller-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .route-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .route-middle {
+    width: 100%;
+  }
+
+  .service-row {
+    gap: 10px;
+  }
+}
+
+
+/* =========================================================
+   TRAVELLER DETAILS
+========================================================= */
+
+.traveller-details-card {
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 18px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.traveller-details-header {
+  background: var(--light-blue-highlighted-background-color);
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.traveller-details-header h5 {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* .traveller-label {
+  font-size: 14px;
+  color: var(--light-black-text-color);
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-family: var(--font-family-raleway);
+}
+
+.traveller-value {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+} */
+
+.traveller-details-body {
+  overflow-x: auto;
+  padding: 16px 18px;
+}
+
+.traveller-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.traveller-table th,
+.traveller-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 6px 10px 6px 0;
+  word-break: break-word;
+}
+
+.traveller-table th {
+  font-size: 15px;
+  font-weight: 600;
+  padding-bottom: 10px;
+}
+
+.traveller-table td {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .traveller-table {
+    min-width: 640px;        /* keeps columns readable; the wrapper scrolls sideways */
+  }
+}
+
+
+/* =========================================================
+   WALLET LOGIN
+========================================================= */
+
+.wallet-login-card {
+  margin-top: 18px;
+  padding: 18px 24px;
+
+  background: #ffffff;
+
+  border: 1px solid #dedede;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 18px;
+
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.wallet-login-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+}
+
+.wallet-emoji {
+  font-size: 34px;
+}
+
+.wallet-login-text {
+  flex: 1;
+
+  font-size: 15px;
+  color: #111;
+}
+
+.wallet-login-text strong {
+  font-weight: 700;
+}
+
+.wallet-login-btn {
+  border: none;
+
+  background: #2196f3;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  padding: 8px 21px;
+
+  border-radius: 20px;
+
+  cursor: pointer;
+}
+
+.wallet-login-btn:hover {
+  background: #1688df;
+}
+
+
+/* =========================================================
+   PAYMENT MODE
+========================================================= */
+
+.payment-mode-card {
+  margin-top: 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #dedede;
+  border-radius: 10px;
+
+  overflow: hidden;
+}
+
+.payment-mode-header {
+  padding: 11px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+.payment-mode-header h5 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  color: #111;
+}
+
+.payment-timer {
+  border: 1px solid #ff9999;
+
+  color: #222;
+
+  border-radius: 20px;
+
+  padding: 5px 11px;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+.payment-timer i {
+  margin-right: 4px;
+}
+
+.payment-timer strong {
+  color: red;
+}
+
+
+/* =========================================================
+   PAYMENT MAIN CONTAINER
+========================================================= */
+
+.payment-mode-content {
+  margin-top: 1rem;
+  border: 1px solid #d4dbe2;
+  border-radius: 6px;
+  display: flex;
+  overflow: hidden;
+  min-height: 310px;
+}
+
+
+/* =========================================================
+   PAYMENT METHODS
+========================================================= */
+
+.payment-method-list {
+  width: 280px;
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--border);
+}
+
+.payment-method {
+  width: 100%;
+  min-height: 77px;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  background: transparent;
+  padding: 1rem 10px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.payment-method:focus-visible{
+  outline: none !important;
+}
+
+.payment-method h5{
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.payment-method:last-child {
+  border-bottom: none;
+}
+
+.payment-method:hover {
+  background: #ffffff;
+}
+
+.payment-method.active {
+  background: color-mix(in srgb, var(--blue-primary-color) 20%, #fff 80%);
+  border-left: 3px solid var(--blue-primary-color);
+}
+
+.payment-method-icon {
+  width: 40px;
+  height: 40px;
+
+  flex-shrink: 0;
+
+  background: #f0f2f5;
+
+  border-radius: 7px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #222;
+
+  font-size: 18px;
+}
+
+.payment-method-icon img{
+  height: 2.5rem;
+}
+
+.payment-method.active
+  .payment-method-icon {
+  color: #168ee7;
+}
+
+.payment-method strong {
+  display: block;
+
+  color: #111;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.payment-method.active strong {
+  color: #168ee7;
+}
+
+.payment-method small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #444;
+
+  font-size: 9.5px;
+
+  line-height: 13px;
+}
+
+
+/* =========================================================
+   PAYMENT CONTENT
+========================================================= */
+
+.payment-content {
+  flex: 1;
+  padding: 0.8rem 1rem;
+  min-width: 0;
+  background: #fff;
+}
+
+
+/* =========================================================
+   UPI
+========================================================= */
+
+.upi-payment-content {
+  display: flex;
+
+  gap: 25px;
+
+  height: 100%;
+}
+
+.upi-left {
+  width: 48%;
+
+  min-width: 0;
+}
+
+.upi-left h5 {
+  margin: 0 0 15px;
+
+  font-size: 16px;
+
+  font-weight: 700;
+
+  color: #111;
+}
+
+.qr-code-box {
+  width: 170px;
+
+  border: 1px solid #e1e1e1;
+
+  padding: 9px;
+
+  text-align: center;
+
+  background: #fff;
+}
+
+.qr-placeholder {
+  width: 145px;
+  height: 145px;
+
+  margin: 0 auto 10px;
+
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #111 0px,
+      #111 3px,
+      #ffffff 3px,
+      #ffffff 6px
+    );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-placeholder span {
+  background: rgba(255, 255, 255, 0.9);
+
+  padding: 5px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.generate-qr-btn {
+  width: 100%;
+
+  border: none;
+
+  background: #2196f3;
+
+  color: #fff;
+
+  padding: 7px;
+
+  border-radius: 4px;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.generate-qr-btn:hover {
+  background: #1688df;
+}
+
+
+/* =========================================================
+   TOTAL FARE
+========================================================= */
+
+.total-fare {
+  margin-top: 14px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 16px;
+
+  color: #111;
+}
+
+.total-fare strong {
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+
+.ksdrgnvjksdfbn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 14px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.ksdrgnvjksdfbn span {
+  font-size: 0.8rem;
+  color: #198754 !important;
+}
+
+.ksdrgnvjksdfbn span i{
+  color: var(--blue-primary-color);
+  font-size: 14px;
+}
+
+.ksdrgnvjksdfbn p {
+  color: #198754 !important;
+  font-family: var(--font-family-raleway);
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   UPI INSTRUCTIONS
+========================================================= */
+
+.upi-instructions {
+  flex: 1;
+
+  border-left: 1px solid #ddd;
+
+  padding-left: 25px;
+}
+
+.upi-instructions h5 {
+  margin: 0 0 15px;
+
+  font-size: 15px;
+
+  font-weight: 700;
+
+  color: #111;
+}
+
+.payment-step {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 12px;
+
+  font-size: 11px;
+
+  color: #222;
+}
+
+.payment-step span {
+  width: 17px;
+  height: 17px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #16c46b;
+
+  color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+.upi-app-title {
+  margin-top: 25px !important;
+}
+
+.upi-apps {
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  font-size: 20px;
+}
+
+.upi-icon {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #f2f2f2;
+
+  font-size: 14px;
+}
+
+.upi-apps strong {
+  font-size: 12px;
+
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   CARD / WALLET / NETBANKING
+========================================================= */
+
+.payment-placeholder h5 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.payment-placeholder > *{
+  font-family: var(--font-family-raleway);
+}
+
+.payment-placeholder p {
+  color: #666;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.payment-placeholder label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card-payment-form {
+  max-width: 450px;
+}
+
+.card-payment-form .form-control,
+.payment-placeholder .form-select {
+  font-size: 13px;
+  min-height: 40px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 991px) {
+
+  .traveller-details-body {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .payment-mode-content {
+    flex-direction: column;
+  }
+
+  .payment-method-list {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .payment-method {
+    min-height: 85px;
+
+    border-bottom: none;
+
+    border-right: 1px solid #ddd;
+  }
+
+  .payment-method:last-child {
+    border-right: none;
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .traveller-details-body {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .wallet-login-card {
+    flex-wrap: wrap;
+  }
+
+  .wallet-login-text {
+    flex: 1;
+
+    min-width: 200px;
+  }
+
+  .payment-mode-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .payment-method-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .payment-method {
+    border-bottom: 1px solid #ddd;
+  }
+
+  .upi-payment-content {
+    flex-direction: column;
+  }
+
+  .upi-left {
+    width: 100%;
+  }
+
+  .upi-instructions {
+    border-left: none;
+
+    border-top: 1px solid #ddd;
+
+    padding-left: 0;
+
+    padding-top: 20px;
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .traveller-details-body {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-login-card {
+    padding: 15px;
+  }
+
+  .wallet-login-text {
+    min-width: 100%;
+    order: 2;
+  }
+
+  .wallet-login-btn {
+    margin-left: auto;
+  }
+
+  .payment-method-list {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-method {
+    border-right: none;
+  }
+
+  .payment-mode-content {
+    margin: 0 8px 8px;
+  }
+
+  .payment-content {
+    padding: 12px;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.payment-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.payment-back-btn:hover {
+  border-color: #0d6efd;
+  color: #0d6efd;
+  background: #f8fbff;
+}
+
+.payment-back-btn i {
+  font-size: 13px;
+}
+
+.fsdgefrsdf{
+  padding:10px;
+  border-radius: 8px;
+}
+
+.fsdgefrsdfa{
+  background: rgb(225 246 255);
+}
+
+.fsdgefrsdfa > div:last-child > div{
+  background: rgb(193 224 237);
+}
+
+.fsdgefrsdfb{
+  background: rgb(232 253 233);
+}
+
+.fsdgefrsdfc{
+  background: rgb(225 246 255);
+}
+
+.fsdgefrsdfc > div > p{
+  white-space: nowrap;
+}
+
+.skip-btn{
+  border: 1px solid #ddd important;
+  background: #fff important;
+  color: red !important;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: all 0.2s ease;
+}
+
+.bs-item {
+  background: none;
+  border: 0;
+  padding: 5px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  display: flex;          /* keep whatever layout .bs-item already had */
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+}
+
+.bs-item:hover{
+  background: rgb(232 253 233);
+}
+
+.bs-item:disabled {
+  cursor: default;
+  opacity: 1;             /* stops the disabled button looking faded */
+}
+
+.bs-item.bs-clickable {
+  cursor: pointer;
+}
+
+/*payment end*/
+
+
+
+
+@media (max-width: 760px) {
+  .bs-bar {
+    padding: 10px 12px;
+  }
+
+  .bs-line,
+  .bs-text {
+    display: none;
+  }
+
+  .bs-step.active .bs-text {
+    display: flex;
+  }
+
+  .bs-step {
+    flex: 1;
+  }
+
+  .bs-step.active {
+    flex: 3;
+  }
+
+  .bs-circle {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+/*flight booking steps end*/
+
+
 
 
 

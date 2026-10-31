@@ -1299,49 +1299,6 @@ span.duiewnrme-divider{
   border-top: 0;
 }
 
-.flight-booking-modal-backdrop{
-  background: rgba(0, 0, 0, 0.6);
-  z-index: 99999;
-  opacity: 1;
-  visibility: visible;
-}
-
-.flight-booking-modal-backdrop-hide{
-  z-index: -99999;
-  opacity: 0;
-  visibility: hidden;
-}
-
-.flight-booking-modal{
-  width: 540px;
-  max-width: 95%;
-  z-index: 999999;
-  opacity: 1;
-  visibility: visible;
-  border-radius: 10px;
-  transition: 0.2s ease-in-out;
-}
-
-.flight-booking-modal-hide{
-  z-index: -999999;
-  opacity: 0;
-  visibility: hidden;
-}
-
-.flight-booking-modal-header{
-  border-bottom: 1px solid var(--border);
-}
-
-.flight-booking-modal-header i{
-  font-size: 1.4rem;
-  cursor: pointer;
-}
-
-.idhijweoijorwekrwer{
-  max-height: 65vh;
-  overflow-y: auto;
-}
-
 .booking-total{
   border-top: 1px solid var(--border);
 }
