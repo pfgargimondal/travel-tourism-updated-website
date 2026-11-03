@@ -463,7 +463,7 @@ const [discountFare, setDiscountFare] = useState(false);
                   </div>
                 </div>
 
-                {tripType === 1 && (
+                {/* {tripType === 1 && (
                   <div className="uidnskdhfsdf">
                     <div className="checkbox-wrapper-15">
                       <input
@@ -489,7 +489,7 @@ const [discountFare, setDiscountFare] = useState(false);
                       </label>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
 
               <div className="form row g-4">

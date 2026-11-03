@@ -785,6 +785,12 @@ export const FlightFilter = () => {
   const [onwardFareApiData, setOnwardFareApiData] = useState({});
   const [returnFareApiData, setReturnFareApiData] = useState({});
 
+  const [selectedFlightType, setSelectedFlightType] = useState(
+    isRoundTrip === false && discountFare === 'true'
+      ? "combined"
+      : "individual"
+  );
+
   useEffect(() => {
     const fetchFlights = async () => {
       setLoading(true);
@@ -1074,7 +1080,7 @@ export const FlightFilter = () => {
     }
   };
 
-  const handleSearchFlight = () => {
+  const handleSearchFlight = (flightType = "individual") => {
     const formatDate = (date) => {
       if (!date) return "";
 
@@ -1082,6 +1088,8 @@ export const FlightFilter = () => {
 
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     };
+
+    const isCombined = flightType === "combined";
 
     const params = new URLSearchParams({
       origin: selectedOrigin,
@@ -1091,7 +1099,8 @@ export const FlightFilter = () => {
       adults: adultCount,
       children: childrenCount,
       infants: infantCount,
-      tripType: selectedTripType,
+      tripType: isCombined ? "2" : selectedTripType,
+      discountFare: isCombined ? "true" : "false",
       travelType,
       cabinClass: selectedCabinClass,
       SrCitizen_Search,
@@ -1184,8 +1193,19 @@ export const FlightFilter = () => {
     });
   };
 
-  console.log(isRoundTrip, 'isRoundTripisRoundTrip');
+  useEffect(() => {
+    setSelectedFlightType(
+      isRoundTrip === false && discountFare === 'true'
+        ? "combined"
+        : "individual"
+    );
+  }, [isRoundTrip, discountFare]);
+  
+
+  console.log(showFareModal, 'showFareModalshowFareModalshowFareModal');
+  console.log(tripType, 'tripTypetripTypetripType');
   console.log(discountFare, 'discountFarediscountFare');
+
 
 
   if (loading) return <Loader />;
@@ -1903,22 +1923,31 @@ export const FlightFilter = () => {
                           <label htmlFor="csdf" className="flex-fill mb-0">
                             <input
                               id="csdf"
-                              name="dnusbnfn"
+                              name="flightType"
                               className="d-none position-absolute"
                               type="radio"
+                              value="individual"
+                              checked={selectedFlightType === "individual"}
+                              onChange={() => {
+                                setSelectedFlightType("individual");
+                                handleSearchFlight("individual");
+                              }}
                             />
-
                             <span>Individual Flights</span>
                           </label>
-
                           <label htmlFor="vsdda" className="flex-fill mb-0">
                             <input
                               id="vsdda"
-                              name="dnusbnfn"
+                              name="flightType"
                               className="d-none position-absolute"
                               type="radio"
+                              value="combined"
+                              checked={selectedFlightType === "combined"}
+                              onChange={() => {
+                                setSelectedFlightType("combined");
+                                handleSearchFlight("combined");
+                              }}
                             />
-
                             <span>Combined Flights</span>
                           </label>
                         </div>
@@ -2950,7 +2979,7 @@ export const FlightFilter = () => {
                           const baggage = fareDetails?.Free_Baggage || {};
 
                           const checkInBaggage = baggage?.Check_In_Baggage || "";
-                          const handBaggage = baggage?.Hand_Baggage || "";
+                          // const handBaggage = baggage?.Hand_Baggage || "";
 
                           // Format API date: MM/DD/YYYY HH:mm
                           const formatFlightDate = (dateTime) => {
@@ -3040,28 +3069,29 @@ export const FlightFilter = () => {
                           const renderLeg = (first, last, legSegments, label) => {
                             if (!first || !last) return null;
 
-                            console.log(first, 'firstfirstfirst');
-                            console.log(last, 'lastlastlastlast');
-
                             const departure = formatFlightDate(first.Departure_DateTime);
                             const arrival = formatFlightDate(last.Arrival_DateTime);
 
-                            console.log(departure, 'departuredeparture');
-                            console.log(arrival, 'arrivalarrival');
+                            const fareClasses = fareDetails?.FareClasses || [];
+
+                            // Get cabin class based on flight segment
+                            const segmentId = label === "onward" ? 0 : 1;
+
+                            const cabinClass =
+                              fareClasses.find(
+                                (item) => Number(item.Segment_Id) === segmentId
+                              )?.CabinClass || "--";
 
                             const stopCount = Math.max(legSegments.length - 1, 0);
 
                             return (
                               <div className={`discount-flight-leg ${label}-leg`} key={label}>
+
                                 {/* Departure */}
                                 <div className="discount-time-block">
                                   <small>{departure.date}</small>
-
                                   <strong>{departure.time}</strong>
-
-                                  <span>
-                                    {first.Origin_City || first.Origin}
-                                  </span>
+                                  <span>{first.Origin_City || first.Origin}</span>
                                 </div>
 
                                 {/* Duration and stops */}
@@ -3080,13 +3110,27 @@ export const FlightFilter = () => {
                                 {/* Arrival */}
                                 <div className="discount-time-block discount-arrival">
                                   <small>{arrival.date}</small>
-
                                   <strong>{arrival.time}</strong>
-
-                                  <span>
-                                    {last.Destination_City || last.Destination}
-                                  </span>
+                                  <span>{last.Destination_City || last.Destination}</span>
                                 </div>
+
+                                {/* Cabin and Baggage */}
+                                <div className="flight-bottom">
+                                  <div>
+                                    <small>Cabin</small>
+                                    <p>{cabinClass}</p>
+                                  </div>
+
+                                  <div>
+                                    <small>Baggage</small>
+                                    <p>
+                                      {checkInBaggage
+                                        ? checkInBaggage.split("|")[0]
+                                        : "--"}
+                                    </p>
+                                  </div>
+                                </div>
+
                               </div>
                             );
                           };
@@ -3170,23 +3214,25 @@ export const FlightFilter = () => {
                                   <button
                                     type="button"
                                     className="discount-book-btn"
-                                    onClick={() => handleFlightFareDetails(flight)}
+                                    onClick={() => {
+                                      setShowFareModal(true);
+                                    }}
                                   >
-                                    BOOK
+                                    BOOK NOW
                                   </button>
 
-                                  <button
+                                  {/* <button
                                     type="button"
                                     className="discount-more-fares"
                                     onClick={() => handleFlightFareDetails(flight)}
                                   >
                                     More Fares <span>⌄</span>
-                                  </button>
+                                  </button> */}
                                 </div>
                               </div>
 
                               {/* Bottom information */}
-                              <div className="discount-flight-footer">
+                              {/* <div className="discount-flight-footer">
                                 <button
                                   type="button"
                                   className="discount-view-details"
@@ -3204,7 +3250,7 @@ export const FlightFilter = () => {
                                     ? handBaggage.split("|")[0]
                                     : "--"}
                                 </span>
-                              </div>
+                              </div> */}
                             </div>
                           );
                         })
@@ -3781,7 +3827,7 @@ export const FlightFilter = () => {
                 <div
                   className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
                 ></div>
-                {showFareModal && selectedFlight && tripType !== "1" && (
+                {showFareModal && selectedFlight && tripType === "0" && (
                   <div
                     className={`${showFareModal && selectedFlight ? "flight-fare-modal" : "flight-fare-modal flight-fare-modal-hide"} bg-white position-fixed start-50 top-50 translate-middle`}
                   >
@@ -4180,6 +4226,20 @@ export const FlightFilter = () => {
                 )}
 
                 {showFareModal && tripType === "1" && (
+                  <RoundTripFareModal
+                    show={showFareModal}
+                    onClose={() => setShowFareModal(false)}
+                    onwardFlight={selectedOnwardFlight}
+                    returnFlight={selectedReturnFlight}
+                    onwardFareApiData={onwardFareApiData}
+                    returnFareApiData={returnFareApiData}
+                    selectedCabinClass={selectedCabinClass}
+                    adults={Number(adults) || 1}
+                    onContinue={handleRoundTripFareContinue}
+                  />
+                )}
+
+                {showFareModal && discountFare === 'true' && tripType === "2" && (
                   <RoundTripFareModal
                     show={showFareModal}
                     onClose={() => setShowFareModal(false)}
