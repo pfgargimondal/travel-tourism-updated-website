@@ -3215,6 +3215,24 @@ export const FlightFilter = () => {
                                     type="button"
                                     className="discount-book-btn"
                                     onClick={() => {
+                                      const onwardFlight = {
+                                        ...flight,
+                                        Segments: onwardSegments,
+                                      };
+
+                                      const returnFlight = {
+                                        ...flight,
+                                        Segments: returnSegments,
+                                      };
+
+                                      // Store the combined flight
+                                      setSelectedFlight(flight);
+
+                                      // Store separate onward and return flights
+                                      setSelectedOnwardFlight(onwardFlight);
+                                      setSelectedReturnFlight(returnFlight);
+
+                                      // Open fare modal
                                       setShowFareModal(true);
                                     }}
                                   >
@@ -3230,27 +3248,6 @@ export const FlightFilter = () => {
                                   </button> */}
                                 </div>
                               </div>
-
-                              {/* Bottom information */}
-                              {/* <div className="discount-flight-footer">
-                                <button
-                                  type="button"
-                                  className="discount-view-details"
-                                  onClick={() => handleFlightFareDetails(flight)}
-                                >
-                                  View Details <span>⌄</span>
-                                </button>
-
-                                <span className="discount-baggage">
-                                  {checkInBaggage
-                                    ? checkInBaggage.split("|")[0]
-                                    : "--"}
-                                  {" / "}
-                                  {handBaggage
-                                    ? handBaggage.split("|")[0]
-                                    : "--"}
-                                </span>
-                              </div> */}
                             </div>
                           );
                         })
@@ -3620,7 +3617,7 @@ export const FlightFilter = () => {
                   )}
 
                   {/* FIXED BOTTOM BOOKING SUMMARY */}
-                  {selectedOnwardFlight && selectedReturnFlight && (
+                  {tripType === "1" && selectedOnwardFlight && selectedReturnFlight && (
                     <div className="round-trip-booking-bar">
                       {/* ONWARD FLIGHT */}
                       <div className="booking-flight-section">
@@ -3824,9 +3821,9 @@ export const FlightFilter = () => {
                   )}
                 </div>
                 
-                <div
-                  className={`${showFareModal && selectedFlight ? "flight-fare-modal-backdrop" : "flight-fare-modal-backdrop flight-fare-modal-backdrop-hide"} position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100`}
-                ></div>
+                {showFareModal && selectedFlight && tripType === "0" && (
+                  <div className="flight-fare-modal-backdrop position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100"></div>
+                )}
                 {showFareModal && selectedFlight && tripType === "0" && (
                   <div
                     className={`${showFareModal && selectedFlight ? "flight-fare-modal" : "flight-fare-modal flight-fare-modal-hide"} bg-white position-fixed start-50 top-50 translate-middle`}

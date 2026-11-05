@@ -398,8 +398,8 @@ export const RoundTripFareModal = ({
                     </div>
 
                     <h6>
-                      {item.fareClass ||
-                        item.cabinClass ||
+                      {item.cabinClass ||
+                        item.fareClass ||
                         `Fare Option ${index + 1}`}
                     </h6>
 
