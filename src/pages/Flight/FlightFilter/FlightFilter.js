@@ -6,18 +6,21 @@ import "react-datepicker/dist/react-datepicker.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { Slider } from "@mui/material";
+import { driver } from "driver.js";
 
 import http from "../../../http";
 import Loader from "../../../component/Loader/Loader";
 import { useFlightFilters } from "../../../context/FlightFilterContext";
 
 import "./FlightFilter.css";
+import "driver.js/dist/driver.css";
 // Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { useAuth } from "../../../context/AuthContext";
 import { RoundTripFareModal } from "./Components/RoundTripFareModal";
+import { RoundTripDiscountFareModal } from "./Components/RoundTripDiscountFareModal";
 
 const getAdultFare = (flight) =>
   flight?.Fares?.flatMap((fare) => fare?.FareDetails || []).find(
@@ -119,10 +122,31 @@ const legPassesFilters = (leg, filters) => {
   return true;
 };
 
+const normalizeFlightNo = (v) => String(v ?? "").replace(/\s+/g, "").toUpperCase();
+
+// matches "6E2345", "6E 2345", "2345" against any segment of the leg
+const legMatchesPlaneNumber = (leg, query) => {
+  const q = normalizeFlightNo(query);
+  if (!q) return true;
+
+  return (leg?.Segments || []).some((s) => {
+    const number = normalizeFlightNo(s?.Flight_Number);
+    const full = normalizeFlightNo(s?.Airline_Code) + number;
+    return number.includes(q) || full.includes(q);
+  });
+};
+
 const itemPassesFilters = (item, filters) => {
   const legs = getLegs(item);
   if (!legs.length) return false;
 
+  // plane number: matches if ANY leg (onward or return) has this flight number
+  if (
+    filters.planeNumber &&
+    !legs.some((leg) => legMatchesPlaneNumber(leg, filters.planeNumber))
+  )
+    return false;
+    
   // stops, refundable, airline, same-day: every leg must pass
   if (!legs.every((leg) => legPassesFilters(leg, filters))) return false;
 
@@ -254,9 +278,31 @@ export const FlightFilter = () => {
   const [resFilterToggle, setResFilterToggle] = useState(false);
   const [onwardFlights, setOnwardFlights] = useState([]);
   const [returnFlights, setReturnFlights] = useState([]);
+  const [selectedFare, setSelectedFare] = useState(null);
   // eslint-disable-next-line
   const [value, setValue] = useState([6115, 43746]);
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+  const [expandedFilters, setExpandedFilters] = useState({
+    view: true,
+    stops: true,
+    farePolicy: true,
+    priceRange: true,
+    departureTime: true,
+    arrivalTime: true,
+    airlines: true,
+    others: true,
+    date: true,
+    planeNumber: true
+  });
+  const [planeInput, setPlaneInput] = useState("");
+  const [planeSearch, setPlaneSearch] = useState("");
+
+  const toggleFilter = (filter) => {
+    setExpandedFilters((prev) => ({
+      ...prev,
+      [filter]: !prev[filter]
+    }));
+  };
 
   const isRoundTrip = onwardFlights.length > 0 && returnFlights.length > 0;
 
@@ -279,6 +325,11 @@ export const FlightFilter = () => {
     toggleOtherFilter,
     setSelectedDate,
   } = useFlightFilters();
+
+  const activeFilters = useMemo(
+    () => ({ ...filters, planeNumber: planeSearch }),
+    [filters, planeSearch]
+  );
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -386,22 +437,111 @@ export const FlightFilter = () => {
   );
 
   const filteredFlights = useMemo(
-    () => applyFilters(flightList, filters, sortConfig),
-    [flightList, filters, sortConfig, applyFilters]
+    () => applyFilters(flightList, activeFilters, sortConfig),
+    [flightList, activeFilters, sortConfig, applyFilters]
   );
 
   const filteredOnwardFlights = useMemo(
-    () => applyFilters(onwardFlights, filters, sortConfig),
-    [onwardFlights, filters, sortConfig, applyFilters]
+    () => applyFilters(onwardFlights, activeFilters, sortConfig),
+    [onwardFlights, activeFilters, sortConfig, applyFilters]
   );
 
   const filteredReturnFlights = useMemo(
     () =>
-      applyFilters(returnFlights, filters, sortConfig, {
+      applyFilters(returnFlights, activeFilters, sortConfig, {
         ignoreDate: true,
       }),
-    [returnFlights, filters, sortConfig, applyFilters]
+    [returnFlights, activeFilters, sortConfig, applyFilters]
   );
+
+  useEffect(() => {
+    if (loading || !isRoundTrip || window.innerWidth <= 991) return;
+
+    try {
+      if (localStorage.getItem("flight-selection-view-tour")) return;
+    } catch (e) {
+      console.log(e.message);
+    }
+
+    let tour = null;
+    let leaving = false; // true when the page is unmounting, not when the user finishes
+
+    const timer = setTimeout(() => {
+      tour = driver({
+        showProgress: true,
+        overlayColor: "#000000",
+        overlayOpacity: 0.8,
+        stagePadding: 8,
+        stageRadius: 10,
+        allowClose: false,
+        showButtons: ["next", "previous"],
+        nextBtnText: "Next",
+        prevBtnText: "Back",
+        doneBtnText: "Got it",
+        disableActiveInteraction: true,
+        onPopoverRender: (popover) => {
+          // the popover element is reused between steps, so only add the button once
+          if (popover.wrapper.querySelector(".tour-close-btn")) return;
+
+          const closeBtn = document.createElement("button");
+          closeBtn.type = "button";
+          closeBtn.className = "tour-close-btn";
+          closeBtn.setAttribute("aria-label", "Close tour");
+          closeBtn.innerHTML = "&times;";
+          closeBtn.addEventListener("click", () => tour.destroy());
+          popover.wrapper.appendChild(closeBtn);
+        },
+        onDestroyed: () => {
+          // only mark as seen if the user closed it or finished, not when we leave the page
+          if (leaving) return;
+          try {
+            localStorage.setItem("flight-selection-view-tour", "1");
+          } catch (e) {
+            console.log(e.message);
+          }
+        },
+        steps: [
+          {
+            element: '[data-tour="view-section"]',
+            popover: {
+              title: "Choose how to view flights",
+              description:
+                "Switch between picking onward and return flights separately, or seeing them as ready-made pairs.",
+              side: "right",
+              align: "start",
+            },
+          },
+          {
+            element: '[data-tour="view-individual"]',
+            popover: {
+              title: "Individual Flights",
+              description: "Pick your onward and return flights one by one.",
+              side: "right",
+            },
+          },
+          {
+            element: '[data-tour="view-combined"]',
+            popover: {
+              title: "Combined Flights",
+              description: "See onward and return flights bundled with one total price.",
+              side: "right",
+            },
+          },
+        ],
+      });
+
+      tour.drive();
+    }, 600);
+
+    return () => {
+      leaving = true;
+      clearTimeout(timer);
+      if (tour) {
+        tour.destroy(); // removes the overlay and popover from the page
+        tour = null;
+      }
+    };
+  }, [loading, isRoundTrip]);
 
   useEffect(() => {
     if (filteredOnwardFlights.length > 0) {
@@ -1032,8 +1172,7 @@ export const FlightFilter = () => {
     searchKey,
   ]);
 
-  console.log(fareApiData, 'fareApiDatafareApiDatafareApiData');
-  console.log(selectedFlight, 'selectedFlightselectedFlight');
+
 
   // eslint-disable-next-line
   const handleFlightDetails = (flight, search_key, fareId, apiFareDetails) => {
@@ -1163,6 +1302,18 @@ export const FlightFilter = () => {
     }, 1500);
   };
 
+  const handlePlaneSearch = () => {
+    setPlaneSearch(planeInput.trim());
+    handleLoaderToggle();
+  };
+
+  const handleResetFilters = () => {
+    resetFilters();
+    setPlaneInput("");
+    setPlaneSearch("");
+    handleLoaderToggle();
+  };
+
   useEffect(() => {
     const handleOutsideClick = () => {
       setFlightDrpdwn(false);
@@ -1180,17 +1331,65 @@ export const FlightFilter = () => {
   const handleRoundTripFareContinue = (fareSelection) => {
     setShowFareModal(false);
 
-    navigate("/flight-details", {
-      state: {
-        ...fareSelection,
-        search_key: searchKey,
-        tripType,
-        travelType,
-        cabinClass,
-        onwardFlight: selectedOnwardFlight,
-        returnFlight: selectedReturnFlight,
-      },
-    });
+    const flightId =
+      selectedOnwardFlight?.Flight_Id ||
+      selectedReturnFlight?.Flight_Id;
+
+    const flightDetailsState = {
+      ...fareSelection,
+      search_key: searchKey,
+      tripType,
+      travelType,
+      cabinClass,
+      onwardFlight: selectedOnwardFlight,
+      returnFlight: selectedReturnFlight,
+    };
+
+    sessionStorage.setItem(
+      `flightDetails_${flightId}`,
+      JSON.stringify(flightDetailsState)
+    );
+
+    window.open(`/round-tip/flight-details/${flightId}`, "_blank");
+  };
+
+  const handleRoundTripDiscountFareContinue = (selection) => {
+    const {
+      combinedFlight,
+      selectedFare,
+      onwardSegments, 
+      returnSegments,
+    } = selection;
+
+    if (!combinedFlight || !selectedFare) {
+      console.error("Combined flight or fare is missing");
+      return;
+    }
+
+    const flightId = combinedFlight.Flight_Id;
+
+    const flightDetailsState = {
+      ...selection,
+      search_key: searchKey,
+      tripType,
+      travelType,
+      cabinClass,
+      onwardFlight: onwardSegments,
+      returnFlight: returnSegments,
+      flight: combinedFlight,
+      flightId,
+    };
+
+    setSelectedFlight(combinedFlight);
+    setSelectedFare(selectedFare);
+    setShowFareModal(false);
+
+    sessionStorage.setItem(
+      `flightDetails_${flightId}`,
+      JSON.stringify(flightDetailsState)
+    );
+
+    window.open(`/round-tip/flight-details/${flightId}`, "_blank");
   };
 
   useEffect(() => {
@@ -1200,6 +1399,12 @@ export const FlightFilter = () => {
         : "individual"
     );
   }, [isRoundTrip, discountFare]);
+
+  const handleCombinedDiscountBookNow = (flight, fare) => {
+    setSelectedFlight(flight);
+    setSelectedFare(fare);
+    setShowFareModal(true);
+  };
   
 
   console.log(showFareModal, 'showFareModalshowFareModalshowFareModal');
@@ -1872,8 +2077,7 @@ export const FlightFilter = () => {
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
-                        resetFilters();
-                        handleLoaderToggle();
+                        handleResetFilters();
                       }}
                       className="reset-link"
                     >
@@ -1895,8 +2099,7 @@ export const FlightFilter = () => {
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            resetFilters();
-                            handleLoaderToggle();
+                            handleResetFilters();
                           }}
                           className="reset-link"
                         >
@@ -1909,18 +2112,19 @@ export const FlightFilter = () => {
                     <div
                       className={`${window.innerWidth <= 991 ? "px-3 pt-3" : ""} dijnsihfsdlf`}
                     >
-                      <div className="flight-filter-box flht-fltr-wrapper mt-0 pb-3">
+                      <div className="flight-filter-box flht-fltr-wrapper mt-0 pb-3" data-tour="view-section">
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
                             <span className="flight-filter-title">
                               Flight Selection View
                             </span>
-                          </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                          </div> 
+                          <i onClick={() => toggleFilter("view")} className={expandedFilters.view ? "fa-solid fa-caret-up flight-filter-icon" : "fa-solid fa-caret-down flight-filter-icon"}></i>
                         </div>
 
+                        {expandedFilters.view && (
                         <div className="flight-filter-content dhsxdcfdhdfgsxf d-flex flex-fill">
-                          <label htmlFor="csdf" className="flex-fill mb-0">
+                          <label htmlFor="csdf" className="flex-fill mb-0" data-tour="view-individual">
                             <input
                               id="csdf"
                               name="flightType"
@@ -1935,7 +2139,7 @@ export const FlightFilter = () => {
                             />
                             <span>Individual Flights</span>
                           </label>
-                          <label htmlFor="vsdda" className="flex-fill mb-0">
+                          <label htmlFor="vsdda" className="flex-fill mb-0" data-tour="view-combined">
                             <input
                               id="vsdda"
                               name="flightType"
@@ -1951,197 +2155,91 @@ export const FlightFilter = () => {
                             <span>Combined Flights</span>
                           </label>
                         </div>
+                        )}
+                      </div>
+
+                      {/*Plane Number*/}
+
+                      <div
+                        className="flight-filter-box flht-fltr-wrapper pb-3"
+                        data-tour="view-section"
+                      >
+                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                          <div className="flight-filter-left">
+                            <span className="flight-filter-title">
+                              Search By Plane Number
+                            </span>
+                          </div>
+
+                          <i
+                            onClick={() => toggleFilter("planeNumber")}
+                            className={
+                              expandedFilters.planeNumber
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
+                        </div>
+
+                        {expandedFilters.planeNumber && (
+                          <div className="flight-filter-content dhsxdcfdhdfgsxf border-0">
+                            <div className="ndkehr-inner position-relative">
+                              <input
+                                className="form-control"
+                                placeholder="Enter Plane Number"
+                                value={planeInput}
+                                onChange={(e) => {
+                                  setPlaneInput(e.target.value);
+                                  // clearing the box clears the filter immediately
+                                  if (!e.target.value.trim())
+                                    setPlaneSearch("");
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handlePlaneSearch();
+                                }}
+                              />
+
+                              <button
+                                type="button"
+                                className="btn position-absolute btn-tour"
+                                onClick={handlePlaneSearch}
+                              >
+                                <i className="fa-solid fa-plane-up"></i>
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Stops */}
-                      <div className="flight-filter-box flht-fltr-wrapper mt-0">
+                      <div
+                        className={`${expandedFilters.stops ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
                             <span className="flight-filter-title">Stops</span>
                           </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                          <i
+                            onClick={() => toggleFilter("stops")}
+                            className={
+                              expandedFilters.stops
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
                         </div>
 
-                        <div className="flight-filter-content">
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="NON_STOP"
-                                  checked={filters.stops.includes("NON_STOP")}
-                                  onChange={() => {
-                                    toggleStop("NON_STOP");
-                                    handleLoaderToggle();
-                                  }}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="icon-checkbox"
-                                    width="28px"
-                                    height="28px"
-                                    viewBox="0 0 28 28"
-                                    version="1.1"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper">
-                                  Non-Stop
-                                </p>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="1_CHANGE"
-                                  checked={filters.stops.includes("1_CHANGE")}
-                                  onChange={() => {
-                                    toggleStop("1_CHANGE");
-                                    handleLoaderToggle();
-                                  }}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="icon-checkbox"
-                                    width="28px"
-                                    height="28px"
-                                    viewBox="0 0 28 28"
-                                    version="1.1"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper">
-                                  1 Change
-                                </p>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Fare Policy */}
-                      <div className="flight-filter-box flht-fltr-wrapper">
-                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
-                          <div className="flight-filter-left">
-                            <span className="flight-filter-title">
-                              Fare Policy
-                            </span>
-                          </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
-                        </div>
-
-                        <div className="flight-filter-content">
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="NON_REFUNDABLE"
-                                  checked={filters.farePolicy.includes(
-                                    "NON_REFUNDABLE",
-                                  )}
-                                  onChange={() => {
-                                    toggleFarePolicy("NON_REFUNDABLE");
-                                    handleLoaderToggle();
-                                  }}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="icon-checkbox"
-                                    width="28px"
-                                    height="28px"
-                                    viewBox="0 0 28 28"
-                                    version="1.1"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper">
-                                  Non Refundable
-                                </p>
-                              </label>
-                            </div>
-                          </div>
-
-                          <div className="form-check suggested-item ps-0">
-                            <div className="checkbox-wrapper-33">
-                              <label className="checkbox">
-                                <input
-                                  type="checkbox"
-                                  value="REFUNDABLE"
-                                  checked={filters.farePolicy.includes(
-                                    "REFUNDABLE",
-                                  )}
-                                  onChange={() => {
-                                    toggleFarePolicy("REFUNDABLE");
-                                    handleLoaderToggle();
-                                  }}
-                                  className="checkbox__trigger visuallyhidden"
-                                />
-                                <span className="checkbox__symbol">
-                                  <svg
-                                    aria-hidden="true"
-                                    className="icon-checkbox"
-                                    width="28px"
-                                    height="28px"
-                                    viewBox="0 0 28 28"
-                                    version="1.1"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path d="M4 14l8 7L24 7" />
-                                  </svg>
-                                </span>
-                                <p className="checkbox__textwrapper">
-                                  Refundable
-                                </p>
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Fare Policy */}
-                      <div className="flight-filter-box flht-fltr-wrapper">
-                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
-                          <div className="flight-filter-left">
-                            <span className="flight-filter-title">
-                              Search By Airlines
-                            </span>
-                          </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
-                        </div>
-
-                        <div className="flight-filter-content">
-                          {availableAirlines.map((airline) => (
-                            <div
-                              className="form-check suggested-item ps-0"
-                              key={airline.code}
-                            >
+                        {expandedFilters.stops && (
+                          <div className="flight-filter-content">
+                            <div className="form-check suggested-item ps-0">
                               <div className="checkbox-wrapper-33">
                                 <label className="checkbox">
                                   <input
                                     type="checkbox"
-                                    value={airline.code}
-                                    checked={filters.airlines.includes(
-                                      airline.code,
-                                    )}
+                                    value="NON_STOP"
+                                    checked={filters.stops.includes("NON_STOP")}
                                     onChange={() => {
-                                      toggleAirline(airline.code);
+                                      toggleStop("NON_STOP");
                                       handleLoaderToggle();
                                     }}
                                     className="checkbox__trigger visuallyhidden"
@@ -2160,234 +2258,468 @@ export const FlightFilter = () => {
                                     </svg>
                                   </span>
                                   <p className="checkbox__textwrapper">
-                                    <img
-                                      src={`/images/${airline.code}.svg`}
-                                      alt={airline.name}
-                                    />{" "}
-                                    {airline.name}
+                                    Non-Stop
                                   </p>
-
-                                  <span className="airline-count">
-                                    ({airline.count})
-                                  </span>
                                 </label>
                               </div>
                             </div>
-                          ))}
+
+                            <div className="form-check suggested-item ps-0">
+                              <div className="checkbox-wrapper-33">
+                                <label className="checkbox">
+                                  <input
+                                    type="checkbox"
+                                    value="1_CHANGE"
+                                    checked={filters.stops.includes("1_CHANGE")}
+                                    onChange={() => {
+                                      toggleStop("1_CHANGE");
+                                      handleLoaderToggle();
+                                    }}
+                                    className="checkbox__trigger visuallyhidden"
+                                  />
+                                  <span className="checkbox__symbol">
+                                    <svg
+                                      aria-hidden="true"
+                                      className="icon-checkbox"
+                                      width="28px"
+                                      height="28px"
+                                      viewBox="0 0 28 28"
+                                      version="1.1"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M4 14l8 7L24 7" />
+                                    </svg>
+                                  </span>
+                                  <p className="checkbox__textwrapper">
+                                    1 Change
+                                  </p>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Fare Policy */}
+                      <div
+                        className={`${expandedFilters.farePolicy ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
+                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                          <div className="flight-filter-left">
+                            <span className="flight-filter-title">
+                              Fare Policy
+                            </span>
+                          </div>
+                          <i
+                            onClick={() => toggleFilter("farePolicy")}
+                            className={
+                              expandedFilters.farePolicy
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
                         </div>
+
+                        {expandedFilters.farePolicy && (
+                          <div className="flight-filter-content">
+                            <div className="form-check suggested-item ps-0">
+                              <div className="checkbox-wrapper-33">
+                                <label className="checkbox">
+                                  <input
+                                    type="checkbox"
+                                    value="NON_REFUNDABLE"
+                                    checked={filters.farePolicy.includes(
+                                      "NON_REFUNDABLE",
+                                    )}
+                                    onChange={() => {
+                                      toggleFarePolicy("NON_REFUNDABLE");
+                                      handleLoaderToggle();
+                                    }}
+                                    className="checkbox__trigger visuallyhidden"
+                                  />
+                                  <span className="checkbox__symbol">
+                                    <svg
+                                      aria-hidden="true"
+                                      className="icon-checkbox"
+                                      width="28px"
+                                      height="28px"
+                                      viewBox="0 0 28 28"
+                                      version="1.1"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M4 14l8 7L24 7" />
+                                    </svg>
+                                  </span>
+                                  <p className="checkbox__textwrapper">
+                                    Non Refundable
+                                  </p>
+                                </label>
+                              </div>
+                            </div>
+
+                            <div className="form-check suggested-item ps-0">
+                              <div className="checkbox-wrapper-33">
+                                <label className="checkbox">
+                                  <input
+                                    type="checkbox"
+                                    value="REFUNDABLE"
+                                    checked={filters.farePolicy.includes(
+                                      "REFUNDABLE",
+                                    )}
+                                    onChange={() => {
+                                      toggleFarePolicy("REFUNDABLE");
+                                      handleLoaderToggle();
+                                    }}
+                                    className="checkbox__trigger visuallyhidden"
+                                  />
+                                  <span className="checkbox__symbol">
+                                    <svg
+                                      aria-hidden="true"
+                                      className="icon-checkbox"
+                                      width="28px"
+                                      height="28px"
+                                      viewBox="0 0 28 28"
+                                      version="1.1"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path d="M4 14l8 7L24 7" />
+                                    </svg>
+                                  </span>
+                                  <p className="checkbox__textwrapper">
+                                    Refundable
+                                  </p>
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Fare Policy */}
+                      <div
+                        className={`${expandedFilters.farePolicy ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
+                        <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
+                          <div className="flight-filter-left">
+                            <span className="flight-filter-title">
+                              Search By Airlines
+                            </span>
+                          </div>
+                          <i
+                            onClick={() => toggleFilter("airlines")}
+                            className={
+                              expandedFilters.airlines
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
+                        </div>
+
+                        {expandedFilters.airlines && (
+                          <div className="flight-filter-content">
+                            {availableAirlines.map((airline) => (
+                              <div
+                                className="form-check suggested-item ps-0"
+                                key={airline.code}
+                              >
+                                <div className="checkbox-wrapper-33">
+                                  <label className="checkbox">
+                                    <input
+                                      type="checkbox"
+                                      value={airline.code}
+                                      checked={filters.airlines.includes(
+                                        airline.code,
+                                      )}
+                                      onChange={() => {
+                                        toggleAirline(airline.code);
+                                        handleLoaderToggle();
+                                      }}
+                                      className="checkbox__trigger visuallyhidden"
+                                    />
+                                    <span className="checkbox__symbol">
+                                      <svg
+                                        aria-hidden="true"
+                                        className="icon-checkbox"
+                                        width="28px"
+                                        height="28px"
+                                        viewBox="0 0 28 28"
+                                        version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path d="M4 14l8 7L24 7" />
+                                      </svg>
+                                    </span>
+                                    <p className="checkbox__textwrapper">
+                                      <img
+                                        src={`/images/${airline.code}.svg`}
+                                        alt={airline.name}
+                                      />{" "}
+                                      {airline.name}
+                                    </p>
+
+                                    <span className="airline-count">
+                                      ({airline.count})
+                                    </span>
+                                  </label>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
 
                       {/* Price Range */}
-                      <div className="flight-filter-box flht-fltr-wrapper">
+                      <div
+                        className={`${expandedFilters.priceRange ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
                             <span className="flight-filter-title">
                               Price Range
                             </span>
                           </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                          <i
+                            onClick={() => toggleFilter("priceRange")}
+                            className={
+                              expandedFilters.priceRange
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
                         </div>
 
-                        <div className="flight-filter-content">
-                          <div className="price-filter">
-                            <Slider
-                              value={filters.priceRange}
-                              min={0}
-                              max={50000}
-                              onChange={(e, newValue) =>
-                                setPriceRange(newValue)
-                              }
-                              // onChangeCommitted={handleLoaderToggle}
-                              valueLabelDisplay="off"
-                            />
-                            <div className="price-values">
-                              <span>
-                                ₹{" "}
-                                {filters.priceRange[0].toLocaleString("en-IN")}
-                              </span>
-                              <span>
-                                ₹{" "}
-                                {filters.priceRange[1].toLocaleString("en-IN")}
-                              </span>
+                        {expandedFilters.priceRange && (
+                          <div className="flight-filter-content">
+                            <div className="price-filter">
+                              <Slider
+                                value={filters.priceRange}
+                                min={0}
+                                max={50000}
+                                onChange={(e, newValue) =>
+                                  setPriceRange(newValue)
+                                }
+                                // onChangeCommitted={handleLoaderToggle}
+                                valueLabelDisplay="off"
+                              />
+                              <div className="price-values">
+                                <span>
+                                  ₹{" "}
+                                  {filters.priceRange[0].toLocaleString(
+                                    "en-IN",
+                                  )}
+                                </span>
+                                <span>
+                                  ₹{" "}
+                                  {filters.priceRange[1].toLocaleString(
+                                    "en-IN",
+                                  )}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        )}
                       </div>
 
                       {/* Departure Time */}
-                      <div className="flight-filter-box flht-fltr-wrapper">
+                      <div
+                        className={`${expandedFilters.departureTime ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
                             <span className="flight-filter-title">
                               Departure Time <span>(BOM)</span>
                             </span>
                           </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                          <i
+                            onClick={() => toggleFilter("departureTime")}
+                            className={
+                              expandedFilters.departureTime
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
                         </div>
 
-                        <div className="uidnkmomkfsdf d-flex align-items-center gap-1 my-2">
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="departure"
-                              checked={filters.departureTime.includes(
-                                "BEFORE_6AM",
-                              )}
-                              onChange={() => {
-                                toggleDepartureTime("BEFORE_6AM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d1.png" alt="" />
-                            <p className="mb-0">
-                              Before <br /> 6 AM
-                            </p>
-                          </label>
+                        {expandedFilters.departureTime && (
+                          <div className="uidnkmomkfsdf d-flex align-items-center gap-1 my-2">
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="departure"
+                                checked={filters.departureTime.includes(
+                                  "BEFORE_6AM",
+                                )}
+                                onChange={() => {
+                                  toggleDepartureTime("BEFORE_6AM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d1.png" alt="" />
+                              <p className="mb-0">
+                                Before <br /> 6 AM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="departure"
-                              checked={filters.departureTime.includes(
-                                "6AM_12PM",
-                              )}
-                              onChange={() => {
-                                toggleDepartureTime("6AM_12PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d2.png" alt="" />
-                            <p className="mb-0">
-                              6 AM - <br /> 12 PM
-                            </p>
-                          </label>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="departure"
+                                checked={filters.departureTime.includes(
+                                  "6AM_12PM",
+                                )}
+                                onChange={() => {
+                                  toggleDepartureTime("6AM_12PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d2.png" alt="" />
+                              <p className="mb-0">
+                                6 AM - <br /> 12 PM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="departure"
-                              checked={filters.departureTime.includes(
-                                "12PM_6PM",
-                              )}
-                              onChange={() => {
-                                toggleDepartureTime("12PM_6PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d3.png" alt="" />
-                            <p className="mb-0">
-                              12 PM - <br /> 6 PM
-                            </p>
-                          </label>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="departure"
+                                checked={filters.departureTime.includes(
+                                  "12PM_6PM",
+                                )}
+                                onChange={() => {
+                                  toggleDepartureTime("12PM_6PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d3.png" alt="" />
+                              <p className="mb-0">
+                                12 PM - <br /> 6 PM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="departure"
-                              checked={filters.departureTime.includes(
-                                "AFTER_6PM",
-                              )}
-                              onChange={() => {
-                                toggleDepartureTime("AFTER_6PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d4.png" alt="" />
-                            <p className="mb-0">
-                              After <br /> 6 PM
-                            </p>
-                          </label>
-                        </div>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="departure"
+                                checked={filters.departureTime.includes(
+                                  "AFTER_6PM",
+                                )}
+                                onChange={() => {
+                                  toggleDepartureTime("AFTER_6PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d4.png" alt="" />
+                              <p className="mb-0">
+                                After <br /> 6 PM
+                              </p>
+                            </label>
+                          </div>
+                        )}
                       </div>
 
                       {/* Arrival Time */}
-                      <div className="flight-filter-box flht-fltr-wrapper">
+                      <div
+                        className={`${expandedFilters.arrivalTime ? "" : "pb-3"} flight-filter-box flht-fltr-wrapper`}
+                      >
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
                             <span className="flight-filter-title">
                               Arrival Time <span>(DEL)</span>
                             </span>
                           </div>
-                          <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                          <i
+                            onClick={() => toggleFilter("arrivalTime")}
+                            className={
+                              expandedFilters.arrivalTime
+                                ? "fa-solid fa-caret-up flight-filter-icon"
+                                : "fa-solid fa-caret-down flight-filter-icon"
+                            }
+                          ></i>
                         </div>
 
-                        <div className="uidnkmomkfsdf d-flex align-items-center gap-1 my-2">
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="arrival"
-                              checked={filters.arrivalTime.includes(
-                                "BEFORE_6AM",
-                              )}
-                              onChange={() => {
-                                toggleArrivalTime("BEFORE_6AM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d1.png" alt="" />
-                            <p className="mb-0">
-                              Before <br /> 6 AM
-                            </p>
-                          </label>
+                        {expandedFilters.arrivalTime && (
+                          <div className="uidnkmomkfsdf d-flex align-items-center gap-1 my-2">
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="arrival"
+                                checked={filters.arrivalTime.includes(
+                                  "BEFORE_6AM",
+                                )}
+                                onChange={() => {
+                                  toggleArrivalTime("BEFORE_6AM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d1.png" alt="" />
+                              <p className="mb-0">
+                                Before <br /> 6 AM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="arrival"
-                              checked={filters.arrivalTime.includes("6AM_12PM")}
-                              onChange={() => {
-                                toggleArrivalTime("6AM_12PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d2.png" alt="" />
-                            <p className="mb-0">
-                              6 AM - <br /> 12 PM
-                            </p>
-                          </label>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="arrival"
+                                checked={filters.arrivalTime.includes(
+                                  "6AM_12PM",
+                                )}
+                                onChange={() => {
+                                  toggleArrivalTime("6AM_12PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d2.png" alt="" />
+                              <p className="mb-0">
+                                6 AM - <br /> 12 PM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="arrival"
-                              checked={filters.arrivalTime.includes("12PM_6PM")}
-                              onChange={() => {
-                                toggleArrivalTime("12PM_6PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d3.png" alt="" />
-                            <p className="mb-0">
-                              12 PM - <br /> 6 PM
-                            </p>
-                          </label>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="arrival"
+                                checked={filters.arrivalTime.includes(
+                                  "12PM_6PM",
+                                )}
+                                onChange={() => {
+                                  toggleArrivalTime("12PM_6PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d3.png" alt="" />
+                              <p className="mb-0">
+                                12 PM - <br /> 6 PM
+                              </p>
+                            </label>
 
-                          <label className="nihnuidnuiwehrwer">
-                            <input
-                              type="checkbox"
-                              name="arrival"
-                              checked={filters.arrivalTime.includes(
-                                "AFTER_6PM",
-                              )}
-                              onChange={() => {
-                                toggleArrivalTime("AFTER_6PM");
-                                handleLoaderToggle();
-                              }}
-                              className="d-none position-absolute"
-                            />
-                            <img src="/images/d4.png" alt="" />
-                            <p className="mb-0">
-                              After <br /> 6 PM
-                            </p>
-                          </label>
-                        </div>
+                            <label className="nihnuidnuiwehrwer">
+                              <input
+                                type="checkbox"
+                                name="arrival"
+                                checked={filters.arrivalTime.includes(
+                                  "AFTER_6PM",
+                                )}
+                                onChange={() => {
+                                  toggleArrivalTime("AFTER_6PM");
+                                  handleLoaderToggle();
+                                }}
+                                className="d-none position-absolute"
+                              />
+                              <img src="/images/d4.png" alt="" />
+                              <p className="mb-0">
+                                After <br /> 6 PM
+                              </p>
+                            </label>
+                          </div>
+                        )}
                       </div>
 
                       {/* Others */}
@@ -2602,7 +2934,7 @@ export const FlightFilter = () => {
                 </div>
 
                 <div className="flight-filtr-wrppr">
-                  {(isRoundTrip === true && discountFare === 'false') ? (
+                  {isRoundTrip === true && discountFare === "false" ? (
                     <div className="round-trip-container">
                       <div className="round-trip-column">
                         <div className="round-trip-heading mb-3">
@@ -2632,13 +2964,14 @@ export const FlightFilter = () => {
                             const price = Number(fare?.Total_Amount || 0);
                             return (
                               <div
-                                 key={flight?.Flight_Id || `onward-${index}`}
-                                  className={`flight-card mb-3 ${
-                                    selectedOnwardFlight?.Flight_Id === flight?.Flight_Id
-                                      ? "selected"
-                                      : ""
-                                  }`}
-                                  onClick={() => setSelectedOnwardFlight(flight)}
+                                key={flight?.Flight_Id || `onward-${index}`}
+                                className={`flight-card mb-3 ${
+                                  selectedOnwardFlight?.Flight_Id ===
+                                  flight?.Flight_Id
+                                    ? "selected"
+                                    : ""
+                                }`}
+                                onClick={() => setSelectedOnwardFlight(flight)}
                               >
                                 <div className="d-flex align-items-center gap-2 mb-3">
                                   <img
@@ -2686,8 +3019,7 @@ export const FlightFilter = () => {
                                           "var(--light-highlighted-text-color)",
                                       }}
                                     >
-                                      Terminal{" "}
-                                      {firstSegment?.Origin_Terminal}
+                                      Terminal {firstSegment?.Origin_Terminal}
                                     </small>
                                   </div>
 
@@ -2722,11 +3054,19 @@ export const FlightFilter = () => {
                                   {/* ARRIVAL */}
                                   <div className="airport-info text-end">
                                     <h4>
-                                      {lastSegment?.Arrival_DateTime?.split( " ",)[1]}
+                                      {
+                                        lastSegment?.Arrival_DateTime?.split(
+                                          " ",
+                                        )[1]
+                                      }
                                     </h4>
 
                                     <strong>
-                                      {lastSegment?.Destination_City?.match( /\((.*?)\)/,)?.[1]}
+                                      {
+                                        lastSegment?.Destination_City?.match(
+                                          /\((.*?)\)/,
+                                        )?.[1]
+                                      }
                                     </strong>
                                     <small
                                       style={{
@@ -2735,7 +3075,8 @@ export const FlightFilter = () => {
                                           "var(--light-highlighted-text-color)",
                                       }}
                                     >
-                                      Terminal{" "}{lastSegment?.Destination_Terminal}
+                                      Terminal{" "}
+                                      {lastSegment?.Destination_Terminal}
                                     </small>
                                   </div>
                                 </div>
@@ -2805,7 +3146,8 @@ export const FlightFilter = () => {
                               <div
                                 key={flight?.Flight_Id || `return-${index}`}
                                 className={`flight-card mb-3 ${
-                                  selectedReturnFlight?.Flight_Id === flight?.Flight_Id
+                                  selectedReturnFlight?.Flight_Id ===
+                                  flight?.Flight_Id
                                     ? "selected"
                                     : ""
                                 }`}
@@ -2857,8 +3199,7 @@ export const FlightFilter = () => {
                                           "var(--light-highlighted-text-color)",
                                       }}
                                     >
-                                      Terminal{" "}
-                                      {firstSegment?.Origin_Terminal}
+                                      Terminal {firstSegment?.Origin_Terminal}
                                     </small>
                                   </div>
 
@@ -2914,9 +3255,7 @@ export const FlightFilter = () => {
                                       }}
                                     >
                                       Terminal{" "}
-                                      {
-                                        lastSegment?.Destination_Terminal
-                                      }
+                                      {lastSegment?.Destination_Terminal}
                                     </small>
                                   </div>
                                 </div>
@@ -2946,7 +3285,7 @@ export const FlightFilter = () => {
                         )}
                       </div>
                     </div>
-                  ) : (isRoundTrip === false && discountFare === 'true') ? (
+                  ) : isRoundTrip === false && discountFare === "true" ? (
                     <div className="discount-fare-container">
                       {filteredFlights.length > 0 ? (
                         filteredFlights.map((flight, index) => {
@@ -2954,31 +3293,37 @@ export const FlightFilter = () => {
 
                           // Separate onward and return flights
                           const onwardSegments = segments.filter(
-                            (segment) => segment?.Return_Flight !== true
+                            (segment) => segment?.Return_Flight !== true,
                           );
 
                           const returnSegments = segments.filter(
-                            (segment) => segment?.Return_Flight === true
+                            (segment) => segment?.Return_Flight === true,
                           );
 
-                          
                           const onwardFirst = onwardSegments[0];
-                          const onwardLast = onwardSegments[onwardSegments.length - 1];
+                          const onwardLast =
+                            onwardSegments[onwardSegments.length - 1];
 
                           const returnFirst = returnSegments[0];
-                          const returnLast = returnSegments[returnSegments.length - 1];
-
+                          const returnLast =
+                            returnSegments[returnSegments.length - 1];
 
                           // Round-trip fare details
-                          const fareDetails = flight?.Fares?.[0]?.FareDetails?.[0];
+                          const fareDetails =
+                            flight?.Fares?.[0]?.FareDetails?.[0];
 
-                          const totalAmount = Number(fareDetails?.Total_Amount || 0);
-                          const instantDiscount = Number(fareDetails?.Promo_Discount || 0);
+                          const totalAmount = Number(
+                            fareDetails?.Total_Amount || 0,
+                          );
+                          const instantDiscount = Number(
+                            fareDetails?.Promo_Discount || 0,
+                          );
 
                           // Baggage
                           const baggage = fareDetails?.Free_Baggage || {};
 
-                          const checkInBaggage = baggage?.Check_In_Baggage || "";
+                          const checkInBaggage =
+                            baggage?.Check_In_Baggage || "";
                           // const handBaggage = baggage?.Hand_Baggage || "";
 
                           // Format API date: MM/DD/YYYY HH:mm
@@ -2998,23 +3343,28 @@ export const FlightFilter = () => {
                             const date = new Date(
                               Number(year),
                               Number(month) - 1,
-                              Number(day)
+                              Number(day),
                             );
 
-                            const formattedDate = date.toLocaleDateString("en-GB", {
-                              weekday: "short",
-                              day: "2-digit",
-                              month: "short",
-                            });
+                            const formattedDate = date.toLocaleDateString(
+                              "en-GB",
+                              {
+                                weekday: "short",
+                                day: "2-digit",
+                                month: "short",
+                              },
+                            );
 
-                            const [hours, minutes] = timePart.split(":").map(Number);
+                            const [hours, minutes] = timePart
+                              .split(":")
+                              .map(Number);
 
                             const formattedTime = new Date(
                               2000,
                               0,
                               1,
                               hours,
-                              minutes
+                              minutes,
                             ).toLocaleTimeString("en-IN", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -3029,25 +3379,32 @@ export const FlightFilter = () => {
 
                           // Calculate duration using the first departure and last arrival
                           const getDuration = (first, last) => {
-                            if (!first?.Departure_DateTime || !last?.Arrival_DateTime) {
+                            if (
+                              !first?.Departure_DateTime ||
+                              !last?.Arrival_DateTime
+                            ) {
                               return "--";
                             }
 
                             const parseDateTime = (value) => {
                               const [datePart, timePart] = value.split(" ");
                               const [month, day, year] = datePart.split("/");
-                              const [hours, minutes] = timePart.split(":").map(Number);
+                              const [hours, minutes] = timePart
+                                .split(":")
+                                .map(Number);
 
                               return new Date(
                                 Number(year),
                                 Number(month) - 1,
                                 Number(day),
                                 hours,
-                                minutes
+                                minutes,
                               );
                             };
 
-                            const start = parseDateTime(first.Departure_DateTime);
+                            const start = parseDateTime(
+                              first.Departure_DateTime,
+                            );
                             const end = parseDateTime(last.Arrival_DateTime);
 
                             const diff = end.getTime() - start.getTime();
@@ -3061,16 +3418,25 @@ export const FlightFilter = () => {
                             const minutes = totalMinutes % 60;
 
                             return `${String(hours).padStart(2, "0")}h : ${String(
-                              minutes
+                              minutes,
                             ).padStart(2, "0")}m`;
                           };
 
                           // Render only the requested journey
-                          const renderLeg = (first, last, legSegments, label) => {
+                          const renderLeg = (
+                            first,
+                            last,
+                            legSegments,
+                            label,
+                          ) => {
                             if (!first || !last) return null;
 
-                            const departure = formatFlightDate(first.Departure_DateTime);
-                            const arrival = formatFlightDate(last.Arrival_DateTime);
+                            const departure = formatFlightDate(
+                              first.Departure_DateTime,
+                            );
+                            const arrival = formatFlightDate(
+                              last.Arrival_DateTime,
+                            );
 
                             const fareClasses = fareDetails?.FareClasses || [];
 
@@ -3079,19 +3445,26 @@ export const FlightFilter = () => {
 
                             const cabinClass =
                               fareClasses.find(
-                                (item) => Number(item.Segment_Id) === segmentId
+                                (item) => Number(item.Segment_Id) === segmentId,
                               )?.CabinClass || "--";
 
-                            const stopCount = Math.max(legSegments.length - 1, 0);
+                            const stopCount = Math.max(
+                              legSegments.length - 1,
+                              0,
+                            );
 
                             return (
-                              <div className={`discount-flight-leg ${label}-leg`} key={label}>
-
+                              <div
+                                className={`discount-flight-leg ${label}-leg`}
+                                key={label}
+                              >
                                 {/* Departure */}
                                 <div className="discount-time-block">
                                   <small>{departure.date}</small>
                                   <strong>{departure.time}</strong>
-                                  <span>{first.Origin_City || first.Origin}</span>
+                                  <span>
+                                    {first.Origin_City || first.Origin}
+                                  </span>
                                 </div>
 
                                 {/* Duration and stops */}
@@ -3111,7 +3484,9 @@ export const FlightFilter = () => {
                                 <div className="discount-time-block discount-arrival">
                                   <small>{arrival.date}</small>
                                   <strong>{arrival.time}</strong>
-                                  <span>{last.Destination_City || last.Destination}</span>
+                                  <span>
+                                    {last.Destination_City || last.Destination}
+                                  </span>
                                 </div>
 
                                 {/* Cabin and Baggage */}
@@ -3130,7 +3505,6 @@ export const FlightFilter = () => {
                                     </p>
                                   </div>
                                 </div>
-
                               </div>
                             );
                           };
@@ -3145,7 +3519,8 @@ export const FlightFilter = () => {
                                 <div className="discount-airline">
                                   <img
                                     src={`https://images.kiwi.com/airlines/64/${
-                                      onwardFirst?.Airline_Code || flight?.Airline_Code
+                                      onwardFirst?.Airline_Code ||
+                                      flight?.Airline_Code
                                     }.png`}
                                     alt={onwardFirst?.Airline_Name || "Airline"}
                                     onError={(e) => {
@@ -3162,7 +3537,8 @@ export const FlightFilter = () => {
 
                                     <small>
                                       {onwardFirst?.Airline_Code}{" "}
-                                      {onwardFirst?.Flight_Number?.trim()},{returnFirst?.Flight_Number?.trim()}
+                                      {onwardFirst?.Flight_Number?.trim()},
+                                      {returnFirst?.Flight_Number?.trim()}
                                     </small>
                                   </div>
                                 </div>
@@ -3179,7 +3555,7 @@ export const FlightFilter = () => {
                                       onwardFirst,
                                       onwardLast,
                                       onwardSegments,
-                                      "onward"
+                                      "onward",
                                     )}
                                   </div>
 
@@ -3193,7 +3569,7 @@ export const FlightFilter = () => {
                                       returnFirst,
                                       returnLast,
                                       returnSegments,
-                                      "return"
+                                      "return",
                                     )}
                                   </div>
                                 </div>
@@ -3206,35 +3582,21 @@ export const FlightFilter = () => {
 
                                   {instantDiscount > 0 && (
                                     <small className="discount-instant">
-                                      ₹ {instantDiscount.toLocaleString("en-IN")} Instant
-                                      Discount
+                                      ₹{" "}
+                                      {instantDiscount.toLocaleString("en-IN")}{" "}
+                                      Instant Discount
                                     </small>
                                   )}
 
                                   <button
                                     type="button"
                                     className="discount-book-btn"
-                                    onClick={() => {
-                                      const onwardFlight = {
-                                        ...flight,
-                                        Segments: onwardSegments,
-                                      };
-
-                                      const returnFlight = {
-                                        ...flight,
-                                        Segments: returnSegments,
-                                      };
-
-                                      // Store the combined flight
-                                      setSelectedFlight(flight);
-
-                                      // Store separate onward and return flights
-                                      setSelectedOnwardFlight(onwardFlight);
-                                      setSelectedReturnFlight(returnFlight);
-
-                                      // Open fare modal
-                                      setShowFareModal(true);
-                                    }}
+                                    onClick={() =>
+                                      handleCombinedDiscountBookNow(
+                                        flight,
+                                        flight?.Fares?.[0],
+                                      )
+                                    }
                                   >
                                     BOOK NOW
                                   </button>
@@ -3257,8 +3619,7 @@ export const FlightFilter = () => {
                         </div>
                       )}
                     </div>
-                  ) : 
-                  filteredFlights.length > 0 ? (
+                  ) : filteredFlights.length > 0 ? (
                     filteredFlights.map((flight, index) => {
                       const firstSegment = flight?.Segments?.[0];
                       const lastSegment =
@@ -3612,215 +3973,249 @@ export const FlightFilter = () => {
                         <br />
                         Try adjusting your search to explore more options.
                       </p>
-
                     </div>
                   )}
 
                   {/* FIXED BOTTOM BOOKING SUMMARY */}
-                  {tripType === "1" && selectedOnwardFlight && selectedReturnFlight && (
-                    <div className="round-trip-booking-bar">
-                      {/* ONWARD FLIGHT */}
-                      <div className="booking-flight-section">
-                        <div className="booking-airline">
-                          <img
-                            src={`https://images.kiwi.com/airlines/64/${
-                              selectedOnwardFlight?.Segments?.[0]?.Airline_Code
-                            }.png`}
-                            alt=""
-                            onError={(e) => {
-                              e.currentTarget.src = "/images/indigo.png";
+                  {tripType === "1" &&
+                    selectedOnwardFlight &&
+                    selectedReturnFlight && (
+                      <div className="round-trip-booking-bar">
+                        <div className="iancjnsxnc">
+                          <div className="uidnuier d-flex flex-fill">
+                            {/* ONWARD FLIGHT */}
+                            <div className="booking-flight-section">
+                              <div className="booking-airline">
+                                <img
+                                  src={`https://images.kiwi.com/airlines/64/${
+                                    selectedOnwardFlight?.Segments?.[0]
+                                      ?.Airline_Code
+                                  }.png`}
+                                  alt=""
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/images/indigo.png";
+                                  }}
+                                />
+
+                                <strong>
+                                  {
+                                    selectedOnwardFlight?.Segments?.[0]
+                                      ?.Airline_Name
+                                  }
+                                </strong>
+                              </div>
+
+                              <div className="booking-flight-details">
+                                <div>
+                                  <strong>
+                                    {
+                                      selectedOnwardFlight?.Segments?.[0]?.Departure_DateTime?.split(
+                                        " ",
+                                      )[1]
+                                    }
+                                  </strong>
+
+                                  <small>
+                                    {
+                                      selectedOnwardFlight?.Segments?.[0]?.Origin_City?.match(
+                                        /\((.*?)\)/,
+                                      )?.[1]
+                                    }
+                                  </small>
+                                </div>
+
+                                <div className="booking-route">
+                                  <span>⟶</span>
+                                  <small>
+                                    {selectedOnwardFlight?.Segments.map(
+                                      (segment) => {
+                                        const [hours, minutes] =
+                                          segment.Duration.split(":");
+
+                                        return `${hours}h ${minutes}m`;
+                                      },
+                                    ).join(" + ")}
+                                  </small>
+                                  <small>
+                                    {selectedOnwardFlight?.Segments?.length ===
+                                    1
+                                      ? "Non Stop"
+                                      : `${selectedOnwardFlight?.Segments?.length - 1} Stop`}
+                                  </small>
+                                </div>
+
+                                <div>
+                                  <strong>
+                                    {
+                                      selectedOnwardFlight?.Segments?.[
+                                        selectedOnwardFlight?.Segments?.length -
+                                          1
+                                      ]?.Arrival_DateTime?.split(" ")[1]
+                                    }
+                                  </strong>
+
+                                  <small>
+                                    {
+                                      selectedOnwardFlight?.Segments?.[
+                                        selectedOnwardFlight?.Segments?.length -
+                                          1
+                                      ]?.Destination_City?.match(
+                                        /\((.*?)\)/,
+                                      )?.[1]
+                                    }
+                                  </small>
+                                </div>
+
+                                <div className="booking-flight-price">
+                                  ₹{" "}
+                                  {Number(
+                                    selectedOnwardFlight?.Fares?.[0]
+                                      ?.FareDetails?.[0]?.Total_Amount || 0,
+                                  ).toLocaleString("en-IN")}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* RETURN FLIGHT */}
+                            <div className="booking-flight-section">
+                              <div className="booking-airline">
+                                <img
+                                  src={`https://images.kiwi.com/airlines/64/${
+                                    selectedReturnFlight?.Segments?.[0]
+                                      ?.Airline_Code
+                                  }.png`}
+                                  alt=""
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/images/indigo.png";
+                                  }}
+                                />
+
+                                <strong>
+                                  {
+                                    selectedReturnFlight?.Segments?.[0]
+                                      ?.Airline_Name
+                                  }
+                                </strong>
+                              </div>
+
+                              <div className="booking-flight-details">
+                                <div>
+                                  <strong>
+                                    {
+                                      selectedReturnFlight?.Segments?.[0]?.Departure_DateTime?.split(
+                                        " ",
+                                      )[1]
+                                    }
+                                  </strong>
+
+                                  <small>
+                                    {
+                                      selectedReturnFlight?.Segments?.[0]?.Origin_City?.match(
+                                        /\((.*?)\)/,
+                                      )?.[1]
+                                    }
+                                  </small>
+                                </div>
+
+                                <div className="booking-route">
+                                  <span>⟶</span>
+                                  <small>
+                                    {selectedReturnFlight?.Segments.map(
+                                      (segment) => {
+                                        const [hours, minutes] =
+                                          segment.Duration.split(":");
+
+                                        return `${hours}h ${minutes}m`;
+                                      },
+                                    ).join(" + ")}
+                                  </small>
+                                  <small>
+                                    {selectedReturnFlight?.Segments?.length ===
+                                    1
+                                      ? "Non Stop"
+                                      : `${selectedReturnFlight?.Segments?.length - 1} Stop`}
+                                  </small>
+                                </div>
+
+                                <div>
+                                  <strong>
+                                    {
+                                      selectedReturnFlight?.Segments?.[
+                                        selectedReturnFlight?.Segments?.length -
+                                          1
+                                      ]?.Arrival_DateTime?.split(" ")[1]
+                                    }
+                                  </strong>
+
+                                  <small>
+                                    {
+                                      selectedReturnFlight?.Segments?.[
+                                        selectedReturnFlight?.Segments?.length -
+                                          1
+                                      ]?.Destination_City?.match(
+                                        /\((.*?)\)/,
+                                      )?.[1]
+                                    }
+                                  </small>
+                                </div>
+
+                                <div className="booking-flight-price">
+                                  ₹{" "}
+                                  {Number(
+                                    selectedReturnFlight?.Fares?.[0]
+                                      ?.FareDetails?.[0]?.Total_Amount || 0,
+                                  ).toLocaleString("en-IN")}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* TOTAL AND ACTIONS */}
+                        <div className="booking-actions">
+                          <div className="booking-total">
+                            <strong>
+                              ₹{" "}
+                              {(
+                                Number(
+                                  selectedOnwardFlight?.Fares?.[0]
+                                    ?.FareDetails?.[0]?.Total_Amount || 0,
+                                ) +
+                                Number(
+                                  selectedReturnFlight?.Fares?.[0]
+                                    ?.FareDetails?.[0]?.Total_Amount || 0,
+                                )
+                              ).toLocaleString("en-IN")}
+                            </strong>
+
+                            <small>Total Price</small>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="btn-book-now"
+                            disabled={
+                              !selectedOnwardFlight || !selectedReturnFlight
+                            }
+                            onClick={() => {
+                              setShowFareModal(true);
                             }}
-                          />
+                          >
+                            BOOK NOW
+                          </button>
 
-                          <strong>
-                            {selectedOnwardFlight?.Segments?.[0]?.Airline_Name}
-                          </strong>
-                        </div>
-
-                        <div className="booking-flight-details">
-                          <div>
-                            <strong>
-                              {selectedOnwardFlight?.Segments?.[0]?.Departure_DateTime?.split(" ")[1]}
-                            </strong>
-
-                            <small>
-                              {selectedOnwardFlight?.Segments?.[0]?.Origin_City?.match(/\((.*?)\)/)?.[1]}
-                            </small>
-                          </div>
-
-                          <div className="booking-route">
-                            <span>⟶</span>
-                            <small>
-                              {selectedOnwardFlight?.Segments
-                              .map((segment) => {
-                                const [hours, minutes] =
-                                  segment.Duration.split(":");
-
-                                return `${hours}h ${minutes}m`;
-                              })
-                              .join(" + ")}
-                            </small>
-                            <small>
-                              {selectedOnwardFlight?.Segments?.length === 1 ? "Non Stop"
-                                : `${selectedOnwardFlight?.Segments?.length - 1} Stop`}
-                            </small>
-                          </div>
-
-                          <div>
-                            <strong>
-                              {
-                                selectedOnwardFlight?.Segments?.[selectedOnwardFlight?.Segments?.length - 1
-                                ]?.Arrival_DateTime?.split(" ")[1]
-                              }
-                            </strong>
-
-                            <small>
-                              {
-                                selectedOnwardFlight?.Segments?.[
-                                  selectedOnwardFlight?.Segments?.length - 1
-                                ]?.Destination_City?.match(/\((.*?)\)/)?.[1]
-                              }
-                            </small>
-                          </div>
-
-                          <div className="booking-flight-price">
-                            ₹{" "}
-                            {Number(
-                              selectedOnwardFlight?.Fares?.[0]?.FareDetails?.[0]
-                                ?.Total_Amount || 0
-                            ).toLocaleString("en-IN")}
-                          </div>
+                          <button
+                            type="button"
+                            className="btn-lock-price"
+                            onClick={""}
+                          >
+                            LOCK PRICE
+                          </button>
                         </div>
                       </div>
-
-                      {/* RETURN FLIGHT */}
-                      <div className="booking-flight-section">
-                        <div className="booking-airline">
-                          <img
-                            src={`https://images.kiwi.com/airlines/64/${
-                              selectedReturnFlight?.Segments?.[0]?.Airline_Code
-                            }.png`}
-                            alt=""
-                            onError={(e) => {
-                              e.currentTarget.src = "/images/indigo.png";
-                            }}
-                          />
-
-                          <strong>
-                            {selectedReturnFlight?.Segments?.[0]?.Airline_Name}
-                          </strong>
-                        </div>
-
-                        <div className="booking-flight-details">
-                          <div>
-                            <strong>
-                              {
-                                selectedReturnFlight?.Segments?.[0]?.Departure_DateTime?.split(
-                                  " "
-                                )[1]
-                              }
-                            </strong>
-
-                            <small>
-                              {selectedReturnFlight?.Segments?.[0]?.Origin_City?.match(
-                                /\((.*?)\)/
-                              )?.[1]}
-                            </small>
-                          </div>
-
-                          <div className="booking-route">
-                            <span>⟶</span>
-                            <small>
-                              {selectedReturnFlight?.Segments
-                              .map((segment) => {
-                                const [hours, minutes] =
-                                  segment.Duration.split(":");
-
-                                return `${hours}h ${minutes}m`;
-                              })
-                              .join(" + ")}
-                            </small>
-                            <small>
-                              {selectedReturnFlight?.Segments?.length === 1
-                                ? "Non Stop"
-                                : `${selectedReturnFlight?.Segments?.length - 1} Stop`}
-                            </small>
-                          </div>
-
-                          <div>
-                            <strong>
-                              {
-                                selectedReturnFlight?.Segments?.[
-                                  selectedReturnFlight?.Segments?.length - 1
-                                ]?.Arrival_DateTime?.split(" ")[1]
-                              }
-                            </strong>
-
-                            <small>
-                              {
-                                selectedReturnFlight?.Segments?.[
-                                  selectedReturnFlight?.Segments?.length - 1
-                                ]?.Destination_City?.match(/\((.*?)\)/)?.[1]
-                              }
-                            </small>
-                          </div>
-
-                          <div className="booking-flight-price">
-                            ₹{" "}
-                            {Number(
-                              selectedReturnFlight?.Fares?.[0]?.FareDetails?.[0]
-                                ?.Total_Amount || 0
-                            ).toLocaleString("en-IN")}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* TOTAL AND ACTIONS */}
-                      <div className="booking-actions">
-                        <div className="booking-total">
-                          <strong>
-                            ₹{" "}
-                            {(
-                              Number(
-                                selectedOnwardFlight?.Fares?.[0]?.FareDetails?.[0]
-                                  ?.Total_Amount || 0
-                              ) +
-                              Number(
-                                selectedReturnFlight?.Fares?.[0]?.FareDetails?.[0]
-                                  ?.Total_Amount || 0
-                              )
-                            ).toLocaleString("en-IN")}
-                          </strong>
-
-                          <small>Total Price</small>
-                        </div>
-
-                        <button
-                          type="button"
-                          className="btn-book-now"
-                          disabled={
-                            !selectedOnwardFlight ||
-                            !selectedReturnFlight
-                          }
-                          onClick={() => {
-                            setShowFareModal(true);
-                          }}
-                        >
-                          BOOK NOW
-                        </button>
-
-                        <button
-                          type="button"
-                          className="btn-lock-price"
-                          onClick={""}
-                        >
-                          LOCK PRICE
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                    )}
                 </div>
-                
+
                 {showFareModal && selectedFlight && tripType === "0" && (
                   <div className="flight-fare-modal-backdrop position-fixed top-0 start-0 end-0 bottom-0 w-100 h-100"></div>
                 )}
@@ -4236,19 +4631,18 @@ export const FlightFilter = () => {
                   />
                 )}
 
-                {showFareModal && discountFare === 'true' && tripType === "2" && (
-                  <RoundTripFareModal
-                    show={showFareModal}
-                    onClose={() => setShowFareModal(false)}
-                    onwardFlight={selectedOnwardFlight}
-                    returnFlight={selectedReturnFlight}
-                    onwardFareApiData={onwardFareApiData}
-                    returnFareApiData={returnFareApiData}
-                    selectedCabinClass={selectedCabinClass}
-                    adults={Number(adults) || 1}
-                    onContinue={handleRoundTripFareContinue}
-                  />
-                )}
+                {showFareModal &&
+                  discountFare === "true" &&
+                  tripType === "2" && (
+                    <RoundTripDiscountFareModal
+                      show={showFareModal}
+                      onClose={() => setShowFareModal(false)}
+                      combinedFlight={selectedFlight}
+                      selectedFare={selectedFare}
+                      adults={Number(adults) || 1}
+                      onContinue={handleRoundTripDiscountFareContinue}
+                    />
+                  )}
               </div>
             </div>
           </div>
