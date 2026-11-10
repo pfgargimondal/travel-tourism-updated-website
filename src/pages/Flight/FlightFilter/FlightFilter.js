@@ -2112,6 +2112,9 @@ export const FlightFilter = () => {
                     <div
                       className={`${window.innerWidth <= 991 ? "px-3 pt-3" : ""} dijnsihfsdlf`}
                     >
+                    
+                    
+                    {tripType === "1" && (
                       <div className="flight-filter-box flht-fltr-wrapper mt-0 pb-3" data-tour="view-section">
                         <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                           <div className="flight-filter-left">
@@ -2157,6 +2160,7 @@ export const FlightFilter = () => {
                         </div>
                         )}
                       </div>
+                    )}
 
                       {/*Plane Number*/}
 
