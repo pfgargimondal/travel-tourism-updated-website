@@ -3320,3 +3320,63 @@ p.jomkodokofjdf{
     font-size: 12px;
   }
 }
+
+
+
+
+
+/* trip secure chat gpt section */
+
+
+.trip-insurance-selection {
+  padding: 18px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.trip-insurance-selection h6 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #222;
+}
+
+.trip-insurance-selection .form-check {
+  padding: 12px 12px 12px 35px;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.trip-insurance-selection .form-check:has(input:checked) {
+  border-color: #198754;
+  background: #f5fbf7;
+}
+
+.trip-insurance-selection .form-check-input {
+  margin-top: 5px;
+}
+
+.trip-insurance-selection .form-check-label {
+  cursor: pointer;
+}
+
+.asego-traveller-details {
+  padding: 15px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.asego-plan-option {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.asego-plan-option.active {
+  border: 2px solid #198754;
+  background: #f3fbf5;
+}
+
+

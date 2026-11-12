@@ -93,8 +93,25 @@ export const FlightDetails = () => {
 
   const [fareRuleModal, setFareRuleModal] = useState(false);
   const [activeTab, setActiveTab] = useState("cancel");
-
   const [addBaggageModal, setAddBaggageModal] = useState(false);
+
+  const [domesticCategoryId, setDomesticCategoryId] = useState("");
+
+  const [insuranceAges, setInsuranceAges] = useState({
+    adults: [],
+    children: [],
+    infants: [],
+  });
+
+  const [insurancePlans, setInsurancePlans] = useState([]);
+  const [selectedInsurancePlan, setSelectedInsurancePlan] = useState(null);
+
+  const [insuranceLoading, setInsuranceLoading] = useState(false);
+  const [insuranceError, setInsuranceError] = useState("");
+
+  const [insuranceSelected, setInsuranceSelected] = useState(false);
+  const [showInsurancePlans, setShowInsurancePlans] = useState(false);
+
   const [countryCode, setCountryCode] = useState([]);
   const [couponCode, setCouponCode] = useState([]);
   const [couponInput, setCouponInput] = useState("");
@@ -206,6 +223,26 @@ export const FlightDetails = () => {
     }
   }, [countryCode]);
 
+  useEffect(() => {
+    const fetchNationCategory = async () => {
+      try {
+        const response = await http.get("/asego/categories");
+
+        const domestic = response.data.data.find(
+          (item) => item.name === "Domestic"
+        );
+
+        setDomesticCategoryId(domestic?.id || "");
+
+      } catch (error) {
+        console.error("Category API Error:", error);
+      }
+    };
+
+    fetchNationCategory();
+  }, []);
+
+  console.log(domesticCategoryId, 'domesticCategoryId');
 
   useEffect(() => {
     const fetchFlightDetails = async () => {
@@ -251,6 +288,43 @@ export const FlightDetails = () => {
     const [month, day, year] = datePart.split("/");
 
     return new Date(`${year}-${month}-${day}T${timePart}`);
+  };
+
+
+  useEffect(() => {
+    setInsuranceAges({
+      adults: Array.from(
+        { length: Number(adults || 0) },
+        () => ""
+      ),
+      children: Array.from(
+        { length: Number(children || 0) },
+        () => ""
+      ),
+      infants: Array.from(
+        { length: Number(infants || 0) },
+        () => ""
+      ),
+    });
+
+    setInsurancePlans([]);
+    setSelectedInsurancePlan(null);
+    setShowInsurancePlans(false);
+    setInsuranceSelected(false);
+
+  }, [adults, children, infants]);
+
+  const handleInsuranceAgeChange = (type, index, value) => {
+    setInsuranceAges((prev) => {
+      const updated = [...prev[type]];
+
+      updated[index] = value;
+
+      return {
+        ...prev,
+        [type]: updated,
+      };
+    });
   };
 
   useEffect(() => {
@@ -537,8 +611,6 @@ export const FlightDetails = () => {
   const [saveBilling, setSaveBilling] = useState(false);
   const [billingError, setBillingError] = useState("");
 
-  
-
   const validatePassengerDetails = () => {
     // =========================
     // ADULT
@@ -817,10 +889,6 @@ export const FlightDetails = () => {
       setLoading(false);
     }
   };
-
-  console.log(adultForms, 'adultFormsadultFormsadultForms');
-  console.log(childForms, 'childFormschildFormschildForms');
-  console.log(infantForms, 'infantFormsinfantFormsinfantForms');
 
 
   const handleSeatSkip = () => {
@@ -1536,8 +1604,112 @@ export const FlightDetails = () => {
     return d;
   };
 
-  //   const firstSegment = segments[0];
 
+  const calculateInsuranceDuration = (segments) => {
+    if (!segments || segments.length === 0) return 0;
+
+    const firstSegment = segments[0];
+    const lastSegment = segments[segments.length - 1];
+
+    const departure = parseDate(
+      firstSegment?.Departure_DateTime
+    );
+
+    const arrival = parseDate(
+      lastSegment?.Arrival_DateTime
+    );
+
+    if (!departure || !arrival) return 0;
+
+    const diff = arrival.getTime() - departure.getTime();
+
+    if (diff < 0) return 0;
+
+    // Convert milliseconds into days
+    return Math.max(1, Math.ceil(diff / 86400000));
+  };
+
+  const fetchAsegoPlans = async () => {
+    try {
+      setInsuranceError("");
+      setInsuranceLoading(true);
+
+      const allAges = [
+        ...insuranceAges.adults,
+        ...insuranceAges.children,
+        ...insuranceAges.infants,
+      ];
+
+      if (
+        allAges.length === 0 ||
+        allAges.some(
+          (age) =>
+            age === "" ||
+            !Number.isInteger(Number(age)) ||
+            Number(age) < 0 ||
+            Number(age) > 120
+        )
+      ) {
+        setInsuranceError("Please enter valid age for all travellers.");
+        return;
+      }
+
+      if (!domesticCategoryId) {
+        setInsuranceError("Domestic category not found.");
+        return;
+      }
+
+      // Use all journey segments, not just one connecting flight.
+      const duration = calculateInsuranceDuration(
+        flight?.Segments
+      );
+
+      if (!duration) {
+        setInsuranceError("Unable to calculate journey duration.");
+        return;
+      }
+
+      const payload = {
+        duration: [duration],
+        age: allAges.map(Number),
+        category: domesticCategoryId,
+      };
+
+      console.log("ASEGO Payload:", payload);
+
+      const response = await http.post(
+        "/asego/plans",
+        payload
+      );
+
+      console.log("ASEGO Response:", response.data);
+
+      const plans = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
+
+      setInsurancePlans(plans);
+      setSelectedInsurancePlan(null);
+      setShowInsurancePlans(true);
+
+      if (!plans.length) {
+        setInsuranceError("No insurance plans available.");
+      }
+
+    } catch (error) {
+      console.error(
+        "ASEGO Error:",
+        error.response?.data || error.message
+      );
+
+      setInsuranceError(
+        error.response?.data?.message ||
+        "Unable to fetch insurance plans."
+      );
+    } finally {
+      setInsuranceLoading(false);
+    }
+  };
 
   const stops = Math.max(0, segments.length - 1);
   const departureDate = parseDate(segment?.Departure_DateTime);
@@ -3677,208 +3849,181 @@ console.log(selectedSeats, 'selectedSeats');
                         {/* Trip Secure */}
                         <div className="fgdfg584d">
                           <div className="trip-card">
-                            {/* Header */}
-                            <div className="dgdfgdfgdf">
-                              <div className="dfsdfds555f mb-3">
-                                <span className="d-block position-relative me-3">
-                                  <i className="fa-solid position-absolute top-50 start-50 translate-middle fa-shield-halved"></i>
-                                </span>
 
-                                <div className="doijhsdksdf">
-                                  <h5 className="mb-1">Trip Secure</h5>
-
-                                  {/* Price */}
-                                  <div className="isfjsofoksdf">
-                                    <span className="price">₹ 299</span>{" "}
-                                    <span className="small-text">
-                                      / Traveller (18% GST included)
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="dfgbdfhgdfg">
-                                <img src="/images/asdc.png" alt="" />
-                              </div>
+                            <div className="d-flex align-items-center gap-2 mb-2">
+                              <i className="fa-solid fa-shield-halved text-success"></i>
+                              <h6 className="mb-0">Choose Your Trip Protection</h6>
                             </div>
 
-                            {/* Features */}
-                            <div className="sdnhfsdsdfsdf">
-                              <div className="row">
-                                <div className="col-lg-10">
-                                  <div className="dfgd5465">
-                                    <div className="row">
-                                      <div className="col-lg-4">
-                                        <label
-                                          htmlFor="247s"
-                                          className="dfsdf5855 position-relative text-center p-3 mb-0"
-                                        >
-                                          <span className="idneisdf stop-info d-block position-absolute">
-                                            Most Popular
-                                          </span>
-
-                                          <input
-                                            id="247s"
-                                            className="d-none position-absolute"
-                                            type="checkbox"
-                                          />
-
-                                          <h6 className="mb-0">
-                                            <span>24x7</span> Support
-                                          </h6>
-
-                                          <div className="ssd8984e p-2">
-                                            <img src="/images/24-hours.png" alt="" />
-                                          </div>
-
-                                          <p className="mb-0">
-                                            Delayed/lost baggage Assistance
-                                          </p>
-                                        </label>
-                                      </div>
-
-                                      <div className="col-lg-4">
-                                        <label
-                                          htmlFor="flt1"
-                                          className="dfsdf5855 text-center p-3 mb-0"
-                                        >
-                                          <input
-                                            id="flt1"
-                                            className="d-none position-absolute"
-                                            type="checkbox"
-                                          />
-
-                                          <h6 className="mb-0">
-                                            Flat <span> ₹ 50,000</span>
-                                          </h6>
-
-                                          <div className="ssd8984e p-2">
-                                            <img src="/images/worker.png" alt="" />
-                                          </div>
-
-                                          <p className="mb-0">
-                                            Delayed/lost baggage Assistance
-                                          </p>
-                                        </label>
-                                      </div>
-
-                                      <div className="col-lg-4">
-                                        <label
-                                          htmlFor="flt2"
-                                          className="dfsdf5855 text-center p-3 mb-0"
-                                        >
-                                          <input
-                                            id="flt2"
-                                            className="d-none position-absolute"
-                                            type="checkbox"
-                                          />
-
-                                          <h6 className="mb-0">
-                                            Flat <span> ₹ 2,000</span>
-                                          </h6>
-
-                                          <div className="ssd8984e p-2">
-                                            <img src="/images/luggage.png" alt="" />
-                                          </div>
-
-                                          <p className="mb-0">
-                                            Delayed/lost baggage Assistance
-                                          </p>
-                                        </label>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="col-lg-2">
-                                  <div className="sdnsdjsd h-100 text-center">
-                                    <span className="kfjsoijfosd position-relative d-block text-center mb-3">
-                                      <i className="bi position-absolute top-50 start-50 translate-middle bi-gift"></i>
-                                    </span>
-
-                                    <p className="mb-0">
-                                      View All Benefits{" "}
-                                      <i className="fa-solid fa-right-long"></i>
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Recommendation */}
-                            <div className="recommend d-flex align-items-center justify-content-between mt-3 p-0">
-                              <div className="duiewhruiwerwer d-flex align-items-center gap-3 p-3">
-                                <span className="d-inline-block position-relative">
-                                  <i className="bi position-absolute top-50 start-50 translate-middle bi-shield-check"></i>
-                                </span>
-
-                                <div className="dikwenfiswf">
-                                  <h6 className="mb-1">
-                                    Recommended for your travel within India
-                                  </h6>
-
-                                  <p className="mb-0">
-                                    Travel worthy-free with Trip Secure.
-                                  </p>
-                                </div>
-                              </div>
-
-                              <img src="/images/dasa.png" className="h-100" alt="" />
-                            </div>
+                            <p className="small-text mb-3">
+                              Protect your journey with Trip Secure. Select whether you want to add
+                              travel insurance to your booking.
+                            </p>
 
                             {/* Radio Buttons */}
-                            <div className="uidnweuyd mt-4 mb-3">
-                              <div className="form-check">
-                                <input
-                                  className="form-check-input"
-                                  type="radio"
-                                  name="trip"
-                                  id="yes"
-                                />
-                                <label className="form-check-label" htmlFor="yes">
-                                  Yes, Secure my trip.
-                                </label>
+                            
+                              {/* Radio Buttons */}
+                              <div className="uidnweuyd mt-4 mb-3">
+
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="trip"
+                                    id="yes"
+                                    checked={insuranceSelected}
+                                    onChange={() => {
+                                      setInsuranceSelected(true);
+                                      setInsuranceError("");
+                                    }}
+                                  />
+
+                                  <label className="form-check-label" htmlFor="yes">
+                                    Yes, Secure my trip.
+                                  </label>
+                                </div>
+
+                                <div className="form-check">
+                                  <input
+                                    className="form-check-input"
+                                    type="radio"
+                                    name="trip"
+                                    id="no"
+                                    checked={!insuranceSelected}
+                                    onChange={() => {
+                                      setInsuranceSelected(false);
+                                      setSelectedInsurancePlan(null);
+                                      setInsurancePlans([]);
+                                      setShowInsurancePlans(false);
+                                      setInsuranceError("");
+                                    }}
+                                  />
+
+                                  <label className="form-check-label" htmlFor="no">
+                                    No, I will book without trip secure.
+                                  </label>
+                                </div>
+
                               </div>
 
-                              <div className="form-check">
-                                <input
-                                  className="form-check-input"
-                                  type="radio"
-                                  name="trip"
-                                  id="no"
-                                />
-                                <label className="form-check-label" htmlFor="no">
-                                  No, I will book without trip secure.
-                                </label>
-                              </div>
-                            </div>
+                              {/* Traveller Age Details */}
+                              {insuranceSelected && (
+                                <div className="asego-traveller-details mt-3">
 
-                            {/* Reviews */}
-                            {/* <div className="duicssd mt-4">
-                                    <p className="mb-0">
-                                      <i className="fa-solid me-1 fa-heart"></i> Preferred by millions of travellers
+                                  <h6>Traveller Age Details</h6>
+
+                                  <p className="small-text">
+                                    Enter the age of each traveller to get insurance plans.
+                                  </p>
+
+                                  {[
+                                    { key: "adults", label: "Adult" },
+                                    { key: "children", label: "Child" },
+                                    { key: "infants", label: "Infant" },
+                                  ].map((group) => (
+                                    insuranceAges[group.key].length > 0 && (
+                                      <div className="mb-3" key={group.key}>
+
+                                        <h6>
+                                          {group.label}s ({insuranceAges[group.key].length})
+                                        </h6>
+
+                                        <div className="d-flex flex-wrap gap-3">
+
+                                          {insuranceAges[group.key].map((age, index) => (
+                                            <div key={index} style={{ width: "110px" }}>
+
+                                              <label className="small-text">
+                                                {group.label} {index + 1}
+                                              </label>
+
+                                              <input
+                                                type="number"
+                                                min="0"
+                                                max="120"
+                                                className="form-control"
+                                                placeholder="Age"
+                                                value={age}
+                                                onChange={(e) =>
+                                                  handleInsuranceAgeChange(
+                                                    group.key,
+                                                    index,
+                                                    e.target.value
+                                                  )
+                                                }
+                                              />
+
+                                            </div>
+                                          ))}
+
+                                        </div>
+                                      </div>
+                                    )
+                                  ))}
+
+                                  {insuranceError && (
+                                    <p className="text-danger small">
+                                      {insuranceError}
                                     </p>
+                                  )}
 
-                                    <div className="row mt-3 g-3">
-                                      <div className="col-md-6 mt-0">
-                                        <div className="review-box">
-                                          "Your willingness to go above and beyond made a big
-                                          difference."
-                                          <br />
-                                          <small>- Amit Paul</small>
-                                        </div>
-                                      </div>
+                                  <button
+                                    type="button"
+                                    className="btn btn-success"
+                                    onClick={fetchAsegoPlans}
+                                    disabled={insuranceLoading}
+                                  >
+                                    {insuranceLoading
+                                      ? "Loading Plans..."
+                                      : "Get Insurance Plans"}
+                                  </button>
 
-                                      <div className="col-md-6 mt-0">
-                                        <div className="review-box">
-                                          "Claim settlement was incredibly fast. Smooth
-                                          experience."
-                                          <br />
-                                          <small>- Prateek Keshari</small>
+                                  {/* ASEGO Plans */}
+                                  {showInsurancePlans && (
+                                    <div className="mt-4">
+
+                                      <h6>Available Insurance Plans</h6>
+
+                                      {insurancePlans.map((plan, index) => (
+                                        <div
+                                          className={`asego-plan-option p-3 mb-2 ${
+                                            selectedInsurancePlan === plan ? "active" : ""
+                                          }`}
+                                          key={plan.id || index}
+                                        >
+
+                                          <div className="d-flex justify-content-between align-items-center">
+
+                                            <div>
+                                              <h6>
+                                                {plan.name || plan.planName || `Plan ${index + 1}`}
+                                              </h6>
+
+                                              <p className="small-text mb-0">
+                                                {plan.description || "Travel insurance coverage"}
+                                              </p>
+                                            </div>
+
+                                            <button
+                                              type="button"
+                                              className="btn btn-outline-success btn-sm"
+                                              onClick={() => setSelectedInsurancePlan(plan)}
+                                            >
+                                              {selectedInsurancePlan === plan
+                                                ? "Selected"
+                                                : "Select"}
+                                            </button>
+
+                                          </div>
+
                                         </div>
-                                      </div>
+                                      ))}
+
                                     </div>
-                                  </div> */}
+                                  )}
+
+                                </div>
+                              )}
 
                             {/* Footer */}
                             <p className="mb-0 small-text d-flex align-items-center">
@@ -3889,29 +4034,23 @@ console.log(selectedSeats, 'selectedSeats');
                           </div>
                         </div>
 
-                        {/* Akasa Priority */}
-                        <div className="fndyff987er">
+                        {/* <div className="fndyff987er">
                           <div className="trip-card d-flex justify-content-between align-items-center">
-                            {/* Left Content */}
                             <div className="d-flex gap-3 align-items-start">
-                              {/* Logo */}
                               <div className="sdfsdfdsf">
                                 <img src="/images/unnamed.webp" alt="" />
                               </div>
 
                               <div>
-                                {/* Title */}
                                 <div className="fw-bold" style={{ fontSize: "18px" }}>
                                   Akasa Priority @ Just ₹ 875
                                 </div>
 
-                                {/* Subtitle */}
                                 <div className="text-muted small mb-2">
                                   Skip queues, get your bags first, and board early with
                                   Akasa Priority.
                                 </div>
 
-                                {/* Features Row */}
                                 <div className="d-flex align-items-center gap-2 flex-wrap">
                                   <div className="d-flex align-items-center gap-1">
                                     <i className="bi sfgdgsfsfsf-icon bi-person-check-fill"></i>
@@ -3942,12 +4081,11 @@ console.log(selectedSeats, 'selectedSeats');
                               </div>
                             </div>
 
-                            {/* Button */}
                             <button className="btn btn-outline-primary rounded-pill px-4">
                               +ADD
                             </button>
                           </div>
-                        </div>
+                        </div> */}
 
                         {isBlockAllowed && (
                           <div className="fndyff987er">
