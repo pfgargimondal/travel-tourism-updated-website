@@ -239,7 +239,7 @@ export const HotelSearch = ({ cities = [], setHotelFilterOptionsToggle }) => {
                                                     className="city-item"
                                                     onClick={() => handleSelectCity(city)}
                                                 >
-                                                    {city.city_name}
+                                                    {city.city_name} , {city.country_name}
                                                 </div>
                                             ))}
                                         </div>
@@ -256,7 +256,11 @@ export const HotelSearch = ({ cities = [], setHotelFilterOptionsToggle }) => {
                                             className="form-control hotel-input"
                                             value={checkIn}
                                             min={new Date().toISOString().split("T")[0]}
-                                            onChange={(e) => setCheckIn(e.target.value)}
+                                            onChange={(e) => {
+                                                const selectedDate = e.target.value;
+                                                setCheckIn(selectedDate);
+                                            }}
+                                            onKeyDown={(e) => e.preventDefault()}
                                         />
                                     </div>
                                 </div>
@@ -270,8 +274,11 @@ export const HotelSearch = ({ cities = [], setHotelFilterOptionsToggle }) => {
                                             id="checkout"
                                             className="form-control hotel-input"
                                             value={checkOut}
-                                            min={checkIn}
-                                            onChange={(e) => setCheckOut(e.target.value)}
+                                            min={checkIn || new Date().toISOString().split("T")[0]}
+                                            onChange={(e) => {
+                                                setCheckOut(e.target.value);
+                                            }}
+                                            onKeyDown={(e) => e.preventDefault()}
                                         />
                                     </div>                                    
                                 </div>

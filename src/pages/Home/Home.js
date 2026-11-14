@@ -561,34 +561,27 @@ const [discountFare, setDiscountFare] = useState(false);
                          
                       {/* <input type="date" className="form-control" placeholder="New Delhi DEL, Indira Gandhi International" /> */}
                       <DatePicker
-                        selected={departureDate}
-                        // includeDates={
-                        //   availableDates.length > 0
-                        //     ? availableDates
-                        //     : undefined
-                        // }
-                        // onChange={(date) => {
-                        //   setDepartureDate(date);
-                        // }}
-                        onChange={(date) => {
-                          setDepartureDate(date);
+                          selected={departureDate}
+                          onChange={(date) => {
+                              setDepartureDate(date);
 
-                          if (tripType === 1 && date) {
-                            const nextDay = new Date(date);
-                            nextDay.setDate(nextDay.getDate() + 1);
-                            setReturnDate(nextDay);
-                          }
-                        }}
-                        minDate={new Date()}
-                        dateFormat="dd MMM yyyy"
-                        className="form-control"
+                              if (tripType === 1 && date) {
+                                  const nextDay = new Date(date);
+                                  nextDay.setDate(nextDay.getDate() + 1);
+                                  setReturnDate(nextDay);
+                              }
+                          }}
+                          minDate={new Date()}
+                          dateFormat="dd MMM yyyy"
+                          className="form-control"
+                          onKeyDown={(e) => e.preventDefault()}
+                          onPaste={(e) => e.preventDefault()}
                       />
                     </div>
 
                     <div className="col-md-4 col-md-4 col-sm-6 col-6">
                       <label className="form-label">Return Date</label>
                       
-                      {/* <input type="date" className="form-control" placeholder="New Delhi DEL, Indira Gandhi International" /> */}
                       <DatePicker
                         selected={returnDate}
                         onChange={(date) => setReturnDate(date)}
@@ -596,6 +589,8 @@ const [discountFare, setDiscountFare] = useState(false);
                         dateFormat="dd MMM yyyy"
                         className="form-control"
                         disabled={tripType === 0}
+                        onKeyDown={(e) => e.preventDefault()}
+                        onPaste={(e) => e.preventDefault()}
                       />
                     </div>
 
