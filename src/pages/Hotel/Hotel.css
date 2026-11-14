@@ -3,7 +3,6 @@
 }
 
 .filter-box {
-    padding: 20px;
     border-radius: 10px;
     box-shadow: none;
     border: 1px solid var(--border);
@@ -13,7 +12,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
 }
 
 .reset-btn {
@@ -35,9 +33,7 @@
 }
 
 .filter-section {
-    margin-top: 20px;
     border-top: 1px solid #ddd;
-    padding-top: 15px;
 }
 
 .filter-section h6 {
@@ -1014,6 +1010,10 @@ h6.klkifyter{
     .badge-custom{
         margin-bottom: 1rem;
         display: inline-block;
+    }
+    
+    .flight-search-btn{
+        position: initial;
     }
 }
 

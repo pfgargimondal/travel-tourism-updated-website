@@ -37,6 +37,7 @@ import {
   CancellationPolicy,
   FlightInvoice
 } from "../pages";
+import ProtectedRoute from "../component/ProtectedRoute ";
 
 // function PageRenderer() {
 //   const location = useLocation();
@@ -81,12 +82,17 @@ function Allroutes() {
 
       <Route path="/thank-you" element={<ThankYou />} />
 
-      <Route path="/user-profile" element={<UserProfile />} />
-      <Route path="/account-information" element={<UserAccountSettings />} />
-      <Route path="/user-booking" element={<UserBooking />} />
-      <Route path="/user-hold-ticket" element={<UserHoldTicket />} />
-      <Route path="/wishlist" element={<UserWishlist />} />
-      <Route path="/change-password" element={<PasswordChange />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route path="/user-profile" element={<UserProfile />} />
+        <Route path="/account-information" element={<UserAccountSettings />} />
+        <Route path="/user-booking" element={<UserBooking />} />
+        <Route path="/user-hold-ticket" element={<UserHoldTicket />} />
+        <Route path="/wishlist" element={<UserWishlist />} />
+        <Route path="/change-password" element={<PasswordChange />} />
+      </Route>
+
+
 
       <Route path="/flight-ticket" element={<FlightTicket />} />
       <Route path="/flight-invoice" element={<FlightInvoice />} />

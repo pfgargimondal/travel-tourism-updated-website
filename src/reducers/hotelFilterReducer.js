@@ -1,7 +1,7 @@
 export const initialState = {
   suggestedForYou: [], // e.g., ['LAST_MINUTE_DEALS', 'BREAKFAST_INCLUDED']
   pricePerNight: [], // e.g., ['500-999', '1000-1999']
-  priceRange: [0, 50000], // "Your Budget" min/max
+  priceRange: [0, 500000], // "Your Budget" min/max
   starCategory: [], // e.g., ['3_STAR', '4_STAR']
   propertyType: [], // e.g., ['HOTEL', 'RESORT']
   topLocations: [], // e.g., ['NORTH_GOA', 'BAGA_BEACH']

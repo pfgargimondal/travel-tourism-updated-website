@@ -295,6 +295,20 @@ export const FlightFilter = () => {
     planeNumber: true
   });
   const [planeInput, setPlaneInput] = useState("");
+  const [resRoundTripReturn, setResRoundTripReturn] = useState({
+    startTrip: true,
+    returnTrip: false
+  });
+
+  const toggleResRoundTripReturn = (trip) => {
+    if (window.innerWidth <= 991) {
+      setResRoundTripReturn((prev) => ({
+        ...prev,
+        [trip]: !prev[trip]
+      }));
+    }
+  };
+  
   const [planeSearch, setPlaneSearch] = useState("");
 
   const toggleFilter = (filter) => {
@@ -1417,6 +1431,19 @@ export const FlightFilter = () => {
 
   return (
     <div>
+      <style>
+        {`
+          @media only screen and (max-width: 600px){
+            header {
+              z-index: 9999;
+            }
+
+            .bottom-res-nav-menu {
+              z-index: 9999;
+            }
+        `}
+      </style>
+
       <div className="sdfsdf655 djinsdjkncv">
         {/* <!-- ================= FLIGHT SEARCH SECTION ================= --> */}
         <section className="menu-section srch-filtr-wrpper">
@@ -2870,77 +2897,84 @@ export const FlightFilter = () => {
                     })}
                   </Swiper>
                 </div>
-
-                <div className="dubyasyufsdf mb-3 p-1">
-                  <div className="col-lg-10">
-                    <table className="table mb-0">
-                      <tbody>
-                        <tr className="text-center">
-                          <th
-                            className={`text-start ${sortConfig.key === "Airline" ? "active" : ""}`}
-                            onClick={() => handleSort("Airline")}
-                          >
-                            <img src="/images/flightdas.png" alt="" /> Airline{" "}
-                            <i
-                              className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
-                            ></i>
-                          </th>
-
-                          <th
-                            className={`text-start ${sortConfig.key === "Departure" ? "active" : ""}`}
-                            onClick={() => handleSort("Departure")}
-                          >
-                            <img src="/images/airplane.png" alt="" />{" "}
-                            <span style={{ position: "relative", zIndex: 999 }}>
-                              Departure{" "}
+                
+                {isRoundTrip === false && (
+                  <div className="dubyasyufsdf mb-3 p-1">
+                    <div className="col-lg-10">
+                      <table className="table mb-0">
+                        <tbody>
+                          <tr className="text-center">
+                            <th
+                              className={`text-start ${sortConfig.key === "Airline" ? "active" : ""}`}
+                              onClick={() => handleSort("Airline")}
+                            >
+                              <img src="/images/flightdas.png" alt="" /> Airline{" "}
                               <i
                                 className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
                               ></i>
-                            </span>
-                          </th>
+                            </th>
 
-                          <th
-                            className={`text-start ${sortConfig.key === "Duration" ? "active" : ""}`}
-                            onClick={() => handleSort("Duration")}
-                          >
-                            <img src="/images/repeat.png" alt="" /> Duration{" "}
-                            <i
-                              className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
-                            ></i>
-                          </th>
+                            <th
+                              className={`text-start ${sortConfig.key === "Departure" ? "active" : ""}`}
+                              onClick={() => handleSort("Departure")}
+                            >
+                              <img src="/images/airplane.png" alt="" />{" "}
+                              <span style={{ position: "relative", zIndex: 999 }}>
+                                Departure{" "}
+                                <i
+                                  className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
+                                ></i>
+                              </span>
+                            </th>
 
-                          <th
-                            className={`text-start ${sortConfig.key === "Arrival" ? "active" : ""}`}
-                            onClick={() => handleSort("Arrival")}
-                          >
-                            <img src="/images/airplane.png" alt="" />{" "}
-                            <span style={{ position: "relative", zIndex: 999 }}>
-                              Arrival{" "}
+                            <th
+                              className={`text-start ${sortConfig.key === "Duration" ? "active" : ""}`}
+                              onClick={() => handleSort("Duration")}
+                            >
+                              <img src="/images/repeat.png" alt="" /> Duration{" "}
                               <i
                                 className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
                               ></i>
-                            </span>
-                          </th>
+                            </th>
 
-                          <th
-                            className={`text-end ${sortConfig.key === "Price" ? "active" : ""}`}
-                            onClick={() => handleSort("Price")}
-                          >
-                            <img src="/images/money.png" alt="" /> Price{" "}
-                            <i
-                              className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
-                            ></i>
-                          </th>
-                        </tr>
-                      </tbody>
-                    </table>
+                            <th
+                              className={`text-start ${sortConfig.key === "Arrival" ? "active" : ""}`}
+                              onClick={() => handleSort("Arrival")}
+                            >
+                              <img src="/images/airplane.png" alt="" />{" "}
+                              <span style={{ position: "relative", zIndex: 999 }}>
+                                Arrival{" "}
+                                <i
+                                  className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
+                                ></i>
+                              </span>
+                            </th>
+
+                            <th
+                              className={`text-end ${sortConfig.key === "Price" ? "active" : ""}`}
+                              onClick={() => handleSort("Price")}
+                            >
+                              <img src="/images/money.png" alt="" /> Price{" "}
+                              <i
+                                className={`bi ${sortConfig.direction === "desc" ? "bi-arrow-up" : "bi-arrow-down"}`}
+                              ></i>
+                            </th>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="flight-filtr-wrppr">
                   {isRoundTrip === true && discountFare === "false" ? (
-                    <div className="round-trip-container">
-                      <div className="round-trip-column">
+                    <div onClick={() => {
+                        if (!resRoundTripReturn.startTrip) {
+                          toggleResRoundTripReturn("startTrip");
+                          toggleResRoundTripReturn("returnTrip");
+                        }
+                      }} className="round-trip-container">
+                      <div className={`round-trip-column ${resRoundTripReturn.startTrip ? "" : "res-round-trip-onward-col"}`}>
                         <div className="round-trip-heading mb-3">
                           <div className="trip-heading-item">
                             <strong>
@@ -3113,7 +3147,12 @@ export const FlightFilter = () => {
                         )}
                       </div>
 
-                      <div className="round-trip-column">
+                      <div onClick={() => {
+                        if (!resRoundTripReturn.returnTrip) {
+                          toggleResRoundTripReturn("returnTrip");
+                          toggleResRoundTripReturn("startTrip");
+                        }
+                      }} className={`round-trip-column ${resRoundTripReturn.returnTrip ? "" : "res-round-trip-return-col"}`}>
                         {/* RETURN HEADING */}
                         <div className="round-trip-heading mb-3">
                           <div className="trip-heading-item">
@@ -3984,7 +4023,7 @@ export const FlightFilter = () => {
                   {tripType === "1" &&
                     selectedOnwardFlight &&
                     selectedReturnFlight && (
-                      <div className="round-trip-booking-bar">
+                      <div style={flightFilterResToggle ? {zIndex: 999} : {}} className="round-trip-booking-bar">
                         <div className="iancjnsxnc">
                           <div className="uidnuier d-flex flex-fill">
                             {/* ONWARD FLIGHT */}

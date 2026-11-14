@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useMemo, useCallback } from 'react';
 import { hotelFilterReducer, initialState, FILTER_ACTION_TYPES } from '../reducers/hotelFilterReducer';
 
 const HotelFilterContext = createContext();
@@ -47,14 +47,31 @@ export const HotelFilterProvider = ({ children }) => {
     dispatch({ type: FILTER_ACTION_TYPES.SET_DEALS_OFFERS, payload: deal });
   };
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     dispatch({ type: FILTER_ACTION_TYPES.RESET_FILTERS });
-  };
+  }, []);
+
+  const hasActiveFilters = useMemo(
+    () =>
+      state.suggestedForYou.length > 0 ||
+      state.pricePerNight.length > 0 ||
+      state.starCategory.length > 0 ||
+      state.propertyType.length > 0 ||
+      state.topLocations.length > 0 ||
+      state.guestsLove.length > 0 ||
+      state.bookingPreference.length > 0 ||
+      state.houseRules.length > 0 ||
+      state.dealsOffers.length > 0 ||
+      state.priceRange[0] !== initialState.priceRange[0] ||
+      state.priceRange[1] !== initialState.priceRange[1],
+    [state]
+  );
 
   return (
     <HotelFilterContext.Provider
       value={{
         filters: state,
+        hasActiveFilters,
         dispatch,
         toggleSuggestedForYou,
         togglePricePerNight,

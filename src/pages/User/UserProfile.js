@@ -1,14 +1,17 @@
 import { useState } from "react";
-
 import { UserSideNavbar } from "./Component/UserSideNavbar/UserSideNavbar";
-
 import "./Css/UserProfile.css";
-
-
+import { useAuth } from "../../context/AuthContext";
 
 export const UserProfile = () => {
     const [isResUserNavOpen, setIsResUserNavOpen] = useState(false);
-
+    // eslint-disable-next-line
+    const [userDropdownToggle, setUserDropdownToggle] = useState(false);
+    // eslint-disable-next-line
+    const { isLoggedIn, user, logout, loginRegModal, setLoginRegModal, } = useAuth();
+    const profileName = user?.name || "User";
+    const profilePhone = user?.phone || user?.mobile || user?.mobile_number;
+    const profileAvatar = user?.avatar || user?.picture;
 
 
     return (
@@ -248,18 +251,21 @@ export const UserProfile = () => {
                                         </a>
                                     </div>
                                     <div className="profile-avatar-wrap">
-                                        <img
-                                            src="https://randomuser.me/api/portraits/men/32.jpg"
-                                            alt="Mr."
-                                        />
+                                        {profileAvatar ? (
+                                            <img src={profileAvatar} alt={`${profileName}'s profile`} />
+                                        ) : (
+                                            <div className="profile-avatar-placeholder" aria-hidden="true">
+                                                {profileName.charAt(0).toUpperCase()}
+                                            </div>
+                                        )}
                                         <div className="avatar-cam">
                                             <i className="bi bi-camera" />
                                         </div>
                                     </div>
                                     <div className="profile-info">
-                                        <h6>Mr. Mr</h6>
-                                        <p>pfMr.@gmail.com</p>
-                                        <p>+880 1712 345 678</p>
+                                        <h6>{profileName}</h6>
+                                        {user?.email && <p><i className="bi bi-envelope me-1" />{user.email}</p>}
+                                        {profilePhone && <p><i className="bi bi-telephone me-1" />{profilePhone}</p>}
                                     </div>
                                     <div className="verified-badge">
                                         <div className="icon">

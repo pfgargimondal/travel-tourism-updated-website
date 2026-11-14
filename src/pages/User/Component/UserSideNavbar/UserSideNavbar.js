@@ -1,4 +1,5 @@
-import { Link, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "../../../../context/AuthContext";
 
 import "./UserSideNavbar.css";
 import "./UserSideNavbarResponsive.css";
@@ -7,6 +8,8 @@ import "./UserSideNavbarResponsive.css";
 
 export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
     const pathName = useLocation().pathname;
+    const { user, logout } = useAuth();
+    const userName = user?.name?.trim() || "User";
 
 
 
@@ -20,7 +23,7 @@ export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
                 <div className="sidebar-brand">
                     <div className="topbar pb-0">
                         <div className="topbar-left">
-                            <h3 className="mb-0">Hi, Mr! 👋</h3>
+                            <h3 className="mb-0">Hi, {userName}! 👋</h3>
                             <p>Ready for your next adventure?</p>
                         </div>
                     </div>
@@ -29,21 +32,21 @@ export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
                 <nav className="sidebar-nav">
                     <ul className="list-unstyled">
                         <li className="nav-item">
-                            <Link to="/user-profile" className="active">
+                            <NavLink to="/user-profile" end className={({ isActive }) => isActive ? "active" : undefined}>
                                 <i className="bi bi-grid" /> Dashboard
-                            </Link>
+                            </NavLink>
                         </li>
 
                         <li className="nav-item">
-                            <Link to="/account-information">
+                            <NavLink to="/account-information" className={({ isActive }) => isActive ? "active" : undefined}>
                                 <i className="bi bi-person" /> Account Information
-                            </Link>
+                            </NavLink>
                         </li>
 
                         <li className="nav-item">
-                            <Link to="/user-booking">
+                            <NavLink to="/user-booking" className={({ isActive }) => isActive ? "active" : undefined}>
                                 <i className="bi bi-journal-bookmark" /> My Bookings
-                            </Link>
+                            </NavLink>
                         </li>
 
                         {/* <li className="nav-item">
@@ -53,9 +56,9 @@ export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
                         </li> */}
 
                         <li className="nav-item">
-                            <Link to="/wishlist">
+                            <NavLink to="/wishlist" className={({ isActive }) => isActive ? "active" : undefined}>
                                 <i className="bi bi-heart" /> Wishlist
-                            </Link>
+                            </NavLink>
                         </li>
                         {/* <li className="nav-item">
                                     <a href="#">
@@ -75,13 +78,19 @@ export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
                         </li> */}
 
                         <li className="nav-item">
-                            <Link to="/change-password">
-                                <i class="bi bi-lock"></i> Change Password
-                            </Link>
+                            <NavLink to="/change-password" className={({ isActive }) => isActive ? "active" : undefined}>
+                                <i className="bi bi-lock"></i> Change Password
+                            </NavLink>
                         </li>
-
-                        <li className="nav-item logout mt-2">
-                            <a href="/">
+                        <li
+                            className="nav-item logout mt-2"
+                            onClick={logout}
+                            style={{ cursor: "pointer" }}
+                        >
+                            <a href="/" onClick={(e) => {
+                                e.preventDefault();
+                                logout();
+                            }}>
                                 <i className="bi bi-box-arrow-left" /> Logout
                             </a>
                         </li>
@@ -104,7 +113,7 @@ export const UserSideNavbar = ({ isResUserNavOpen, setIsResUserNavOpen }) => {
                     
                     <div className="topbar pb-0">
                         <div className="topbar-left">
-                            <h3 className="mb-0">Hi, Mr! 👋</h3>
+                            <h3 className="mb-0">Hi, {userName}! 👋</h3>
                             <p>Ready for your next adventure?</p>
                         </div>
                     </div>

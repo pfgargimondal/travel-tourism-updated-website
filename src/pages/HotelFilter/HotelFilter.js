@@ -34,6 +34,28 @@ export const HotelFilter = () => {
   });
   // eslint-disable-next-line
   const [price, setPrice] = useState([0, 500000]);
+  const [expandedFilters, setExpandedFilters] = useState({
+    suggestedForYou: true,
+    pricePerNight: true,
+    yourBudget: true,
+    topLocations: true
+  });
+
+  const handleLoaderToggle = () => {
+    setLoading(true);
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+  };
+
+  const toggleFilter = (filterOptions) => {
+    setExpandedFilters((prev) => ({
+      ...prev,
+      [filterOptions]: !prev[filterOptions]
+    }));
+  };
+  
   const {
     filters,
     hasActiveFilters,
@@ -275,9 +297,32 @@ export const HotelFilter = () => {
   return (
     <div>
       {loading && <Loader />}
-      <div className="bannerhotel" style={{ background: "url('/images/hotelbanner.png')" }}></div>
 
-      <div className={hotelFilterOptionsToggle ? "hotel-filter-options-container" : "hotel-filter-options-container hotel-filter-options-container-element-hide"}>
+      <style>
+        {`
+          @media only screen and (max-width: 600px){
+            header {
+              z-index: 9999;
+            }
+
+            .bottom-res-nav-menu {
+              z-index: 9999;
+            }
+        `}
+      </style>
+
+      <div
+        className="bannerhotel"
+        style={{ background: "url('/images/hotelbanner.png')" }}
+      ></div>
+
+      <div
+        className={
+          hotelFilterOptionsToggle
+            ? "hotel-filter-options-container"
+            : "hotel-filter-options-container hotel-filter-options-container-element-hide"
+        }
+      >
         {window.innerWidth <= 600 && (
           <div className="disnikjfisdf my-3">
             <div className="container">
@@ -288,11 +333,30 @@ export const HotelFilter = () => {
                       <h4 className="mb-1">{searchParams?.city}</h4>
 
                       <p className="mb-0">
-                        <span style={{ color: "var(--light-black-text-color)" }}>{(searchParams?.checkin && searchParams?.checkout) && `${formattedCheckinDate} - ${formattedCheckoutDate} |`}</span>&nbsp;
-
-                        <span style={{ color: "var(--light-black-text-color)" }}>{searchParams?.adults && `${searchParams?.adults} Adult${searchParams?.adults > 1 ? "s" : ""}`} * {searchParams.children && `${searchParams?.children} Child${searchParams?.children > 1 ? "ren" : ""} |`}</span>&nbsp;
-
-                        <span style={{ color: "var(--light-black-text-color)" }}>{searchParams.rooms && `${searchParams?.rooms} Room${searchParams?.rooms > 1 ? "s" : ""}`}</span>  
+                        <span
+                          style={{ color: "var(--light-black-text-color)" }}
+                        >
+                          {searchParams?.checkin &&
+                            searchParams?.checkout &&
+                            `${formattedCheckinDate} - ${formattedCheckoutDate} |`}
+                        </span>
+                        &nbsp;
+                        <span
+                          style={{ color: "var(--light-black-text-color)" }}
+                        >
+                          {searchParams?.adults &&
+                            `${searchParams?.adults} Adult${searchParams?.adults > 1 ? "s" : ""}`}{" "}
+                          *{" "}
+                          {searchParams.children &&
+                            `${searchParams?.children} Child${searchParams?.children > 1 ? "ren" : ""} |`}
+                        </span>
+                        &nbsp;
+                        <span
+                          style={{ color: "var(--light-black-text-color)" }}
+                        >
+                          {searchParams.rooms &&
+                            `${searchParams?.rooms} Room${searchParams?.rooms > 1 ? "s" : ""}`}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -301,8 +365,12 @@ export const HotelFilter = () => {
                     <div className="docmosdfsdf">
                       <span
                         className="d-flex flex-column align-items-center gap-1"
-                        onClick={() => setHotelFilterOptionsToggle(prev => !prev)}
-                      ><i className="fa-solid fa-pencil"></i> Edit</span>
+                        onClick={() =>
+                          setHotelFilterOptionsToggle((prev) => !prev)
+                        }
+                      >
+                        <i className="fa-solid fa-pencil"></i> Edit
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -311,7 +379,10 @@ export const HotelFilter = () => {
           </div>
         )}
 
-        <HotelSearch setHotelFilterOptionsToggle={setHotelFilterOptionsToggle} cities={cities}/>
+        <HotelSearch
+          setHotelFilterOptionsToggle={setHotelFilterOptionsToggle}
+          cities={cities}
+        />
       </div>
 
       <div className="mainsection hhsdfh58558">
@@ -321,454 +392,587 @@ export const HotelFilter = () => {
               <div className="col-lg-3">
                 {window.innerWidth <= 991 && (
                   <div className="hotel-res-filter-btn mobile-filter-btn filter-header">
-                    <h5 className="mb-0" onClick={() => setResHotelFilterToggle(prev => !prev)}>{window.innerWidth <= 991 && <i className="fa-solid me-1 fa-sliders"></i>} Filters</h5>
-                    
-                    <span onClick={resetFilters} className="reset-btn d-flex align-items-center"><i className="fa-solid fa-arrow-rotate-left"></i> <b>Reset</b></span>
+                    <h5
+                      className="mb-0"
+                      onClick={() => setResHotelFilterToggle((prev) => !prev)}
+                    >
+                      {window.innerWidth <= 991 && (
+                        <i className="fa-solid me-1 fa-sliders"></i>
+                      )}{" "}
+                      Filters
+                    </h5>
+
+                    <span
+                      onClick={() => {
+                        if (hasActiveFilters) {
+                          resetFilters();
+                          handleLoaderToggle();
+                        }
+                      }}
+                      className={`reset-link d-flex align-items-center ${hasActiveFilters ? "" : "disabled"}`}
+                    >
+                      <i className="fa-solid fa-arrow-rotate-left"></i>{" "}
+                      <b>Reset</b>
+                    </span>
                   </div>
                 )}
 
-                <div className={resHotelFilterToggle ? "sdbfhsd55 active" : "sdbfhsd55"}>
+                <div
+                  className={
+                    resHotelFilterToggle ? "sdbfhsd55 active" : "sdbfhsd55"
+                  }
+                >
                   <div className="filter-box">
                     <div className="filter-header">
                       <h5 className="mb-0">Filter</h5>
                       <span
-                        className={`reset-btn d-flex align-items-center ${hasActiveFilters ? '' : 'disabled'}`}
-                        onClick={hasActiveFilters ? resetFilters : undefined}
+                        className={`reset-link d-flex align-items-center ${hasActiveFilters ? "" : "disabled"}`}
+                        onClick={() => {
+                          if (hasActiveFilters) {
+                            resetFilters();
+                            handleLoaderToggle();
+                          }
+                        }}
                       >
-                        <i className="bi me-1 bi-arrow-clockwise"></i> Reset
+                        <i className="fa-solid me-1 fa-arrow-rotate-left"></i>{" "}
+                        Reset
                       </span>
                     </div>
 
                     <div className="filter-section suggested-section">
                       <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                         <div className="flight-filter-left">
-                          <span className="flight-filter-title">Suggested For You</span>
+                          <span className="flight-filter-title">
+                            Suggested For You
+                          </span>
                         </div>
 
-                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                        <i
+                          onClick={() => toggleFilter("suggestedForYou")}
+                          className={`fa-solid ${expandedFilters.suggestedForYou ? "fa-caret-up" : "fa-caret-down"} flight-filter-icon`}
+                        ></i>
                       </div>
 
-                      <div className="fijkfokweer mt-3">
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.suggestedForYou.includes('LAST_MINUTE_DEALS')}
-                                onChange={() => toggleSuggestedForYou('LAST_MINUTE_DEALS')}
-                              />
+                      {expandedFilters.suggestedForYou && (
+                        <div className="fijkfokweer mt-3">
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.suggestedForYou.includes(
+                                    "LAST_MINUTE_DEALS",
+                                  )}
+                                  onChange={() =>
+                                    toggleSuggestedForYou("LAST_MINUTE_DEALS")
+                                  }
+                                />
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <p className="checkbox__textwrapper">Last Minute Deals</p>
-                            </label>
+                                <p className="checkbox__textwrapper">
+                                  Last Minute Deals
+                                </p>
+                              </label>
+                            </div>
+
+                            <span className="item-count">
+                              ({getSuggestedCount("LAST_MINUTE_DEALS")})
+                            </span>
                           </div>
 
-                          <span className="item-count">({getSuggestedCount("LAST_MINUTE_DEALS")})</span>
-                        </div>
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.suggestedForYou.includes(
+                                    "5_STAR",
+                                  )}
+                                  onChange={() =>
+                                    toggleSuggestedForYou("5_STAR")
+                                  }
+                                />
 
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.suggestedForYou.includes('5_STAR')}
-                                onChange={() => toggleSuggestedForYou('5_STAR')}
-                              />
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <p className="checkbox__textwrapper">5 Star</p>
+                              </label>
+                            </div>
 
-                              <p className="checkbox__textwrapper">5 Star</p>
-                            </label>
+                            <span className="item-count">
+                              ({getSuggestedCount("5_STAR")})
+                            </span>
                           </div>
 
-                          <span className="item-count">({getSuggestedCount("5_STAR")})</span>
-                        </div>
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.suggestedForYou.includes(
+                                    "4_STAR",
+                                  )}
+                                  onChange={() =>
+                                    toggleSuggestedForYou("4_STAR")
+                                  }
+                                />
 
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.suggestedForYou.includes('4_STAR')}
-                                onChange={() => toggleSuggestedForYou('4_STAR')}
-                              />
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <p className="checkbox__textwrapper">4 Star</p>
+                              </label>
+                            </div>
 
-                              <p className="checkbox__textwrapper">4 Star</p>
-                            </label>
+                            <span className="item-count">
+                              ({getSuggestedCount("4_STAR")})
+                            </span>
                           </div>
 
-                          <span className="item-count">({getSuggestedCount("4_STAR")})</span>
-                        </div>
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.suggestedForYou.includes(
+                                    "BREAKFAST_INCLUDED",
+                                  )}
+                                  onChange={() =>
+                                    toggleSuggestedForYou("BREAKFAST_INCLUDED")
+                                  }
+                                />
 
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.suggestedForYou.includes('BREAKFAST_INCLUDED')}
-                                onChange={() => toggleSuggestedForYou('BREAKFAST_INCLUDED')}
-                              />
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <p className="checkbox__textwrapper">
+                                  Breakfast Included
+                                </p>
+                              </label>
+                            </div>
 
-                              <p className="checkbox__textwrapper">Breakfast Included</p>
-                            </label>
+                            <span className="item-count">
+                              ({getSuggestedCount("BREAKFAST_INCLUDED")})
+                            </span>
                           </div>
 
-                          <span className="item-count">({getSuggestedCount("BREAKFAST_INCLUDED")})</span>
-                        </div>
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.suggestedForYou.includes(
+                                    "3_STAR",
+                                  )}
+                                  onChange={() =>
+                                    toggleSuggestedForYou("3_STAR")
+                                  }
+                                />
 
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.suggestedForYou.includes('3_STAR')}
-                                onChange={() => toggleSuggestedForYou('3_STAR')}
-                              />
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <p className="checkbox__textwrapper">3 Star</p>
+                              </label>
+                            </div>
 
-                              <p className="checkbox__textwrapper">3 Star</p>
-                            </label>
+                            <span className="item-count">
+                              ({getSuggestedCount("3_STAR")})
+                            </span>
                           </div>
-
-                          <span className="item-count">({getSuggestedCount("3_STAR")})</span>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     <div className="filter-section">
                       <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                         <div className="flight-filter-left">
-                          <span className="flight-filter-title">Price Per Night</span>
+                          <span className="flight-filter-title">
+                            Price Per Night
+                          </span>
                         </div>
 
-                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                        <i
+                          onClick={() => toggleFilter("pricePerNight")}
+                          className={
+                            expandedFilters.pricePerNight
+                              ? "fa-solid fa-caret-up flight-filter-icon"
+                              : "fa-solid fa-caret-down flight-filter-icon"
+                          }
+                        ></i>
                       </div>
 
-                      <div className="fijkfokweer mt-3">
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('999-1999')}
-                                onChange={() => togglePricePerNight('999-1999')}
-                              />
+                      {expandedFilters.pricePerNight && (
+                        <div className="fijkfokweer mt-3">
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "999-1999",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("999-1999")
+                                  }
+                                />
 
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                              <p className="checkbox__textwrapper">₹999 - ₹1999</p>
-                            </label>
+                                <p className="checkbox__textwrapper">
+                                  ₹999 - ₹1999
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "1100-1999",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("1100-1999")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  ₹1100 - ₹1999
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "1500-2999",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("1500-2999")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  ₹1500 - ₹2999
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "2000-2999",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("2000-2999")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  ₹2000 - ₹2999
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "2000-3500",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("2000-3500")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  ₹2000 - ₹3500
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "3999-5999",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("3999-5999")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  ₹3999 - ₹5999
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.pricePerNight.includes(
+                                    "10000-plus",
+                                  )}
+                                  onChange={() =>
+                                    togglePricePerNight("10000-plus")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">10000+</p>
+                              </label>
+                            </div>
                           </div>
                         </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('1100-1999')}
-                                onChange={() => togglePricePerNight('1100-1999')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">₹1100 - ₹1999</p>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('1500-2999')}
-                                onChange={() => togglePricePerNight('1500-2999')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">₹1500 - ₹2999</p>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('2000-2999')}
-                                onChange={() => togglePricePerNight('2000-2999')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">₹2000 - ₹2999</p>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('2000-3500')}
-                                onChange={() => togglePricePerNight('2000-3500')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">₹2000 - ₹3500</p>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('3999-5999')}
-                                onChange={() => togglePricePerNight('3999-5999')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">₹3999 - ₹5999</p>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="suggested-item">
-                          <div className="checkbox-wrapper-33">
-                            <label className="checkbox">
-                              <input
-                                className="checkbox__trigger visuallyhidden"
-                                type="checkbox"
-                                checked={filters.pricePerNight.includes('10000-plus')}
-                                onChange={() => togglePricePerNight('10000-plus')}
-                              />
-
-                              <span className="checkbox__symbol">
-                                <svg
-                                  aria-hidden="true"
-                                  className="icon-checkbox"
-                                  width="28px"
-                                  height="28px"
-                                  viewBox="0 0 28 28"
-                                  version="1.1"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path d="M4 14l8 7L24 7"></path>
-                                </svg>
-                              </span>
-
-                              <p className="checkbox__textwrapper">10000+</p>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     <div className="filter-section border-top-0">
                       <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                         <div className="flight-filter-left">
-                          <span className="flight-filter-title">Your Budget</span>
+                          <span className="flight-filter-title">
+                            Your Budget
+                          </span>
                         </div>
 
-                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                        <i
+                          onClick={() => toggleFilter("yourBudget")}
+                          className={
+                            expandedFilters.yourBudget
+                              ? "fa-solid fa-caret-up flight-filter-icon"
+                              : "fa-solid fa-caret-down flight-filter-icon"
+                          }
+                        ></i>
                       </div>
 
-                      <div className="flight-filter-content">
-                        <div className="price-filter">
-                          <Slider
-                            value={filters.priceRange}
-                            onChange={handlePriceRangeChange}
-                            min={0}
-                            max={500000}
-                            step={1000}
-                            disableSwap
-                            sx={{
-                              color: 'var(--blue-primary-color) !important',
-                              height: 4,
-                              '& .MuiSlider-thumb': {
-                                width: 22,
-                                height: 22,
-                                backgroundColor: 'var(--blue-primary-color) !important',
-                              },
-                              '& .MuiSlider-track': {
-                                border: 'none',
-                              },
-                              '& .MuiSlider-rail': {
-                                backgroundColor: '#d9d9d9',
-                              },
-                            }}
-                          />
+                      {expandedFilters.yourBudget && (
+                        <div className="flight-filter-content">
+                          <div className="price-filter">
+                            <Slider
+                              value={filters.priceRange}
+                              onChange={handlePriceRangeChange}
+                              min={0}
+                              max={500000}
+                              step={1000}
+                              disableSwap
+                              sx={{
+                                color: "var(--blue-primary-color) !important",
+                                height: 4,
+                                "& .MuiSlider-thumb": {
+                                  width: 22,
+                                  height: 22,
+                                  backgroundColor:
+                                    "var(--blue-primary-color) !important",
+                                },
+                                "& .MuiSlider-track": {
+                                  border: "none",
+                                },
+                                "& .MuiSlider-rail": {
+                                  backgroundColor: "#d9d9d9",
+                                },
+                              }}
+                            />
 
-                          <div className="flight-results-section mb-0">
-                            <div className="price-values">
-                              <span className="price-box">
-                                {formatPrice(filters.priceRange[0])}
-                              </span>
+                            <div className="flight-results-section mb-0">
+                              <div className="price-values">
+                                <span className="price-box">
+                                  {formatPrice(filters.priceRange[0])}
+                                </span>
 
-                              <span className="price-box">
-                                {formatPrice(filters.priceRange[1])}
-                              </span>
+                                <span className="price-box">
+                                  {formatPrice(filters.priceRange[1])}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* <div className="filter-section suggested-section">
@@ -1036,330 +1240,393 @@ export const HotelFilter = () => {
                     <div className="filter-section suggested-section">
                       <div className="flight-filter-header d-flex justify-content-between align-items-center flight-filter-toggle">
                         <div className="flight-filter-left">
-                          <span className="flight-filter-title">Top locations</span>
+                          <span className="flight-filter-title">
+                            Top locations
+                          </span>
                         </div>
 
-                        <i className="fa-solid fa-caret-up flight-filter-icon"></i>
+                        <i
+                          onClick={() => toggleFilter("topLocations")}
+                          className={`flight-filter-icon ${expandedFilters.topLocations ? "fa-solid fa-caret-up" : "fa-solid fa-caret-down"}`}
+                        ></i>
                       </div>
 
-                      <div className="suggested-item mt-3">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('NORTH_GOA')}
-                              onChange={() => toggleTopLocation('NORTH_GOA')}
-                            />
+                      {expandedFilters.topLocations && (
+                        <div className="fijkfokweer mt-3">
+                          <div className="suggested-item mt-3">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "NORTH_GOA",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("NORTH_GOA")
+                                  }
+                                />
 
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
 
-                            <p className="checkbox__textwrapper">North Goa</p>
-                          </label>
+                                <p className="checkbox__textwrapper">
+                                  North Goa
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "HURGHADA",
+                                  )}
+                                  onChange={() => toggleTopLocation("HURGHADA")}
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Hurghada
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "SOUTH_GOA",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("SOUTH_GOA")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  South Goa
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "BAGA_BEACH",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("BAGA_BEACH")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Baga Beach
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "PANJIM",
+                                  )}
+                                  onChange={() => toggleTopLocation("PANJIM")}
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">Panjim</p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "CALANGUTE_BEACH",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("CALANGUTE_BEACH")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Calangute Beach
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "CANDOLIM_BEACH",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("CANDOLIM_BEACH")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Candolim Beach
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "VAGATOR",
+                                  )}
+                                  onChange={() => toggleTopLocation("VAGATOR")}
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">Vagator</p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "ANJUNA_BEACH",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("ANJUNA_BEACH")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Anjuna Beach
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "PALOLEM_BEACH",
+                                  )}
+                                  onChange={() =>
+                                    toggleTopLocation("PALOLEM_BEACH")
+                                  }
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Palolem Beach
+                                </p>
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="suggested-item">
+                            <div className="checkbox-wrapper-33">
+                              <label className="checkbox">
+                                <input
+                                  className="checkbox__trigger visuallyhidden"
+                                  type="checkbox"
+                                  checked={filters.topLocations.includes(
+                                    "CANDOLIM",
+                                  )}
+                                  onChange={() => toggleTopLocation("CANDOLIM")}
+                                />
+
+                                <span className="checkbox__symbol">
+                                  <svg
+                                    aria-hidden="true"
+                                    className="icon-checkbox"
+                                    width="28px"
+                                    height="28px"
+                                    viewBox="0 0 28 28"
+                                    version="1.1"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path d="M4 14l8 7L24 7"></path>
+                                  </svg>
+                                </span>
+
+                                <p className="checkbox__textwrapper">
+                                  Candolim
+                                </p>
+                              </label>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('HURGHADA')}
-                              onChange={() => toggleTopLocation('HURGHADA')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Hurghada</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('SOUTH_GOA')}
-                              onChange={() => toggleTopLocation('SOUTH_GOA')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">South Goa</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('BAGA_BEACH')}
-                              onChange={() => toggleTopLocation('BAGA_BEACH')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Baga Beach</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('PANJIM')}
-                              onChange={() => toggleTopLocation('PANJIM')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Panjim</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('CALANGUTE_BEACH')}
-                              onChange={() => toggleTopLocation('CALANGUTE_BEACH')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Calangute Beach</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('CANDOLIM_BEACH')}
-                              onChange={() => toggleTopLocation('CANDOLIM_BEACH')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Candolim Beach</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('VAGATOR')}
-                              onChange={() => toggleTopLocation('VAGATOR')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Vagator</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('ANJUNA_BEACH')}
-                              onChange={() => toggleTopLocation('ANJUNA_BEACH')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Anjuna Beach</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('PALOLEM_BEACH')}
-                              onChange={() => toggleTopLocation('PALOLEM_BEACH')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Palolem Beach</p>
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="suggested-item">
-                        <div className="checkbox-wrapper-33">
-                          <label className="checkbox">
-                            <input
-                              className="checkbox__trigger visuallyhidden"
-                              type="checkbox"
-                              checked={filters.topLocations.includes('CANDOLIM')}
-                              onChange={() => toggleTopLocation('CANDOLIM')}
-                            />
-
-                            <span className="checkbox__symbol">
-                              <svg
-                                aria-hidden="true"
-                                className="icon-checkbox"
-                                width="28px"
-                                height="28px"
-                                viewBox="0 0 28 28"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M4 14l8 7L24 7"></path>
-                              </svg>
-                            </span>
-
-                            <p className="checkbox__textwrapper">Candolim</p>
-                          </label>
-                        </div>
-                      </div>
+                      )}
                     </div>
 
                     {/* <div className="filter-section suggested-section">
@@ -1875,12 +2142,21 @@ export const HotelFilter = () => {
                   </div>
                 </div>
 
-                <div className={resHotelFilterToggle ? "filter-overlay active" : "filter-overlay"} onClick={() => setResHotelFilterToggle(false)}></div>
+                <div
+                  className={
+                    resHotelFilterToggle
+                      ? "filter-overlay active"
+                      : "filter-overlay"
+                  }
+                  onClick={() => setResHotelFilterToggle(false)}
+                ></div>
               </div>
 
               <div className="col-lg-9">
                 <div className="ajhfbmuihehee mb-4">
-                  <h5 className="fw-semibold mb-0">{filteredHotels?.length} Hotels Found on Your Search</h5>
+                  <h5 className="fw-semibold mb-0">
+                    {filteredHotels?.length} Hotels Found on Your Search
+                  </h5>
 
                   {/* <div className="sort-area">
                     <p className="mb-0">Sort By :</p>
@@ -1891,12 +2167,10 @@ export const HotelFilter = () => {
                     </select>
                   </div> */}
                 </div>
-                
-                <div className="sebfghsfsdf">
 
+                <div className="sebfghsfsdf">
                   {filteredHotels?.length > 0 ? (
                     filteredHotels.map((hotel, index) => {
-
                       // Clean Description
                       const cleanDescription = hotel.description
                         ?.replace(/<[^>]*>/g, " ")
@@ -1905,19 +2179,21 @@ export const HotelFilter = () => {
                         ?.trim();
                       // Extract Headline
                       const headlineMatch = cleanDescription?.match(
-                        /HeadLine\s*:\s*(.*?)(Location\s*:|$)/i
+                        /HeadLine\s*:\s*(.*?)(Location\s*:|$)/i,
                       );
                       // Extract Location
                       const locationMatch = cleanDescription?.match(
-                        /Location\s*:\s*(.*?)(Rooms\s*:|Dining\s*:|$)/i
+                        /Location\s*:\s*(.*?)(Rooms\s*:|Dining\s*:|$)/i,
                       );
                       const headline = headlineMatch?.[1]?.trim();
                       const hotelLocation = locationMatch?.[1]?.trim();
                       // Final Description
-                      const shortDescription = hotelLocation || cleanDescription;
+                      const shortDescription =
+                        hotelLocation || cleanDescription;
                       const params = new URLSearchParams(location.search);
 
-                      const room = hotel?.hotelFilter?.HotelResult?.[0]?.Rooms?.[0];
+                      const room =
+                        hotel?.hotelFilter?.HotelResult?.[0]?.Rooms?.[0];
 
                       const totalBasePrice =
                         room?.DayRates?.reduce((sum, dayRate) => {
@@ -1940,7 +2216,10 @@ export const HotelFilter = () => {
                                       <div className="fbvhjd position-relative">
                                         <img src={hotel.image} alt="" />
 
-                                        <button className="xbzgsczxcrr rounded-pill position-absolute px-2 py-1"><i className="fa-regular me-1 fa-images"></i> 25 Photos</button>
+                                        <button className="xbzgsczxcrr rounded-pill position-absolute px-2 py-1">
+                                          <i className="fa-regular me-1 fa-images"></i>{" "}
+                                          25 Photos
+                                        </button>
 
                                         {/* <div className="wishlist-icon">
                                           <img
@@ -1959,7 +2238,8 @@ export const HotelFilter = () => {
                                           </h4>
 
                                           <h6 className="mb-3">
-                                            <i className="fa-solid fa-location-dot"></i> &nbsp;
+                                            <i className="fa-solid fa-location-dot"></i>{" "}
+                                            &nbsp;
                                             {hotel.address}
                                           </h6>
 
@@ -1973,71 +2253,105 @@ export const HotelFilter = () => {
                                           {/* Location */}
                                           <p className="sgfsvdfgf mt-1 mb-3">
                                             {headline
-                                              ? shortDescription?.split(" ")?.slice(0, 18)?.join(" ")
-                                              : shortDescription?.split(" ")?.slice(0, 25)?.join(" ")
-                                            }
+                                              ? shortDescription
+                                                  ?.split(" ")
+                                                  ?.slice(0, 18)
+                                                  ?.join(" ")
+                                              : shortDescription
+                                                  ?.split(" ")
+                                                  ?.slice(0, 25)
+                                                  ?.join(" ")}
 
-                                            {shortDescription?.split(" ")?.length >
+                                            {shortDescription?.split(" ")
+                                              ?.length >
                                               (headline ? 18 : 25) && (
-                                                <>
-                                                  ...{" "}
-                                                  <span
-                                                    onClick={() => {
-                                                      navigate(`/hotel-details/${hotel.hotel_code}?${params.toString()}`);
-                                                    }}
-                                                    style={{
-                                                      color: "var(--main-green-color)",
-                                                      cursor: "pointer",
-                                                      fontWeight: "600",
-                                                    }}
-                                                  >
-                                                    Read More
-                                                  </span>
-                                                </>
-                                              )}
+                                              <>
+                                                ...{" "}
+                                                <span
+                                                  onClick={() => {
+                                                    navigate(
+                                                      `/hotel-details/${hotel.hotel_code}?${params.toString()}`,
+                                                    );
+                                                  }}
+                                                  style={{
+                                                    color:
+                                                      "var(--main-green-color)",
+                                                    cursor: "pointer",
+                                                    fontWeight: "600",
+                                                  }}
+                                                >
+                                                  Read More
+                                                </span>
+                                              </>
+                                            )}
                                           </p>
                                         </div>
 
                                         <div className="ubjbsdknfusdf">
-                                            <p className="mb-1">| {displayName}</p>
+                                          <p className="mb-1">
+                                            | {displayName}
+                                          </p>
                                         </div>
 
                                         <div className="diehfsdf d-flex align-items-center gap-1 mt-2 mb-1">
                                           <div className="iudhewijjrrr p-2 me-1">
-                                            <img src="./images/gift.png" alt="" />
+                                            <img
+                                              src="./images/gift.png"
+                                              alt=""
+                                            />
                                           </div>
 
-                                          <h6 className="mb-0">Long Stay Benefits</h6>
+                                          <h6 className="mb-0">
+                                            Long Stay Benefits
+                                          </h6>
                                         </div>
 
                                         <div className="djiwehriwer d-flex align-items-center gap-1">
                                           <div className="diehrknjiwer d-flex align-items-center p-2 rounded-3">
-                                            <img src="./images/leaves.png" className="me-1" alt="" />
+                                            <img
+                                              src="./images/leaves.png"
+                                              className="me-1"
+                                              alt=""
+                                            />
 
                                             <div className="duewhrwer">
                                               <p className="mb-0">20% off on</p>
 
-                                              <p className="mb-0">Spa Session</p>
+                                              <p className="mb-0">
+                                                Spa Session
+                                              </p>
                                             </div>
                                           </div>
 
                                           <div className="diehrknjiwer d-flex align-items-center p-2 rounded-3">
-                                            <img src="./images/leaves.png" className="me-1" alt="" />
+                                            <img
+                                              src="./images/leaves.png"
+                                              className="me-1"
+                                              alt=""
+                                            />
 
                                             <div className="duewhrwer">
                                               <p className="mb-0">20% off on</p>
 
-                                              <p className="mb-0">Food & Beverage Services</p>
+                                              <p className="mb-0">
+                                                Food & Beverage Services
+                                              </p>
                                             </div>
                                           </div>
 
                                           <div className="diehrknjiwer d-flex align-items-center p-2 rounded-3">
-                                            <img src="./images/leaves.png" className="me-1" alt="" />
+                                            <img
+                                              src="./images/leaves.png"
+                                              className="me-1"
+                                              alt=""
+                                            />
 
                                             <div className="duewhrwer">
                                               <p className="mb-0">20% off on</p>
 
-                                              <p className="mb-0">Laundry Service (upto 2 items)</p>
+                                              <p className="mb-0">
+                                                Laundry Service (upto 2 items)
+                                              </p>
                                             </div>
                                           </div>
                                         </div>
@@ -2052,35 +2366,65 @@ export const HotelFilter = () => {
                                   <div className="dinweirowerwer">
                                     <div className="fdjvfd78 mb-2">
                                       <p className="mb-0 d-flex flex-column gap-1">
-                                        From <span>₹{Math.round(totalBasePrice).toLocaleString("en-IN")}</span>
+                                        From{" "}
+                                        <span>
+                                          ₹
+                                          {Math.round(
+                                            totalBasePrice,
+                                          ).toLocaleString("en-IN")}
+                                        </span>
                                       </p>
                                     </div>
 
                                     <div className="vdfv785 mb-2">
-                                      <p className="mb-0">+ ₹ {Math.round(room?.TotalTax || 0).toLocaleString("en-IN")} taxes & fees</p>
-                                      <small>Per Night for {roomCount} Room{roomCount > 1 ? "s" : ""}</small>
+                                      <p className="mb-0">
+                                        + ₹{" "}
+                                        {Math.round(
+                                          room?.TotalTax || 0,
+                                        ).toLocaleString("en-IN")}{" "}
+                                        taxes & fees
+                                      </p>
+                                      <small>
+                                        Per Night for {roomCount} Room
+                                        {roomCount > 1 ? "s" : ""}
+                                      </small>
                                     </div>
                                   </div>
 
                                   <div className="iduweoijrwer">
                                     <div className="sbfsdvfsf align-items-center mb-4">
                                       <div className="vfddf">
-                                        {[...Array(Number(hotel.hotel_rating || 0))].map((_, i) => (
-                                          <i key={i} className="fa-solid fa-star"></i>
+                                        {[
+                                          ...Array(
+                                            Number(hotel.hotel_rating || 0),
+                                          ),
+                                        ].map((_, i) => (
+                                          <i
+                                            key={i}
+                                            className="fa-solid fa-star"
+                                          ></i>
                                         ))}
                                       </div>
 
                                       <div className="vbhsf">
-                                        <span className="tour-badge">{hotel.hotel_rating}/5 Stars</span>
+                                        <span className="tour-badge">
+                                          {hotel.hotel_rating}/5 Stars
+                                        </span>
                                       </div>
                                     </div>
 
                                     <div className="sdbds86">
-                                      <button className="btn-tour w-100 py-2"
+                                      <button
+                                        className="btn-tour w-100 py-2"
                                         onClick={() => {
-                                          navigate(`/hotel-details/${hotel.hotel_code}?${params.toString()}`);
+                                          navigate(
+                                            `/hotel-details/${hotel.hotel_code}?${params.toString()}`,
+                                          );
                                         }}
-                                      >View Details <i className="bi ms-1 bi-arrow-up-right-circle"></i></button>
+                                      >
+                                        View Details{" "}
+                                        <i className="bi ms-1 bi-arrow-up-right-circle"></i>
+                                      </button>
                                     </div>
                                   </div>
                                 </div>
@@ -2090,12 +2434,20 @@ export const HotelFilter = () => {
                             <div className="tfty885r mt-4 d-flex align-items-center px-3 py-2 justify-content-between">
                               <div className="dsoijfcosdc">
                                 <h6 className="mb-0">
-                                  <img src="./images/vzdvs.png" className="me-3" alt="" />
-
-                                  SBI Debit Card Offer &nbsp; &nbsp; | &nbsp; &nbsp; Get INR 5000 Off!</h6>
+                                  <img
+                                    src="./images/vzdvs.png"
+                                    className="me-3"
+                                    alt=""
+                                  />
+                                  SBI Debit Card Offer &nbsp; &nbsp; | &nbsp;
+                                  &nbsp; Get INR 5000 Off!
+                                </h6>
                               </div>
 
-                              <button className="btn btn-light overflow-hidden position-relative py-1 d-flex align-items-center"><span>Know More</span> <i className="fa-solid fa-arrow-right"></i></button>
+                              <button className="btn btn-light overflow-hidden position-relative py-1 d-flex align-items-center">
+                                <span>Know More</span>{" "}
+                                <i className="fa-solid fa-arrow-right"></i>
+                              </button>
                             </div>
                           </div>
                         </div>
@@ -2337,7 +2689,6 @@ export const HotelFilter = () => {
                       </div>
                     </div>
                   </div> */}
-
                 </div>
               </div>
             </div>

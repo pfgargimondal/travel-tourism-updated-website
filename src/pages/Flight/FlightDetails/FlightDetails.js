@@ -4087,25 +4087,21 @@ console.log(selectedSeats, 'selectedSeats');
                           </div>
                         </div> */}
 
-                        {isBlockAllowed && (
+                        {/* {isBlockAllowed && (
                           <div className="fndyff987er">
                             <div className="trip-card d-flex justify-content-between align-items-center">
-                              {/* Left Content */}
                               <div className="d-flex gap-3 align-items-start">
-                                {/* Logo */}
                                 <div className="sdfsdfdsf">
                                   <img src="/images/fl_small_blue_plain_lock.png" alt="" />
                                 </div>
 
                                 <div className="mt-3">
-                                  {/* Title */}
                                   <div className="fw-bold" style={{ fontSize: "18px" }}>
                                     Still unsure about this trip? Lock this price!
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Button */}
                               <button className="btn btn-outline-primary rounded-pill px-4"
                                 onClick={() => {
                                   if (!isLoggedIn) {
@@ -4119,7 +4115,7 @@ console.log(selectedSeats, 'selectedSeats');
                               </button>
                             </div>
                           </div>
-                        )}
+                        )} */}
 
                         <div className="sdejvfhsikdjl text-end mt-3">
                           <button
@@ -4130,7 +4126,7 @@ console.log(selectedSeats, 'selectedSeats');
                                 setLoginRegModal(true);
                                 return;
                               }
-                              handleContinue();
+                              // handleContinue();
                               setCurrent(1);
                             }}
                           >

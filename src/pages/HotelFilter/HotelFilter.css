@@ -8,7 +8,6 @@
 }
 
 .filter-box {
-  padding: 20px;
   border-radius: 10px;
   background: #fff;
 }
@@ -17,7 +16,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  padding: 0.7rem;
 }
 
 .reset-btn {
@@ -34,10 +33,13 @@
   margin-top: 5px;
 }
 
+.fijkfokweer .suggested-item:last-child{
+  margin-bottom: 0;
+}
+
 .filter-section {
-  margin-top: 20px;
   border-top: 1px solid #ddd;
-  padding-top: 20px;
+  padding: 0.7rem;
 }
 
 .filter-section h6 {
@@ -1001,7 +1003,7 @@ button.xbzgsczxcrr {
     padding: 15px;
     border-radius: 50px;
     border: 1px solid var(--border);
-    z-index: 9999;
+    z-index: 999;
     box-shadow: var(--light-box-shadow);
   }
 

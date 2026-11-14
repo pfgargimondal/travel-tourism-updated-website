@@ -2016,7 +2016,7 @@ label.nihnuidnuiwehrwer img{
         padding: 15px;
         border-radius: 50px;
         border: 1px solid var(--border);
-        z-index: 9999;
+        z-index: 999;
         box-shadow: var(--light-box-shadow);        
     }
 
@@ -2187,7 +2187,7 @@ label.nihnuidnuiwehrwer img{
 
     .round-trip-booking-bar{
         padding-bottom: 1.8rem !important;
-        z-index: 999;
+        z-index: 9999;
         bottom: 10%;
         left: 50%;
         transform: translateX(-50%);
@@ -2238,6 +2238,24 @@ label.nihnuidnuiwehrwer img{
 }
 
 
+@media only screen and (max-width: 884px){
+    .filter-card .filter-header {
+        bottom: 23%;
+    }
+}
+
+
+@media only screen and (max-width: 820px){
+    .round-trip-booking-bar {
+        bottom: 8%;
+    }
+
+    .filter-card .filter-header {
+        bottom: 19%;
+    }
+}
+
+
 @media only screen and (max-width: 800px){
     .round-trip-booking-bar{
         flex-direction: column;
@@ -2262,11 +2280,22 @@ label.nihnuidnuiwehrwer img{
     }
 
     .filter-card .filter-header {
-        bottom: 36%;
+        bottom: 24%;
     }
 
     .iancjnsxnc {
         width: 100%;
+    }
+}
+
+
+@media only screen and (max-width: 768px){
+    .round-trip-booking-bar {
+        bottom: 9%;
+    }
+
+    .filter-card .filter-header {
+        bottom: 29%;
     }
 }
 
@@ -2620,9 +2649,44 @@ label.nihnuidnuiwehrwer img{
 }
 
 
+@media only screen and (max-width: 467px){
+    .round-trip-container{
+        display: flex;
+    }
+
+    .res-round-trip-onward-col,
+    .res-round-trip-return-col{
+        width: 33%;
+        transition: 0.3s ease-in-out;
+    }
+
+    .round-trip-column{
+        transition: 0.3s ease-in-out;
+    }
+
+    .res-round-trip-onward-col .flight-duration small,
+    .res-round-trip-return-col .flight-duration small,
+    .res-round-trip-onward-col .flight-card div small,
+    .res-round-trip-return-col .flight-card div small{
+        white-space: nowrap;
+    }
+}
+
+
 @media only screen and (max-width: 457px) {
     .filter-card .filter-header {
         bottom: 39%;
+    }
+}
+
+
+@media only screen and (max-width: 430px){
+    .round-trip-booking-bar {
+        bottom: 7%;
+    }
+
+    .filter-card .filter-header {
+        bottom: 28%;
     }
 }
 
@@ -2650,6 +2714,17 @@ label.nihnuidnuiwehrwer img{
 }
 
 
+@media only screen and (max-width: 412px){
+    .filter-card .filter-header {
+        bottom: 29%;
+    }
+
+    .round-trip-booking-bar {
+        bottom: 8%;
+    }
+}
+
+
 @media only screen and (max-width: 393px) {
     .filter-card .filter-header h5{
         font-size: 1rem;
@@ -2666,6 +2741,35 @@ label.nihnuidnuiwehrwer img{
 
     .dikijasdlfdsf .btn-tour {
         font-size: 12px;
+    }
+
+    .res-round-trip-onward-col,
+    .res-round-trip-return-col{
+        width: 22%;
+    }
+
+    .filter-card .filter-header {
+        bottom: 31%;
+    }
+
+    .round-trip-booking-bar {
+        bottom: 8%;
+    }
+
+    .trip-heading-item strong{
+        white-space: nowrap;
+    }
+
+    .trip-heading-item{
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+
+@media only screen and (max-width: 384px){
+    .filter-card .filter-header {
+        bottom: 29%;
     }
 }
 
@@ -2694,6 +2798,7 @@ label.nihnuidnuiwehrwer img{
 @media only screen and (max-width: 360px){
     .filter-card .filter-header{
         width: 95%;
+        bottom: 33%;
     }
 
     .docmosdfsdf h4 {
@@ -2710,6 +2815,14 @@ label.nihnuidnuiwehrwer img{
 
     .booking-flight-details{
         justify-content: center;
+    }
+
+    .airport-info h4 {
+        font-size: 16px;
+    }
+
+    .flight-route-row .airport-info small{
+        font-size: 10px;
     }
 }
 
@@ -2765,6 +2878,25 @@ label.nihnuidnuiwehrwer img{
 
     .offer-strip{
         padding-inline: 0;
+    }
+}
+
+
+@media only screen and (max-width: 320px){
+    .round-trip-booking-bar {
+        bottom: 11%;
+    }
+    
+    .filter-card .filter-header {
+        bottom: 41%;
+    }
+
+    .airport-info h4 {
+        font-size: 14px;
+    }
+
+    .booking-airline{
+        margin-bottom: 0;
     }
 }
 
