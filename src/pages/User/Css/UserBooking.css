@@ -514,12 +514,6 @@
 }
 
 
-
-
-
-
-
-
 @media only screen and (max-width: 991px){
   .stat-card-top{
     flex-direction: column;
@@ -560,10 +554,6 @@
   }
 }
 
-
-
-
-
 @media only screen and (max-width: 617px){
   .filter-tab-content .nav{
     padding-bottom: 0.7rem;
@@ -571,19 +561,11 @@
   }
 }
 
-
-
-
-
 @media only screen and (max-width: 600px){
   .stat-card {
     align-items: center;
   }
 }
-
-
-
-
 
 @media only screen and (max-width: 560px){
   .help-bar{
@@ -596,10 +578,6 @@
   }
 }
 
-
-
-
-
 @media only screen and (max-width: 428px){
   .table-footer{
     flex-direction: column;
@@ -611,10 +589,6 @@
   }
 }
 
-
-
-
-
 @media only screen and (max-width: 370px){
   .filter-btn {
     padding: 8px 10px;
@@ -623,4 +597,239 @@
   .search-input {
     width: 150px;
   }
+}
+
+
+
+
+/* Held Booking Card */
+
+.held-booking-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #dedede;
+    border-radius: 5px;
+    margin: 15px 29px 25px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+/* Header */
+
+.held-booking-header {
+    display: flex;
+    align-items: center;
+    position: relative;
+    min-height: 86px;
+    padding: 15px 40px;
+    border-bottom: 1px solid #ddd;
+    gap: 18px;
+}
+
+.held-booking-icon {
+    position: absolute;
+    left: -23px;
+    top: 16px;
+    width: 43px;
+    height: 43px;
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    color: #29475e;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+
+.held-booking-heading {
+    flex: 1;
+    min-width: 0;
+    padding-left: 2px;
+}
+
+.held-route-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.held-route-title h5 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #253b53;
+    margin: 0;
+}
+
+.held-route-title h5 i {
+    font-size: 14px;
+}
+
+.held-booking-validity {
+    background: #fff0d3;
+    color: #b87b16;
+    padding: 3px 7px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.held-booking-reference {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #858585;
+}
+
+.held-manage-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 22px;
+    background: linear-gradient(90deg, #58b8ed, #176bf0);
+    color: #fff !important;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 25px;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,.15);
+    border: none;
+}
+
+.held-manage-button:hover {
+    opacity: .9;
+}
+
+/* Body */
+
+.held-booking-body {
+    display: grid;
+    grid-template-columns: 165px 165px minmax(150px, 1fr) 130px;
+    align-items: center;
+    gap: 22px;
+    min-height: 125px;
+    padding: 20px 42px;
+}
+
+.held-location {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.held-label {
+    color: #929292;
+    font-size: 12px;
+}
+
+.held-location strong {
+    color: #555;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.held-airport-details {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 10px;
+    color: #555;
+}
+
+.held-terminal {
+    color: #c18420;
+    font-weight: 600;
+}
+
+.held-airline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #454545;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.held-airline i {
+    font-size: 15px;
+    color: #777;
+}
+
+.held-book-now {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    color: #0788e8 !important;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+
+    /* Remove default button styling */
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    box-shadow: none;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: normal;
+    appearance: none;
+}
+
+.held-book-now i {
+    font-size: 15px;
+}
+
+.held-book-now:hover {
+    color: #005bb5 !important;
+    background: transparent;
+}
+
+.held-book-now:focus,
+.held-book-now:active {
+    outline: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+/* Responsive */
+
+@media (max-width: 991px) {
+    .held-booking-body {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .held-booking-header {
+        padding: 15px 15px 15px 28px;
+        flex-wrap: wrap;
+    }
+
+    .held-booking-icon {
+        left: -15px;
+    }
+
+    .held-manage-button {
+        width: 100%;
+    }
+
+    .held-booking-body {
+        grid-template-columns: 1fr 1fr;
+        padding: 20px;
+    }
+
+    .held-booking-reference {
+        flex-wrap: wrap;
+    }
 }
