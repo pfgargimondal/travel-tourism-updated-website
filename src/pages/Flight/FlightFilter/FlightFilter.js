@@ -3680,7 +3680,7 @@ export const FlightFilter = () => {
                                   <div className="d-flex align-items-center justify-content-between gap-2">
                                     <div className="uiajsdkcoijzczx d-flex gap-3 align-items-center justify-content-between">
                                       <img
-                                        src={`https: //images.kiwi.com/airlines/64/${firstSegment.Airline_Code}.png`}
+                                        src={`https://images.kiwi.com/airlines/64/${firstSegment.Airline_Code}.png`}
                                         className="airline-logo"
                                         alt=""
                                         onError={(e) => {

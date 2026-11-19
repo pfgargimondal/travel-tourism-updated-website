@@ -1684,15 +1684,37 @@ export const FlightDetails = () => {
 
       console.log("ASEGO Response:", response.data);
 
-      const plans = Array.isArray(response.data.data)
-        ? response.data.data
-        : [];
+      // const plans = Array.isArray(response.data.data)
+      //   ? response.data.data
+      //   : [];
 
-      setInsurancePlans(plans);
+      // setInsurancePlans(plans);
+      // setSelectedInsurancePlan(null);
+      // setShowInsurancePlans(true);
+
+      // if (!plans.length) {
+      //   setInsuranceError("No insurance plans available.");
+      // }
+
+      const insurers =
+        response.data?.data?.data ??
+        response.data?.data ??
+        [];
+
+      const formattedPlans = insurers.flatMap(insurer =>
+        (insurer.plans || []).map(plan => ({
+          ...plan,
+          insurerName: insurer.insurerName,
+          insurerLogoPath: insurer.insurerLogoPath,
+          termsAndConditions: insurer.termsAndConditions,
+        }))
+      );
+
+      setInsurancePlans(formattedPlans);
       setSelectedInsurancePlan(null);
       setShowInsurancePlans(true);
 
-      if (!plans.length) {
+      if (formattedPlans.length === 0) {
         setInsuranceError("No insurance plans available.");
       }
 
@@ -1989,6 +2011,7 @@ export const FlightDetails = () => {
         } else {
             // No meals / no extra add-ons → Booking
             setShowSeatMealSection(true);
+            setCurrent(2);
             // setFlightBookingModal(true);
         }
     }
@@ -2003,6 +2026,7 @@ export const FlightDetails = () => {
         } else {
             // No extra add-ons → Booking
             setShowSeatMealSection(true);
+            setCurrent(2);
             // setFlightBookingModal(true);
         }
     }
@@ -3977,47 +4001,115 @@ console.log(selectedSeats, 'selectedSeats');
                                       ? "Loading Plans..."
                                       : "Get Insurance Plans"}
                                   </button>
-
+                                  
                                   {/* ASEGO Plans */}
                                   {showInsurancePlans && (
-                                    <div className="mt-4">
+                                    <div className="asego-plans-container mt-4">
 
-                                      <h6>Available Insurance Plans</h6>
+                                      <h6 className="mb-3">Available Insurance Plans</h6>
 
-                                      {insurancePlans.map((plan, index) => (
-                                        <div
-                                          className={`asego-plan-option p-3 mb-2 ${
-                                            selectedInsurancePlan === plan ? "active" : ""
-                                          }`}
-                                          key={plan.id || index}
-                                        >
+                                      {insurancePlans.map((plan, index) => {
 
-                                          <div className="d-flex justify-content-between align-items-center">
+                                        const totalPremium = (plan.agePremiums || []).reduce(
+                                          (total, item) => total + Number(item.premium || 0),
+                                          0
+                                        );
 
-                                            <div>
-                                              <h6>
-                                                {plan.name || plan.planName || `Plan ${index + 1}`}
-                                              </h6>
+                                        return (
+                                          <div
+                                            className={`asego-api-plan ${
+                                              selectedInsurancePlan?.id === plan.id ? "active" : ""
+                                            }`}
+                                            key={plan.id || index}
+                                          >
 
-                                              <p className="small-text mb-0">
-                                                {plan.description || "Travel insurance coverage"}
-                                              </p>
+                                            {/* Insurer */}
+                                            <div className="asego-plan-header">
+                                              <div>
+                                                <small>Insurance Provider</small>
+                                                <h6>{plan.insurerName}</h6>
+                                                <span>{plan.displayName || plan.name}</span>
+                                              </div>
+
+                                              {plan.asegoRecomended && (
+                                                <span className="asego-recommended">
+                                                  Recommended
+                                                </span>
+                                              )}
                                             </div>
 
+                                            {/* Price */}
+                                            <div className="asego-plan-price">
+                                              <div>
+                                                <small>Total Insurance Premium</small>
+                                                <h4>₹ {totalPremium.toFixed(2)}</h4>
+                                              </div>
+
+                                              <div className="text-end">
+                                                <small>Sum Insured</small>
+                                                <h6>{plan.sumInsured}</h6>
+                                              </div>
+                                            </div>
+
+                                            {/* Age wise premium */}
+                                            <div className="asego-age-premium">
+                                              <strong>Traveller Premium Details</strong>
+
+                                              {(plan.agePremiums || []).map((item, i) => (
+                                                <div key={i} className="d-flex justify-content-between mt-2">
+                                                  <span>Traveller {i + 1} (Age {item.age})</span>
+                                                  <strong>₹ {Number(item.premium).toFixed(2)}</strong>
+                                                </div>
+                                              ))}
+                                            </div>
+
+                                            {/* Coverages */}
+                                            <div className="asego-coverage-section">
+
+                                              <strong>Insurance Benefits</strong>
+
+                                              {(plan.coverages || []).map((coverage, i) => (
+                                                <div className="asego-coverage-item" key={i}>
+
+                                                  <div>
+                                                    <i className="fa-solid fa-circle-check"></i>
+                                                    <span>{coverage.name}</span>
+                                                  </div>
+
+                                                  <strong>
+                                                    ₹ {Number(coverage.maxAmount || 0).toLocaleString("en-IN")}
+                                                  </strong>
+
+                                                </div>
+                                              ))}
+
+                                            </div>
+
+                                            {/* Select Plan */}
                                             <button
                                               type="button"
-                                              className="btn btn-outline-success btn-sm"
+                                              className={`asego-select-btn ${
+                                                selectedInsurancePlan?.id === plan.id
+                                                  ? "selected"
+                                                  : ""
+                                              }`}
                                               onClick={() => setSelectedInsurancePlan(plan)}
                                             >
-                                              {selectedInsurancePlan === plan
-                                                ? "Selected"
-                                                : "Select"}
+                                              {selectedInsurancePlan?.id === plan.id
+                                                ? "✓ Selected Plan"
+                                                : "Select This Plan"}
                                             </button>
 
-                                          </div>
+                                            {/* Terms */}
+                                            {plan.termsAndConditions && (
+                                              <p className="asego-terms">
+                                                Terms and Conditions: {plan.termsAndConditions}
+                                              </p>
+                                            )}
 
-                                        </div>
-                                      ))}
+                                          </div>
+                                        );
+                                      })}
 
                                     </div>
                                   )}
@@ -5206,7 +5298,8 @@ console.log(selectedSeats, 'selectedSeats');
                         </div>
                         )}
 
-                        {showSeatMealSection && hasSeatOrMeal && hasExtraAddOn && (
+                        {showSeatMealSection &&
+                            (hasSeatOrMeal || hasExtraAddOn) && (
                           <>
                             <div className="ucbhsduodkf mt-4">
                               {/* =========================================================

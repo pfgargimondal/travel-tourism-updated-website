@@ -3380,3 +3380,136 @@ p.jomkodokofjdf{
 }
 
 
+.asego-api-plan {
+  background: #fff;
+  border: 1px solid #dce5ed;
+  border-radius: 7px;
+  padding: 16px;
+  margin-bottom: 15px;
+  transition: .2s;
+}
+
+.asego-api-plan.active {
+  border: 1px solid #159b70;
+  background: #f6fff9;
+}
+
+.asego-plan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.asego-plan-header small,
+.asego-plan-price small {
+  color: #718096;
+  font-size: 11px;
+}
+
+.asego-plan-header h6 {
+  margin: 5px 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.asego-plan-header span {
+  color: #0788ce;
+  font-size: 12px;
+}
+
+.asego-recommended {
+  background: #d9f8e9;
+  color: #168454 !important;
+  padding: 5px 8px;
+  border-radius: 4px;
+}
+
+.asego-plan-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f3f7ff;
+  padding: 13px;
+  margin: 12px 0;
+  border-radius: 5px;
+}
+
+.asego-plan-price h4 {
+  color: #078cbd;
+  font-weight: 700;
+  margin: 5px 0 0;
+  font-size: 21px;
+}
+
+.asego-plan-price h6 {
+  margin-top: 6px;
+  font-weight: 700;
+}
+
+.asego-age-premium {
+  padding: 10px;
+  background: #fafcff;
+  border: 1px solid #edf0f4;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.asego-coverage-section {
+  margin-top: 15px;
+}
+
+.asego-coverage-section > strong {
+  font-size: 13px;
+}
+
+.asego-coverage-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid #edf0f3;
+  font-size: 11px;
+}
+
+.asego-coverage-item div {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.asego-coverage-item i {
+  color: #1ab184;
+}
+
+.asego-coverage-item strong {
+  white-space: nowrap;
+}
+
+.asego-select-btn {
+  width: 100%;
+  border: 1px solid #159b70;
+  color: #159b70;
+  background: white;
+  padding: 9px;
+  margin-top: 14px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.asego-select-btn.selected {
+  color: white;
+  background: #159b70;
+}
+
+.asego-terms {
+  font-size: 10px;
+  color: #718096;
+  margin: 10px 0 0;
+  overflow-wrap: anywhere;
+}
+
+
+
