@@ -1664,6 +1664,8 @@ export const FlightFilter = () => {
                                   minDate={new Date()}
                                   dateFormat="dd MMM yyyy"
                                   className="form-control"
+                                  onKeyDown={(e) => e.preventDefault()}
+                                  onPaste={(e) => e.preventDefault()}
                                 />
                               </div>
 
@@ -1684,6 +1686,8 @@ export const FlightFilter = () => {
                                   minDate={new Date()}
                                   dateFormat="dd MMM yyyy"
                                   className="form-control"
+                                  onKeyDown={(e) => e.preventDefault()}
+                                  onPaste={(e) => e.preventDefault()}
                                 />
                               </div>
 
