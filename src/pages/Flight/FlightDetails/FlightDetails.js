@@ -2150,6 +2150,39 @@ export const FlightDetails = () => {
     0
   );
 
+  
+
+  useEffect(() => {
+    if (activeSeatMealTab === "meals" && passengerList?.length > 0) {
+        setActiveMealPassenger(0);
+    }
+  }, [activeSeatMealTab, passengerList?.length]);
+
+  const handleMealSelect = (meal) => {
+      if (activeMealPassenger === null || !meal) {
+          return;
+      }
+
+      const passenger = passengerList?.[activeMealPassenger];
+
+      setSelectedMeals((prev) => ({
+          ...prev,
+          [activeMealPassenger]: {
+              ...meal,
+              passengerIndex: activeMealPassenger,
+              paxId: passenger?.Pax_Id || passenger?.paxId || activeMealPassenger + 1,
+          },
+      }));
+
+      // Automatically move to the next passenger
+      const nextPassenger = activeMealPassenger + 1;
+
+      if (nextPassenger < passengerList.length) {
+          setActiveMealPassenger(nextPassenger);
+      }
+  };
+
+
   const selectedMealList = Array.isArray(selectedMeals)
     ? selectedMeals
     : selectedMeals
@@ -2176,30 +2209,6 @@ export const FlightDetails = () => {
     },
     0
   );
-
-  useEffect(() => {
-    if (activeSeatMealTab === "meals" && passengerList?.length > 0) {
-        setActiveMealPassenger(0);
-    }
-  }, [activeSeatMealTab, passengerList?.length]);
-
-  const handleMealSelect = (meal) => {
-    if (activeMealPassenger === null || !meal) {
-        return;
-    }
-
-    setSelectedMeals((prev) => ({
-        ...prev,
-        [activeMealPassenger]: meal,
-    }));
-
-    // Automatically move to the next passenger
-    const nextPassenger = activeMealPassenger + 1;
-
-    if (nextPassenger < passengerList.length) {
-        setActiveMealPassenger(nextPassenger);
-    }
-  };
 
 
   const extraAddOnTypes = ["ADDITIONALBAGGAGE", "BAGGAGE", "SEAT", "COMPLIMENTORY_MEALS", "MEALS"];
@@ -2943,7 +2952,6 @@ export const FlightDetails = () => {
 
     if (Array.isArray(selectedMealList)) {
       selectedMealList.forEach((meal) => {
-        console.log(meal, 'mealsergderhpayment');
         ssrDetails.push({
           // SSR_Type: "MEAL",
 
@@ -2959,6 +2967,8 @@ export const FlightDetails = () => {
       });
     }
 
+    console.log(selectedSSR, 'selectedSSR');
+
     Object.values(selectedSSR || {}).forEach((passengerSSR) => {
       Object.values(passengerSSR || {}).forEach((ssr) => {
         if (!ssr) return;
@@ -2972,6 +2982,8 @@ export const FlightDetails = () => {
         });
       });
     });
+
+    console.log(ssrDetails, 'ssrDetailsssrDetails');
 
     return ssrDetails;
   };
@@ -3164,7 +3176,6 @@ export const FlightDetails = () => {
     }
   };
 
-console.log(selectedSeats, 'selectedSeats');
 
   if (loading) return <Loader />;
 
