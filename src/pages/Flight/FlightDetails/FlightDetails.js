@@ -1773,6 +1773,7 @@ export const FlightDetails = () => {
         },
       },
     }));
+    console.log(setSelectedSSR, 'setSelectedSSRsetSelectedSSR');
   };
 
   const handleIncreaseSSR = (bag) => {
@@ -2574,6 +2575,30 @@ export const FlightDetails = () => {
     Ticketing_Type: "1",
   });
 
+  const createTicketingPayloadWithPayment = ({bookingReference, paymentResponse, paymentResponseData}) => ({
+
+    BookingReference: bookingReference,
+    Search_Key: search_key || "",
+    Flight_Key: getFlightKey(),
+    PaymentId: paymentResponse?.razorpay_payment_id || "",
+    OrderId: paymentResponse?.razorpay_order_id || "",
+    PaymentSignature: paymentResponse?.razorpay_signature || "",
+    PAX_Details: createPAXDetails(),
+    BookingFlightDetails: [
+      {
+        Search_Key: search_key || "",
+        Flight_Key: getFlightKey(),
+        BookingSSRDetails: createBookingSSRDetails(),
+      },
+    ],
+    Passenger_Mobile: bookingPassengers?.[0]?.mobile || "",
+    Passenger_Email: bookingPassengers?.[0]?.email || "",
+    Ticketing_Type: "1",
+    amount: paymentResponseData?.Amount,
+    debitedAmount: paymentResponseData?.DebitedAmount,
+    paymentId: paymentResponseData?.PaymentID,
+  })
+
   /* One helper instead of 5 copy-pasted navigate() blocks */
   const goToPending = (bookingReference, extra = {}) => {
     navigate(`/flight-booking-pending/${bookingReference}`, {
@@ -2611,6 +2636,9 @@ export const FlightDetails = () => {
         createTicketingPayload({ bookingReference, paymentResponse })
       );
 
+      const paymentResponseData = addPaymentResponse?.data?.data || {};
+
+
       if (!addPaymentResponse?.data?.success) {
         const message =
           addPaymentResponse?.data?.message || "Payment could not be completed.";
@@ -2638,10 +2666,14 @@ export const FlightDetails = () => {
       // 3. Air ticketing
       const ticketResponse = await http.post(
         "/flight-ticketing",
-        createTicketingPayload({ bookingReference, paymentResponse })
+        createTicketingPayloadWithPayment({ bookingReference, paymentResponse, paymentResponseData })
       );
 
-      const ticketData = ticketResponse?.data?.data || {};
+      // console.log("FULL TICKETING RESPONSE:", ticketResponse?.data);
+      // console.log("TICKETING DATA:", ticketResponse?.data?.data);
+
+      // const ticketData = ticketResponse?.data?.data || {};
+      const ticketData = ticketResponse?.data || {};
       const airlinePNRDetails = ticketData?.AirlinePNRDetails || [];
       const header = ticketData?.Response_Header || {};
 
@@ -2651,7 +2683,7 @@ export const FlightDetails = () => {
       const statusId = header?.Status_Id || "";
 
       // 4. Work out the status
-      let bookingStatus = "pending";
+      let bookingStatus = "";
       if (errorCode === "0000" && airlinePNRDetails.length > 0) {
         bookingStatus = "confirmed";
       } else if (errorCode === "0046") {
@@ -2935,7 +2967,6 @@ export const FlightDetails = () => {
     }));
   };
 
-  console.log(createPAXDetails, 'createPAXDetailscreatePAXDetailscreatePAXDetailscreatePAXDetails');
 
   const createBookingSSRDetails = () => {
     const ssrDetails = [];
@@ -2967,8 +2998,6 @@ export const FlightDetails = () => {
       });
     }
 
-    console.log(selectedSSR, 'selectedSSR');
-
     Object.values(selectedSSR || {}).forEach((passengerSSR) => {
       Object.values(passengerSSR || {}).forEach((ssr) => {
         if (!ssr) return;
@@ -2983,7 +3012,25 @@ export const FlightDetails = () => {
       });
     });
 
-    console.log(ssrDetails, 'ssrDetailsssrDetails');
+    // =====================================================
+    // EXTRA ADD-ONS
+    // =====================================================
+
+    if (Array.isArray(selectedExtraAddOns)) {
+        selectedExtraAddOns.forEach((addOn) => {
+            if (!addOn?.SSR_Key) return;
+
+            ssrDetails.push({
+                Pax_Id: Number(
+                    addOn?.paxId ??
+                    addOn?.Pax_Id ??
+                    1
+                ),
+                SSR_Key: addOn.SSR_Key || "",
+            });
+        });
+    }
+
 
     return ssrDetails;
   };
