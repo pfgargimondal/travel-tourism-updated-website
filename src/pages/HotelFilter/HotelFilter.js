@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { Slider } from "@mui/material";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
 
 import http from "../../http";
 import Loader from "../../component/Loader/Loader";
@@ -10,6 +12,8 @@ import { useHotelFilters } from "../../context/HotelFilterContext";
 import { HotelSearch } from "../../component/HotelSearch/HotelSearch";
 
 import "./HotelFilter.css";
+import "swiper/css";
+import "swiper/css/navigation";
 
 
 
@@ -22,6 +26,7 @@ export const HotelFilter = () => {
   const [hotels, setHotels] = useState([]);
   const [hotelFilterOptionsToggle, setHotelFilterOptionsToggle] = useState(false);
   const [resHotelFilterToggle, setResHotelFilterToggle] = useState(false);
+  const [hotelGalleryModalOpen, setHotelGalleryModalOpen] = useState(false);
   // eslint-disable-next-line
   const [searchParams, setSearchParams] = useState({
     city: "",
@@ -2216,7 +2221,7 @@ export const HotelFilter = () => {
                                       <div className="fbvhjd position-relative">
                                         <img src={hotel.image} alt="" />
 
-                                        <button className="xbzgsczxcrr rounded-pill position-absolute px-2 py-1">
+                                        <button onClick={() => setHotelGalleryModalOpen(prev => !prev)} className="xbzgsczxcrr rounded-pill position-absolute px-2 py-1">
                                           <i className="fa-regular me-1 fa-images"></i>{" "}
                                           25 Photos
                                         </button>
@@ -2693,6 +2698,30 @@ export const HotelFilter = () => {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className={`hotel-gallery-modal-backdrop ${hotelGalleryModalOpen ? "" : "hotel-gallery-modal-backdrop-hide"} w-100 h-100 position-fixed top-0 start-0 bottom-0 end-0`}></div>
+      
+      <div className={`hotel-gallery-modal ${hotelGalleryModalOpen ? "" : "hotel-gallery-modal-hide"} position-fixed top-50 start-50 translate-middle bg-white p-2 rounded-2`}>
+        <i onClick={() => setHotelGalleryModalOpen(false)} className="fa-solid text-white hgm-close-btn position-absolute fa-xmark"></i>
+
+        <div className="hotel-gallery-slider">
+          <Swiper
+            modules={[Navigation]}
+            spaceBetween={50}
+            loop={false}
+            slidesPerView={1}
+            navigation
+          >
+            <SwiperSlide><img className="w-100" src="./images/5 star hotels.jpg" alt="" /></SwiperSlide>
+            
+            <SwiperSlide><img className="w-100" src="./images/5 star hotels.jpg" alt="" /></SwiperSlide>
+            
+            <SwiperSlide><img className="w-100" src="./images/5 star hotels.jpg" alt="" /></SwiperSlide>
+            
+            <SwiperSlide><img className="w-100" src="./images/5 star hotels.jpg" alt="" /></SwiperSlide>
+          </Swiper>
         </div>
       </div>
     </div>

@@ -537,9 +537,9 @@ export const RoundTripFareModal = ({
             </small>
 
             <span>
-              Onward: ₹ {formatPrice(onwardPrice)}
+              Onward: <b>₹ {formatPrice(onwardPrice)}</b>
               {" + "}
-              Return: ₹ {formatPrice(returnPrice)}
+              Return: <b>₹ {formatPrice(returnPrice)}</b>
             </span>
           </div>
 

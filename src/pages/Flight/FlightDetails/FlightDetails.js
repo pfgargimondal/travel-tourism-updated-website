@@ -3930,19 +3930,13 @@ export const FlightDetails = () => {
 
                         {/* Trip Secure */}
                         <div className="fgdfg584d">
-                          <div className="trip-card">
-
-                            <div className="d-flex align-items-center gap-2 mb-2">
-                              <i className="fa-solid fa-shield-halved text-success"></i>
-                              <h6 className="mb-0">Choose Your Trip Protection</h6>
-                            </div>
-
-                            <p className="small-text mb-3">
+                          <div className="trip-card sdfgsdf">
+                            <h5 className="mb-3"><span className="me-3 text-center"><i className="fa-solid fa-shield-halved text-success"></i></span>Choose Your Trip Protection</h5>
+                            
+                            <p className="mb-3">
                               Protect your journey with Trip Secure. Select whether you want to add
                               travel insurance to your booking.
                             </p>
-
-                            {/* Radio Buttons */}
                             
                               {/* Radio Buttons */}
                               <div className="uidnweuyd mt-4 mb-3">
@@ -4049,16 +4043,18 @@ export const FlightDetails = () => {
                                     </p>
                                   )}
 
-                                  <button
-                                    type="button"
-                                    className="btn btn-success"
-                                    onClick={fetchAsegoPlans}
-                                    disabled={insuranceLoading}
-                                  >
-                                    {insuranceLoading
-                                      ? "Loading Plans..."
-                                      : "Get Insurance Plans"}
-                                  </button>
+                                  {!showInsurancePlans && (
+                                    <button
+                                      type="button"
+                                      className="btn btn-success"
+                                      onClick={fetchAsegoPlans}
+                                      disabled={insuranceLoading}
+                                    >
+                                      {insuranceLoading
+                                        ? "Loading Plans..."
+                                        : "Get Insurance Plans"}
+                                    </button>
+                                  )}
                                   
                                   {/* ASEGO Plans */}
                                   {showInsurancePlans && (
@@ -4146,7 +4142,7 @@ export const FlightDetails = () => {
                                             {/* Select Plan */}
                                             <button
                                               type="button"
-                                              className={`asego-select-btn ${
+                                              className={`btn asego-select-btn ${
                                                 selectedInsurancePlan?.id === plan.id
                                                   ? "selected"
                                                   : ""
@@ -4176,7 +4172,7 @@ export const FlightDetails = () => {
                               )}
 
                             {/* Footer */}
-                            <p className="mb-0 small-text d-flex align-items-center">
+                            <p className="uidnehrer mb-0 small-text d-flex align-items-center">
                               <i className="bi me-2 bi-shield-exclamation"></i> Trip
                               Secure is non-refundable. By selecting it, you confirm all
                               travelers are Indian nationals.

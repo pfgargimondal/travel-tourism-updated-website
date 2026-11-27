@@ -983,6 +983,40 @@ button.xbzgsczxcrr {
   color: var(--card-border-color) !important;
 }
 
+.hotel-gallery-modal-backdrop{
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99999;
+  backdrop-filter: blur(5px);
+  opacity: 1;
+  visibility: visible;
+}
+
+.hotel-gallery-modal-backdrop-hide{
+  z-index: -9999;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hotel-gallery-modal{
+  width: 500px;
+  max-width: 90%;
+  z-index: 99999;
+  opacity: 1;
+  visibility: visible;
+}
+
+.hotel-gallery-modal-hide{
+  z-index: -99999;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.hgm-close-btn{
+  right: -10%;
+  top: -10%;
+  font-size: 1.5rem;
+}
+
 
 
 

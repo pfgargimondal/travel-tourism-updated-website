@@ -22,6 +22,11 @@ export const ThankYou = () => {
         // paymentResponse,
     } = location.state || {};
 
+    console.log(ticketResponse, 'ticketResponse');
+    console.log(bookingReference, 'bookingReference');
+    console.log(bookingStatus, 'bookingStatus');
+    console.log(bookingMessage, 'bookingMessage');
+
 
     // =====================================================
     // FALLBACK TO SESSION STORAGE
@@ -64,36 +69,22 @@ export const ThankYou = () => {
     // TICKETING RESPONSE
     // =====================================================
 
-    const ticketData =
-        ticketResponse?.data || {};
+    // const ticketData = ticketResponse?.data || {};
+    const ticketData = ticketResponse || {};
 
-    const airlinePNRDetails =
-        ticketData?.AirlinePNRDetails || [];
+    const airlinePNRDetails = ticketData?.AirlinePNRDetails || [];
 
-    const responseHeader =
-        ticketData?.Response_Header || {};
+    const responseHeader = ticketData?.Response_Header || {};
 
-    const errorCode =
-        String(responseHeader?.Error_Code || "");
-
+    const errorCode = String(responseHeader?.Error_Code || "");
 
     // =====================================================
     // DETERMINE FINAL STATUS
     // =====================================================
 
-    const isConfirmed =
-        bookingStatus === "confirmed" &&
-        errorCode === "0000" &&
-        airlinePNRDetails.length > 0;
-
-    const isPaymentPending =
-        bookingStatus === "payment_pending" ||
-        errorCode === "0046";
-
-    const isTicketingFailed =
-        bookingStatus === "ticketing_failed" ||
-        errorCode === "0009";
-
+    const isConfirmed = bookingStatus === "confirmed" && errorCode === "0000" && airlinePNRDetails.length > 0;
+    const isPaymentPending = bookingStatus === "payment_pending" || errorCode === "0046";
+    const isTicketingFailed = bookingStatus === "ticketing_failed" || errorCode === "0009";
 
     // =====================================================
     // LOADER
@@ -115,25 +106,20 @@ export const ThankYou = () => {
     // =====================================================
 
     const airlinePNR =
+        airlinePNRDetails?.[0]?.AirlinePNRs?.[0]?.Airline_PNR ||
         airlinePNRDetails?.[0]?.Airline_PNR ||
         airlinePNRDetails?.[0]?.AirlinePNR ||
         airlinePNRDetails?.[0]?.PNR ||
         airlinePNRDetails?.[0]?.airlinePNR ||
         "";
 
-
     // =====================================================
     // PAGE CONTENT
     // =====================================================
 
     let title = "Your Booking is Being Processed";
-
-    let message =
-        bookingMessage ||
-        "Your booking request is currently being processed. Please do not make another payment";
-
+    let message = bookingMessage || "Your booking request is currently being processed. Please do not make another payment";
     let iconType = "pending";
-
 
     // -----------------------------------------------------
     // CONFIRMED
@@ -141,13 +127,9 @@ export const ThankYou = () => {
 
     if (isConfirmed) {
         title = "Booking Confirmed!";
-
-        message =
-            "Your flight has been booked successfully. Thank you for choosing us for your journey.";
-
+        message = "Your flight has been booked successfully. Thank you for choosing us for your journey.";
         iconType = "success";
     }
-
 
     // -----------------------------------------------------
     // PAYMENT PENDING
@@ -155,13 +137,9 @@ export const ThankYou = () => {
 
     else if (isPaymentPending) {
         title = "Booking Under Process";
-
-        message =
-            "Your payment has been received and your booking is currently being processed. Please do not make another payment.";
-
+        message = "Your payment has been received and your booking is currently being processed. Please do not make another payment.";
         iconType = "pending";
     }
-
 
     // -----------------------------------------------------
     // TICKETING FAILED
@@ -169,11 +147,7 @@ export const ThankYou = () => {
 
     else if (isTicketingFailed) {
         title = "Ticketing Failed";
-
-        message =
-            bookingMessage ||
-            "Your ticket request could not be completed with the airline. Please contact our support team with your booking reference.";
-
+        message = bookingMessage || "Your ticket request could not be completed with the airline. Please contact our support team with your booking reference.";
         iconType = "failed";
     }
 
@@ -367,7 +341,7 @@ export const ThankYou = () => {
                                             {airlinePNR}
                                         </strong>
 
-                                        <button
+                                        {/* <button
                                             type="button"
                                             className="copy-btn"
                                             onClick={() =>
@@ -375,7 +349,7 @@ export const ThankYou = () => {
                                             }
                                         >
                                             {copiedField === "pnr" ? "Copied" : "Copy"}
-                                        </button>
+                                        </button> */}
                                     </span>
 
                                 </div>
@@ -456,7 +430,7 @@ export const ThankYou = () => {
 
                         {isConfirmed && (
                             <Link
-                                to="/my-bookings"
+                                to="/user-booking"
                                 className="contact-btn"
                             >
                                 View Booking

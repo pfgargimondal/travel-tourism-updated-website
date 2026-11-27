@@ -686,7 +686,7 @@
 }
 
 .state-box {
-  background: #f3f4f6;
+  background: #fff;
   padding: 15px;
   border-radius: 6px;
   border: 1px solid #e0e0e0;
@@ -694,14 +694,6 @@
 
 .state-select {
   max-width: 250px;
-}
-
-
-.state-box {
-  background: #f3f4f6;
-  padding: 15px;
-  border-radius: 6px;
-  border: 1px solid #e0e0e0;
 }
 
 .state-select {
@@ -710,7 +702,12 @@
 
 .dhdsfsd788 {
   box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  border-radius: 6px;
+}
 
+.dhdsfsd788 .text-danger{
+  padding: 15px;
+  padding-top: 0;
 }
 
 /* Banner */
@@ -3390,7 +3387,7 @@ p.jomkodokofjdf{
 }
 
 .asego-api-plan.active {
-  border: 1px solid #159b70;
+  border: 1px solid var(--main-green-color);
   background: #f6fff9;
 }
 
@@ -3404,8 +3401,8 @@ p.jomkodokofjdf{
 
 .asego-plan-header small,
 .asego-plan-price small {
-  color: #718096;
-  font-size: 11px;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .asego-plan-header h6 {
@@ -3415,8 +3412,9 @@ p.jomkodokofjdf{
 }
 
 .asego-plan-header span {
-  color: #0788ce;
-  font-size: 12px;
+  color: var(--blue-primary-color);
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .asego-recommended {
@@ -3437,7 +3435,7 @@ p.jomkodokofjdf{
 }
 
 .asego-plan-price h4 {
-  color: #078cbd;
+  color: var(--blue-secondary-color);
   font-weight: 700;
   margin: 5px 0 0;
   font-size: 21px;
@@ -3446,6 +3444,8 @@ p.jomkodokofjdf{
 .asego-plan-price h6 {
   margin-top: 6px;
   font-weight: 700;
+  color: var(--blue-secondary-color);
+  font-size: 21px;
 }
 
 .asego-age-premium {
@@ -3456,12 +3456,21 @@ p.jomkodokofjdf{
   font-size: 12px;
 }
 
+.asego-age-premium strong{
+  font-size: 16px;
+}
+
+.asego-age-premium span{
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .asego-coverage-section {
   margin-top: 15px;
 }
 
 .asego-coverage-section > strong {
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .asego-coverage-item {
@@ -3470,7 +3479,8 @@ p.jomkodokofjdf{
   gap: 10px;
   padding: 9px 0;
   border-bottom: 1px solid #edf0f3;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .asego-coverage-item div {
@@ -3485,31 +3495,52 @@ p.jomkodokofjdf{
 
 .asego-coverage-item strong {
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .asego-select-btn {
   width: 100%;
-  border: 1px solid #159b70;
-  color: #159b70;
+  border: 1px solid var(--blue-secondary-color);
+  color: var(--blue-secondary-color);
   background: white;
   padding: 9px;
   margin-top: 14px;
   border-radius: 4px;
   font-weight: 600;
-  font-size: 12px;
+  font-family: var(--font-family-raleway);
+}
+
+.asego-select-btn:hover{
+  background: var(--button-hover-gradient-color) !important;
+  color: #fff !important;
 }
 
 .asego-select-btn.selected {
   color: white;
-  background: #159b70;
+  background: var(--button-hover-gradient-color);
 }
 
 .asego-terms {
-  font-size: 10px;
-  color: #718096;
+  font-size: 11px;
   margin: 10px 0 0;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
+p.uidnehrer{
+  font-size: 0.8rem;
+  padding: 1rem 0;
+  color: #000 !important;
+  font-style: italic;
+}
 
-
+p.uidnehrer i{
+  color: #fff;
+  font-size: 1rem;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 50%;
+  background: var(--main-golden);
+  text-align: center;
+  line-height: 2;
+}

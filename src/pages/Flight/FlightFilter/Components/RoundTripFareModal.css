@@ -80,27 +80,23 @@
 
 .rt-fare-tabs {
   display: flex;
+  gap: 8px;
+  padding: 12px 0;
+  margin: 0 22px;
 
-  border-bottom: 2px solid #e8e8e8;
 }
 
 .rt-fare-tabs button {
   flex: 1;
-
   padding: 14px 10px;
-
   border: none;
   border-bottom: 3px solid transparent;
-
-  background: #fff;
-
+  background: rgb(229 229 229 / 61%);
   color: #777;
-
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 16px;
   font-weight: 700;
-
   cursor: pointer;
-
   transition: color 0.2s, border-color 0.2s;
 }
 
@@ -109,9 +105,9 @@
 }
 
 .rt-fare-tabs button.active {
-  color: #111;
-
+  color: #ffffff;
   border-bottom-color: #1687ff;
+  background: var(--button-gradient-color);
 }
 
 /* =========================================
@@ -122,16 +118,17 @@
   display: flex;
   align-items: center;
   gap: 12px;
-
-  padding: 15px 22px;
-
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
+  padding: 10px 22px;
+  border: 1px solid var(--light-border-color);
+  border-radius: 8px;
+  margin: 0 22px;
+  margin-bottom: 0.5rem;
+  background: rgb(229 229 229 / 61%);
 }
 
-.rt-fare-flight-info > img {
-  width: 34px;
-  height: 34px;
+.rt-fare-flight-info>img {
+  width: 40px;
+  height: 40px;
 
   object-fit: contain;
 }
@@ -143,12 +140,12 @@
 }
 
 .rt-fare-airline strong {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .rt-fare-airline span {
-  font-size: 11px;
-  color: #777;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .rt-fare-flight-summary {
@@ -160,12 +157,12 @@
 }
 
 .rt-fare-flight-summary strong {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .rt-fare-flight-summary span {
-  font-size: 11px;
-  color: #777;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .rt-fare-duration {
@@ -179,12 +176,12 @@
 }
 
 .rt-fare-duration strong {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .rt-fare-duration span {
-  font-size: 11px;
-  color: #777;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 /* =========================================
@@ -194,26 +191,25 @@
 .rt-fare-content {
   flex: 1;
   min-height: 150px;
-
-  padding: 20px 22px;
-
+  padding: 10px 22px;
   overflow-y: auto;
 }
 
 .rt-fare-intro {
+  border-left: 4px solid var(--main-green-color);
   margin-bottom: 16px;
+  padding-left: 1rem;
 }
 
 .rt-fare-intro h6 {
   margin-bottom: 5px;
-
   font-size: 15px;
   font-weight: 600;
 }
 
 .rt-fare-intro p {
   margin: 0;
-
+  line-height: 1;
   color: #777;
   font-size: 12px;
 }
@@ -224,31 +220,22 @@
 
 .rt-fare-grid {
   display: grid;
-
   grid-template-columns: repeat(3, minmax(0, 1fr));
-
   gap: 14px;
 }
 
 .rt-fare-option {
   display: flex;
   flex-direction: column;
-
+  position: relative;
   min-width: 0;
-
   padding: 14px 12px;
-
   border: 1px solid #ddd;
   border-radius: 7px;
-
   background: #fff;
-
   color: #333;
-
   text-align: left;
-
   cursor: pointer;
-
   transition: border-color 0.2s, background 0.2s;
 }
 
@@ -257,10 +244,8 @@
 }
 
 .rt-fare-option.selected {
-  border: 1px solid #1687ff;
-
+  border: 3px solid var(--blue-primary-color);
   background: #f5faff;
-
   box-shadow: 0 0 0 1px rgba(22, 135, 255, 0.08);
 }
 
@@ -272,32 +257,28 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-
   gap: 5px;
-
   margin-bottom: 12px;
 }
 
 .rt-fare-radio {
   color: #1687ff;
-
   font-size: 19px;
   line-height: 1;
 }
 
 .rt-fare-option-top strong {
-  font-size: 16px;
+  font-size: 26px;
   font-weight: 700;
 }
 
 .rt-fare-option-top small {
-  font-size: 10px;
-  color: #666;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .rt-fare-option h6 {
   margin: 0 0 12px;
-
   font-size: 13px;
   font-weight: 600;
 }
@@ -308,30 +289,23 @@
 
 .rt-fare-feature {
   padding-top: 11px;
-  margin-top: 8px;
-
   border-top: 1px solid #e8e8e8;
 }
 
-.rt-fare-feature > strong {
+.rt-fare-feature>strong {
   display: block;
-
   margin-bottom: 8px;
-
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .rt-fare-feature p {
   display: flex;
   align-items: flex-start;
   gap: 5px;
-
   margin: 6px 0;
-
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
-
   overflow-wrap: anywhere;
 }
 
@@ -399,18 +373,18 @@
 }
 
 .rt-fare-total strong {
-  font-size: 21px;
+  font-size: 24px;
   font-weight: 700;
 }
 
 .rt-fare-total small {
-  color: #0a0a0a;
-  font-size: 10px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .rt-fare-total span {
-  color: #0a0a0a;
-  font-size: 10px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .rt-fare-continue {

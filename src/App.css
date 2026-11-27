@@ -44,8 +44,7 @@ h4,
 h5,
 h6,
 table,
-tr,
-td {
+tr {
     font-family: var(--font-family-spinnaker);
 }
 
@@ -76,7 +75,8 @@ label{
 }
 
 span,
-small{
+small,
+strong{
     font-family: var(--font-family-raleway);
 }
 
